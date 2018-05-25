@@ -6,5 +6,6 @@ SDL_Texture *icon_check, *icon_uncheck;
 SDL_Texture *dialog, *options_dialog, *properties_dialog;
 
 void Textures_Load(void);
+void Textures_Free(void);
 
 #endif

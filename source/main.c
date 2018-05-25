@@ -8,6 +8,8 @@
 
 static void Term_Services(void)
 {
+	Textures_Free();
+	
 	TTF_CloseFont(Roboto);
 	TTF_Quit();
 

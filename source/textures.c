@@ -17,3 +17,19 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &options_dialog, "romfs:/res/drawable/ic_material_options_dialog.png");
 	SDL_LoadImage(RENDERER, &properties_dialog, "romfs:/res/drawable/ic_material_properties_dialog.png");
 }
+
+void Textures_Free(void)
+{
+	SDL_DestroyTexture(properties_dialog);
+	SDL_DestroyTexture(options_dialog);
+	SDL_DestroyTexture(dialog);
+	SDL_DestroyTexture(icon_uncheck);
+	SDL_DestroyTexture(icon_check);
+	SDL_DestroyTexture(icon_text);
+	SDL_DestroyTexture(icon_image);
+	SDL_DestroyTexture(icon_file);
+	SDL_DestroyTexture(icon_dir);
+	SDL_DestroyTexture(icon_audio);
+	SDL_DestroyTexture(icon_archive);
+	SDL_DestroyTexture(icon_app);
+}
