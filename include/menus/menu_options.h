@@ -11,6 +11,8 @@
 
 void Menu_ControlDeleteDialog(u64 input);
 void Menu_DisplayDeleteDialog(void);
+void Menu_ControlProperties(u64 input);
+void Menu_DisplayProperties(void);
 void Menu_ControlOptions(u64 input);
 void Menu_DisplayOptions(void);
 

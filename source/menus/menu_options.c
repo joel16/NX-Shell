@@ -380,9 +380,12 @@ void Menu_ControlDeleteDialog(u64 input)
 				Dirbrowse_PopulateFiles(true);
 			
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+
 		}
 		else
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+
+		delete_dialog_selection = 0;
 	}
 }
 
@@ -413,6 +416,47 @@ void Menu_DisplayDeleteDialog(void)
 	SDL_DrawText(Roboto, 910 - (cancel_width), ((720 - (height)) / 2) + 245, TITLE_COLOUR, "NO");
 }
 
+void Menu_ControlProperties(u64 input)
+{
+	if ((input & KEY_A) || (input & KEY_B))
+		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+}
+
+void Menu_DisplayProperties(void)
+{
+	// Find File
+	File *file = Dirbrowse_GetFileIndex(position);
+
+	char path[1024];
+	strcpy(path, cwd);
+	strcpy(path + strlen(path), file->name);
+
+	SDL_DrawImage(RENDERER, properties_dialog, 350, 85, 580, 550);
+	SDL_DrawText(Roboto, 370, 133, TITLE_COLOUR, "Actions");
+
+	SDL_DrawText(Roboto, 390, 183, TEXT_MIN_COLOUR, "Name: ");
+	SDL_DrawText(Roboto, 390, 233, TEXT_MIN_COLOUR, "Parent: ");
+	SDL_DrawText(Roboto, 390, 283, TEXT_MIN_COLOUR, "Type: ");
+	SDL_DrawText(Roboto, 390, 333, TEXT_MIN_COLOUR, "Size: ");
+
+	if (file->isDir)
+	{
+		SDL_DrawText(Roboto, 390, 383, TEXT_MIN_COLOUR, "Contains: ");
+		SDL_DrawText(Roboto, 390, 433, TEXT_MIN_COLOUR, "Created: ");
+		SDL_DrawText(Roboto, 390, 483, TEXT_MIN_COLOUR, "Modified: ");
+	}
+	else
+	{
+		SDL_DrawText(Roboto, 390, 383, TEXT_MIN_COLOUR, "Created: ");
+		SDL_DrawText(Roboto, 390, 433, TEXT_MIN_COLOUR, "Modified: ");
+	}	
+
+	int width = 0, height = 0;
+	TTF_SizeText(Roboto, "OK", &width, &height);
+	SDL_DrawRect(RENDERER, (890 - width) - 20, (595 - height) - 20, width + 40, height + 40, SELECTOR_COLOUR);
+	SDL_DrawText(Roboto, 890 - width, 595 - height, TITLE_COLOUR, "OK");
+}
+
 void Menu_ControlOptions(u64 input)
 {
 	if (input & KEY_RIGHT)
@@ -437,6 +481,8 @@ void Menu_ControlOptions(u64 input)
 
 	if (input & KEY_A)
 	{
+		if (row == 0 && column == 0)
+			MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
 		if (row == 1 && column == 1)
 		{
 			if (copy_status == false)

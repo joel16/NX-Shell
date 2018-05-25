@@ -65,8 +65,10 @@ static void Menu_Main_Controls(void)
 	
 	if (MENU_DEFAULT_STATE == MENU_STATE_HOME)
 		Menu_HomeControls(kDown);
-	if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
+	else if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
 		Menu_ControlOptions(kDown);
+	else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES)
+		Menu_ControlProperties(kDown);
 	else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG)
 		Menu_ControlDeleteDialog(kDown);
 }
@@ -90,6 +92,8 @@ void Menu_Main(void)
 
 		if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
 			Menu_DisplayOptions();
+		else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES)
+			Menu_DisplayProperties();
 		else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG)
 			Menu_DisplayDeleteDialog();
 		
