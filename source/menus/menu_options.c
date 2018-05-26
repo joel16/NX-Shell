@@ -407,7 +407,7 @@ void Menu_DisplayDeleteDialog(void)
 	SDL_QueryTexture(dialog, NULL, NULL, &width, &height);
 
 	SDL_DrawImage(RENDERER, dialog, ((1280 - (width)) / 2), ((720 - (height)) / 2), 880, 320);
-	SDL_DrawText(Roboto, ((1280 - (width)) / 2) + 80, ((720 - (height)) / 2) + 45, TITLE_COLOUR, "Confirm deleton");
+	SDL_DrawText(Roboto, ((1280 - (width)) / 2) + 80, ((720 - (height)) / 2) + 45, TITLE_COLOUR, "Confirm deletion");
 	SDL_DrawText(Roboto, ((1280 - (text_width)) / 2), ((720 - (height)) / 2) + 130, TEXT_MIN_COLOUR, "Do you wish to continue?");
 
 	if (delete_dialog_selection == 0)
