@@ -370,7 +370,10 @@ void Menu_ControlDeleteDialog(u64 input)
 		delete_dialog_selection = 1;
 
 	if (input & KEY_B)
+	{
+		delete_dialog_selection = 0;
 		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+	}
 
 	if (input & KEY_A)
 	{
@@ -434,22 +437,30 @@ void Menu_DisplayProperties(void)
 	SDL_DrawImage(RENDERER, properties_dialog, 350, 85, 580, 550);
 	SDL_DrawText(Roboto, 370, 133, TITLE_COLOUR, "Actions");
 
-	SDL_DrawText(Roboto, 390, 183, TEXT_MIN_COLOUR, "Name: ");
-	SDL_DrawText(Roboto, 390, 233, TEXT_MIN_COLOUR, "Parent: ");
-	SDL_DrawText(Roboto, 390, 283, TEXT_MIN_COLOUR, "Type: ");
-	SDL_DrawText(Roboto, 390, 333, TEXT_MIN_COLOUR, "Size: ");
+	char name[50], parent[50], size[30], contains[50]; //created[50], modified[50];
+
+	snprintf(name, 50, "Name: %s", file->name);
+	snprintf(parent, 50, "Parent: %s", cwd);
+
+	char utils_size[16];
+	Utils_GetSizeString(utils_size, FS_GetFileSize(path));
+	snprintf(size, 50, "Size: %s", utils_size);
+
+	SDL_DrawText(Roboto, 390, 183, TEXT_MIN_COLOUR, name);
+	SDL_DrawText(Roboto, 390, 233, TEXT_MIN_COLOUR, parent);
+	SDL_DrawText(Roboto, 390, 283, TEXT_MIN_COLOUR, size);
 
 	if (file->isDir)
 	{
-		SDL_DrawText(Roboto, 390, 383, TEXT_MIN_COLOUR, "Contains: ");
-		SDL_DrawText(Roboto, 390, 433, TEXT_MIN_COLOUR, "Created: ");
-		SDL_DrawText(Roboto, 390, 483, TEXT_MIN_COLOUR, "Modified: ");
+		SDL_DrawText(Roboto, 390, 333, TEXT_MIN_COLOUR, "Contains: ");
+		//SDL_DrawText(Roboto, 390, 383, TEXT_MIN_COLOUR, "Created: ");
+		//SDL_DrawText(Roboto, 390, 433, TEXT_MIN_COLOUR, "Modified: ");
 	}
-	else
+	/*else
 	{
-		SDL_DrawText(Roboto, 390, 383, TEXT_MIN_COLOUR, "Created: ");
-		SDL_DrawText(Roboto, 390, 433, TEXT_MIN_COLOUR, "Modified: ");
-	}	
+		SDL_DrawText(Roboto, 390, 333, TEXT_MIN_COLOUR, "Created: ");
+		SDL_DrawText(Roboto, 390, 383, TEXT_MIN_COLOUR, "Modified: ");
+	}*/
 
 	int width = 0, height = 0;
 	TTF_SizeText(Roboto, "OK", &width, &height);

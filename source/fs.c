@@ -76,7 +76,7 @@ const char *FS_GetFileExt(const char *filename)
 	return dot + 1;
 }
 
-const char* FS_GetFileModifiedTime(const char *filename) 
+char *FS_GetFileModifiedTime(const char *filename) 
 {
 	struct stat attr;
 	stat(filename, &attr);

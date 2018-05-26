@@ -10,13 +10,7 @@
 static void Menu_HomeControls(u64 input)
 {
 	if (input & KEY_PLUS)
-	{
-		if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
-			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-		else
-			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		//longjmp(exitJmp, 1);
-	}
+		longjmp(exitJmp, 1);
 
 	if (fileCount > 0)
 	{
@@ -41,18 +35,23 @@ static void Menu_HomeControls(u64 input)
 				position = 0;
 		}
 
+		if (input & KEY_X)
+		{
+			if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
+				MENU_DEFAULT_STATE = MENU_STATE_HOME;
+			else
+				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+		}
+
 		if (input & KEY_A)
 		{
-			if (MENU_DEFAULT_STATE != MENU_STATE_THEMES)
-			{
-				wait(1);
-				Dirbrowse_OpenFile(); // Open file/dir
-			}
+			wait(5);
+			Dirbrowse_OpenFile();
 		}
 
 		if ((strcmp(cwd, ROOT_PATH) != 0) && (input & KEY_B))
 		{
-			wait(1);
+			wait(5);
 			Dirbrowse_Navigate(-1);
 			Dirbrowse_PopulateFiles(true);
 		}
