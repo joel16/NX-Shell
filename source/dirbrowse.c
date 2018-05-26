@@ -4,6 +4,7 @@
 #include "common.h"
 #include "dirbrowse.h"
 #include "fs.h"
+#include "menu_gallery.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
@@ -157,9 +158,9 @@ void Dirbrowse_DisplayFiles(void)
 			strncpy(buf, file->name, sizeof(buf));
 			buf[sizeof(buf) - 1] = '\0';
 
-			if (strncmp(file->name, "..", 2) == 0)
-				SDL_DrawText(Roboto, 170, 160 + (73 * printed), BLACK, "Parent folder");
-			else if (!file->isDir)
+			/*if (strncmp(file->name, "..", 2) == 0)
+				SDL_DrawText(Roboto, 170, 160 + (73 * printed), BLACK, "Parent folder");*/
+			if (!file->isDir)
 			{
 				Utils_GetSizeString(size, FS_GetFileSize(path));
 				int width = 0;
@@ -224,14 +225,12 @@ void Dirbrowse_OpenFile(void)
 			Dirbrowse_SaveLastDirectory();
 
 			Dirbrowse_PopulateFiles(true);
-			Dirbrowse_DisplayFiles();
+			//Dirbrowse_DisplayFiles();
 		}
 	}
-	/*else if ((strncasecmp(file->ext, "png", 3) == 0) || (strncasecmp(file->ext, "jpg", 3) == 0) || 
-		(strncasecmp(file->ext, "gif", 3) == 0) || (strncasecmp(file->ext, "bmp", 3) == 0) || 
-		(strncasecmp(file->ext, "tga", 3) == 0))
+	else if ((strncasecmp(file->ext, "png", 3) == 0) || (strncasecmp(file->ext, "jpg", 3) == 0))
 		Gallery_DisplayImage(path);
-	else if (Music_GetMusicFileType(path) != 0)
+	/*else if (Music_GetMusicFileType(path) != 0)
 		Music_Player(path);
 	else if (strncasecmp(file->ext, "txt", 3) == 0)
 		TextViewer_DisplayText(path);
@@ -270,7 +269,6 @@ int Dirbrowse_Navigate(int dir)
 		}
 
 		slash[0] = 0; // Terminate working directory
-		Dirbrowse_SaveLastDirectory();
 	}
 
 	// Normal folder
@@ -280,8 +278,9 @@ int Dirbrowse_Navigate(int dir)
 		strcpy(cwd + strlen(cwd), file->name);
 		cwd[strlen(cwd) + 1] = 0;
 		cwd[strlen(cwd)] = '/';
-		Dirbrowse_SaveLastDirectory();
 	}
+
+	Dirbrowse_SaveLastDirectory();
 
 	return 0; // Return success
 }
