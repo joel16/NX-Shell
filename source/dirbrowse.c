@@ -223,12 +223,10 @@ void Dirbrowse_OpenFile(void)
 		if (R_SUCCEEDED(Dirbrowse_Navigate(0)))
 		{
 			Dirbrowse_SaveLastDirectory();
-
 			Dirbrowse_PopulateFiles(true);
-			//Dirbrowse_DisplayFiles();
 		}
 	}
-	else if ((strncasecmp(file->ext, "png", 3) == 0) || (strncasecmp(file->ext, "jpg", 3) == 0))
+	else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0))
 		Gallery_DisplayImage(path);
 	/*else if (Music_GetMusicFileType(path) != 0)
 		Music_Player(path);
