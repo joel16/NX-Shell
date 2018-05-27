@@ -497,7 +497,7 @@ void Menu_ControlOptions(u64 input)
 			MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
 		if (row == 1 && column == 1)
 		{
-			if (copy_status == false)
+			if (copy_status == false && cut_status == false)
 			{
 				copy_status = true;
 				FileOptions_Copy(COPY_KEEP_ON_FINISH);
@@ -515,7 +515,7 @@ void Menu_ControlOptions(u64 input)
 		}
 		else if (row == 0 && column == 2)
 		{
-			if (cut_status == false)
+			if (cut_status == false && copy_status == false)
 			{
 				cut_status = true;
 				FileOptions_Copy(COPY_DELETE_ON_FINISH);
@@ -536,6 +536,13 @@ void Menu_ControlOptions(u64 input)
 	}
 
 	if (input & KEY_B)
+	{
+		copy_status = false;
+		cut_status = false;
+		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	}
+
+	if (input & KEY_X)
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
 
