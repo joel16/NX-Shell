@@ -539,6 +539,8 @@ void Menu_ControlOptions(u64 input)
 	{
 		copy_status = false;
 		cut_status = false;
+		row = 0;
+		column = 0;
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
 
