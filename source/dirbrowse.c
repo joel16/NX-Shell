@@ -2,6 +2,7 @@
 #include <switch.h>
 
 #include "common.h"
+#include "config.h"
 #include "dirbrowse.h"
 #include "fs.h"
 #include "menu_gallery.h"
@@ -126,16 +127,16 @@ void Dirbrowse_DisplayFiles(void)
 		if (position < FILES_PER_PAGE || i > (position - FILES_PER_PAGE))
 		{
 			if (i == position)
-				SDL_DrawRect(RENDERER, 0, 140 + (73 * printed), 1280, 73, SELECTOR_COLOUR);
+				SDL_DrawRect(RENDERER, 0, 140 + (73 * printed), 1280, 73, dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-			SDL_DrawImage(RENDERER, icon_uncheck, 20, 156 + (73 * printed), 40, 40);
+			SDL_DrawImage(RENDERER, dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
 
 			char path[500];
 			strcpy(path, cwd);
 			strcpy(path + strlen(path), file->name);
 
 			if (file->isDir)
-				SDL_DrawImage(RENDERER, icon_dir, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(RENDERER, dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "nro", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "elf", 3) == 0)
 					|| (strncasecmp(FS_GetFileExt(file->name), "bin", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_app, 80, 141 + (73 * printed), 72, 72);
@@ -165,12 +166,12 @@ void Dirbrowse_DisplayFiles(void)
 				Utils_GetSizeString(size, FS_GetFileSize(path));
 				int width = 0;
 				TTF_SizeText(Roboto_small, size, &width, NULL);
-				SDL_DrawText(Roboto_small, 1260 - width, 180 + (73 * printed), BLACK, size);
+				SDL_DrawText(Roboto_small, 1260 - width, 180 + (73 * printed), dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, size);
 			}
 
 			int height = 0;
 			TTF_SizeText(Roboto, size, NULL, &height);
-			SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), BLACK, buf);
+			SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), dark_theme? WHITE : BLACK, buf);
 
 			printed++; // Increase printed counter
 		}

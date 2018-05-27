@@ -1,6 +1,7 @@
 #include <switch.h>
 
 #include "common.h"
+#include "config.h"
 #include "dirbrowse.h"
 #include "menu_main.h"
 #include "menu_options.h"
@@ -78,10 +79,10 @@ void Menu_Main(void)
 
 	while(appletMainLoop())
 	{
-		SDL_ClearScreen(RENDERER, WHITE);
+		SDL_ClearScreen(RENDERER, dark_theme? BLACK_BG : WHITE);
 		SDL_RenderClear(RENDERER);
-		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, BLUE_DARK);	// Status bar
-		SDL_DrawRect(RENDERER, 0, 40, 1280, 100, BLUE_LIGHT);	// Menu bar
+		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
+		SDL_DrawRect(RENDERER, 0, 40, 1280, 100, dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
 		
 		StatusBar_DisplayTime();
 		Dirbrowse_DisplayFiles();

@@ -2,6 +2,7 @@
 #include <switch.h>
 
 #include "common.h"
+#include "config.h"
 #include "fs.h"
 #include "menu_main.h"
 #include "textures.h"
@@ -81,6 +82,8 @@ static void Init_Services(void)
 int main(int argc, char **argv)
 {
 	Init_Services();
+	dark_theme = false;
+	Config_Load();
 
 	if (setjmp(exitJmp)) 
 	{
