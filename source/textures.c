@@ -22,18 +22,46 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &dialog_dark, "romfs:/res/drawable/ic_material_dialog_dark.png");
 	SDL_LoadImage(RENDERER, &options_dialog_dark, "romfs:/res/drawable/ic_material_options_dialog_dark.png");
 	SDL_LoadImage(RENDERER, &properties_dialog_dark, "romfs:/res/drawable/ic_material_properties_dialog_dark.png");
+	SDL_LoadImage(RENDERER, &bg_header, "romfs:/res/drawable/bg_header.png");
+	SDL_LoadImage(RENDERER, &icon_settings, "romfs:/res/drawable/ic_material_light_settings.png");
+	SDL_LoadImage(RENDERER, &icon_sd, "romfs:/res/drawable/ic_material_light_sdcard.png");
+	SDL_LoadImage(RENDERER, &icon_secure, "romfs:/res/drawable/ic_material_light_secure.png");
+	SDL_LoadImage(RENDERER, &icon_settings_dark, "romfs:/res/drawable/ic_material_light_settings_dark.png");
+	SDL_LoadImage(RENDERER, &icon_sd_dark, "romfs:/res/drawable/ic_material_light_sdcard_dark.png");
+	SDL_LoadImage(RENDERER, &icon_secure_dark, "romfs:/res/drawable/ic_material_light_secure_dark.png");
+	SDL_LoadImage(RENDERER, &icon_radio_off, "romfs:/res/drawable/btn_material_light_radio_off_normal.png");
+	SDL_LoadImage(RENDERER, &icon_radio_on, "romfs:/res/drawable/btn_material_light_radio_on_normal.png");
+	SDL_LoadImage(RENDERER, &icon_radio_dark_off, "romfs:/res/drawable/btn_material_light_radio_off_normal_dark.png");
+	SDL_LoadImage(RENDERER, &icon_radio_dark_on, "romfs:/res/drawable/btn_material_light_radio_on_normal_dark.png");
 }
 
 void Textures_Free(void)
 {
+	SDL_DestroyTexture(icon_radio_dark_on);
+	SDL_DestroyTexture(icon_radio_dark_off);
+	SDL_DestroyTexture(icon_radio_on);
+	SDL_DestroyTexture(icon_radio_off);
+	SDL_DestroyTexture(icon_secure_dark);
+	SDL_DestroyTexture(icon_sd_dark);
+	SDL_DestroyTexture(icon_settings_dark);
+	SDL_DestroyTexture(icon_secure);
+	SDL_DestroyTexture(icon_sd);
+	SDL_DestroyTexture(icon_settings);
+	SDL_DestroyTexture(bg_header);
+	SDL_DestroyTexture(properties_dialog_dark);
+	SDL_DestroyTexture(options_dialog_dark);
+	SDL_DestroyTexture(dialog_dark);
 	SDL_DestroyTexture(properties_dialog);
 	SDL_DestroyTexture(options_dialog);
 	SDL_DestroyTexture(dialog);
+	SDL_DestroyTexture(icon_uncheck_dark);
 	SDL_DestroyTexture(icon_uncheck);
+	SDL_DestroyTexture(icon_check_dark);
 	SDL_DestroyTexture(icon_check);
 	SDL_DestroyTexture(icon_text);
 	SDL_DestroyTexture(icon_image);
 	SDL_DestroyTexture(icon_file);
+	SDL_DestroyTexture(icon_dir_dark);
 	SDL_DestroyTexture(icon_dir);
 	SDL_DestroyTexture(icon_audio);
 	SDL_DestroyTexture(icon_archive);

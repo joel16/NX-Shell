@@ -170,7 +170,7 @@ void Dirbrowse_DisplayFiles(void)
 			}
 
 			int height = 0;
-			TTF_SizeText(Roboto, size, NULL, &height);
+			TTF_SizeText(Roboto, buf, NULL, &height);
 			SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), dark_theme? WHITE : BLACK, buf);
 
 			printed++; // Increase printed counter

@@ -11,7 +11,9 @@ static void Term_Services(void)
 {
 	Textures_Free();
 	
+	TTF_CloseFont(Roboto_small);
 	TTF_CloseFont(Roboto);
+	TTF_CloseFont(Roboto_large);
 	TTF_Quit();
 
 	IMG_Quit();
@@ -40,9 +42,10 @@ static void Init_Services(void)
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 
 	TTF_Init();
+	Roboto_large = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 30);
 	Roboto = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 25);
 	Roboto_small = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 20);
-	if (!Roboto || !Roboto_small)
+	if (!Roboto_large || !Roboto || !Roboto_small)
 		Term_Services();
 
 	Textures_Load();

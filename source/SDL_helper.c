@@ -16,7 +16,7 @@ void SDL_DrawRect(SDL_Renderer* renderer, int x, int y, int w, int h, SDL_Color 
 	SDL_RenderFillRect(RENDERER, &rect);
 }
 
-void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, char *text)
+void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, const char *text)
 {
 	SDL_Surface *surface = TTF_RenderText_Blended_Wrapped(font, text, colour, 1280);
 	SDL_SetSurfaceAlphaMod(surface, 255);

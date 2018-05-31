@@ -5,8 +5,33 @@
 #include "dirbrowse.h"
 #include "menu_main.h"
 #include "menu_options.h"
+#include "menu_settings.h"
 #include "SDL_helper.h"
 #include "status_bar.h"
+#include "textures.h"
+
+static void Menu_ControlMenuBar(u64 input)
+{
+	if (input & KEY_A)
+		MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
+
+	if ((input & KEY_Y) || (input & KEY_B))
+		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+}
+
+static void Menu_DisplayMenuBar(void)
+{
+	SDL_DrawRect(RENDERER, 0, 0, 400, 720, dark_theme? BLACK_BG : WHITE);
+	SDL_DrawRect(RENDERER, 400, 0, 1, 720, dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
+	SDL_DrawImage(RENDERER, bg_header, 0, 0, 400, 214);
+	SDL_DrawText(Roboto_large, 15, 164, WHITE, "NX Shell");
+	SDL_DrawImage(RENDERER, dark_theme? icon_sd_dark : icon_sd, 20, 254, 60, 60);
+	SDL_DrawText(Roboto, 100, 254, dark_theme? WHITE : BLACK, "External storage");
+	SDL_DrawText(Roboto_small, 100, 284, dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
+	int settings_width = 0, settings_height = 0;
+	SDL_DrawRect(RENDERER, 10, 630, 80, 80, dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawImage(RENDERER, dark_theme? icon_settings_dark : icon_settings, 20, 640, 60, 60);
+}
 
 static void Menu_HomeControls(u64 input)
 {
@@ -43,14 +68,20 @@ static void Menu_HomeControls(u64 input)
 			else
 				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 		}
+		else if (input & KEY_Y)
+		{
+			if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
+				MENU_DEFAULT_STATE = MENU_STATE_HOME;
+			else
+				MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
+		}
 
 		if (input & KEY_A)
 		{
 			wait(5);
 			Dirbrowse_OpenFile();
 		}
-
-		if ((strcmp(cwd, ROOT_PATH) != 0) && (input & KEY_B))
+		else if ((strcmp(cwd, ROOT_PATH) != 0) && (input & KEY_B))
 		{
 			wait(5);
 			Dirbrowse_Navigate(-1);
@@ -71,6 +102,8 @@ static void Menu_Main_Controls(void)
 		Menu_ControlProperties(kDown);
 	else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG)
 		Menu_ControlDeleteDialog(kDown);
+	else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
+		Menu_ControlMenuBar(kDown);
 }
 
 void Menu_Main(void)
@@ -96,6 +129,10 @@ void Menu_Main(void)
 			Menu_DisplayProperties();
 		else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG)
 			Menu_DisplayDeleteDialog();
+		else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
+			Menu_DisplayMenuBar();
+		else if (MENU_DEFAULT_STATE == MENU_STATE_SETTINGS)
+			Menu_DisplaySettings();
 		
 		SDL_RenderPresent(RENDERER);
 	}
