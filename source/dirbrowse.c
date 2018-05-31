@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <switch.h>
 
+#include "archive.h"
 #include "common.h"
 #include "config.h"
 #include "dirbrowse.h"
@@ -229,6 +230,12 @@ void Dirbrowse_OpenFile(void)
 	}
 	else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0))
 		Gallery_DisplayImage(path);
+	else if (strncasecmp(FS_GetFileExt(file->name), "zip", 3) == 0)
+	{
+		Archive_ExtractZip(path, cwd);
+		Dirbrowse_PopulateFiles(true);
+	}
+
 	/*else if (Music_GetMusicFileType(path) != 0)
 		Music_Player(path);
 	else if (strncasecmp(file->ext, "txt", 3) == 0)
