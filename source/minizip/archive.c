@@ -120,17 +120,17 @@ Result unzExtractAll(const char *src, unzFile *unzHandle)
 
 Result Archive_ExtractZip(const char *src, const char *dst)
 {
-	char tmpFile2[1024];
-	char tmpPath2[1024];
+	char tmpFile2[512];
+	char tmpPath2[512];
 
 	FS_MakeDir(dst);
 
 	strncpy(tmpPath2, "sdmc:", sizeof(tmpPath2));
-	strncat(tmpPath2, (char *)dst, (1024 - strlen(tmpPath2) - 1));
+	strncat(tmpPath2, (char *)dst, (512 - strlen(tmpPath2) - 1));
 	chdir(tmpPath2);
 	
 	strncpy(tmpFile2, "sdmc:", sizeof(tmpFile2));
-	strncat(tmpFile2, (char*)src, (1024 - strlen(tmpFile2) - 1));
+	strncat(tmpFile2, (char*)src, (512 - strlen(tmpFile2) - 1));
 
 	unzFile *unzHandle = unzOpen(tmpFile2); // Open zip file
 
