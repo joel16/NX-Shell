@@ -37,7 +37,7 @@ static void Init_Services(void)
 
 	SDL_SetRenderDrawBlendMode(RENDERER, SDL_BLENDMODE_BLEND);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 

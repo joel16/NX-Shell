@@ -29,7 +29,14 @@ SDL_Surface *SDL_LoadImage(SDL_Renderer* renderer, SDL_Texture **texture, char *
 {
 	SDL_Surface *loaded_surface = NULL;
 	loaded_surface = IMG_Load(path);
-	*texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
+
+	if (loaded_surface)
+	{
+		Uint32 colorkey = SDL_MapRGB(loaded_surface->format, 0, 0, 0);
+		SDL_SetColorKey(loaded_surface, SDL_TRUE, colorkey);
+		*texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
+	}
+
 	SDL_FreeSurface(loaded_surface);
 }
 
