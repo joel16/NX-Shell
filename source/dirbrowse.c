@@ -11,6 +11,8 @@
 #include "textures.h"
 #include "utils.h"
 
+#define TYPE_DIR(n) (n == DT_DIR ? 1 : 0)
+
 int position = 0; // menu position
 int fileCount = 0; // file count
 File * files = NULL; // file list
@@ -24,8 +26,76 @@ void Dirbrowse_RecursiveFree(File *node)
 	free(node); // Free memory
 }
 
+/* function declaration */
+typedef int(*qsort_compar)(const void *, const void *);
+
+/* Basically scndir implementation */
+static int Dirbrowse_ScanDir(const char *dir, struct dirent ***namelist, int (*select)(const struct dirent *),
+	int (*compar)(const struct dirent **, const struct dirent **)) 
+{
+	DIR *d;
+	struct dirent *entry;
+	register int i = 0;
+	size_t entrysize;
+
+	if ((d=opendir(dir)) == NULL)
+		return(-1);
+
+	*namelist=NULL;
+	
+	while ((entry=readdir(d)) != NULL)
+	{
+		if (select == NULL || (select != NULL && (*select)(entry)))
+		{
+			*namelist = (struct dirent **)realloc((void *)(*namelist), (size_t)((i + 1) * sizeof(struct dirent *)));
+
+			if (*namelist == NULL) 
+				return(-1);
+			
+			entrysize = sizeof(struct dirent) - sizeof(entry->d_name) + strlen(entry->d_name) + 1;
+			
+			(*namelist)[i] = (struct dirent *)malloc(entrysize);
+			
+			if ((*namelist)[i] == NULL) 
+				return(-1);
+
+			memcpy((*namelist)[i], entry, entrysize);
+			i++;
+		}
+	}
+
+	if (closedir(d)) 
+		return(-1);
+	if (i == 0) 
+		return(-1);
+	if (compar != NULL)
+		qsort((void *)(*namelist), (size_t)i, sizeof(struct dirent *), (qsort_compar)compar);
+
+	return(i);
+}
+
+static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2) 
+{
+	char isDir[2];
+	
+	// push '..' to beginning
+	if (strcmp("..", (*dent1)->d_name) == 0)
+		return -1;
+	else if (strcmp("..", (*dent2)->d_name) == 0)
+		return 1;
+
+	isDir[0] = TYPE_DIR((*dent1)->d_type);
+	isDir[1] = TYPE_DIR((*dent2)->d_type);
+
+	if (isDir[0] == isDir[1]) // sort by name
+		return strcasecmp((*dent1)->d_name, (*dent2)->d_name);
+	else
+		return isDir[1] - isDir[0]; // put directories first
+}
+
 void Dirbrowse_PopulateFiles(bool clear)
 {
+	char path[512];
 	Dirbrowse_RecursiveFree(files);
 	files = NULL;
 	fileCount = 0;
@@ -47,23 +117,28 @@ void Dirbrowse_PopulateFiles(bool clear)
 			files->isDir = 1;
 			fileCount++;
 		}
-		
-		struct dirent *entries;
 
-		// Iterate Files
-		while ((entries = readdir(directory)) != NULL)
-		{	
-			// Ingore null filename
-			if (entries->d_name[0] == '\0') 
+		struct dirent **entries;
+
+		fileCount = Dirbrowse_ScanDir(cwd, &entries, NULL, cmpstringp);
+
+		if (fileCount != 0)
+		{
+			for (int i = 0; i < (fileCount); i++)
+			{
+				// Ingore null filename
+			if (entries[i]->d_name[0] == '\0') 
 				continue;
 
 			// Ignore "." in all Directories
-			if (strcmp(entries->d_name, ".") == 0) 
+			if (strcmp(entries[i]->d_name, ".") == 0) 
 				continue;
 
 			// Ignore ".." in Root Directory
-			if (strcmp(cwd, ROOT_PATH) == 0 && strncmp(entries->d_name, "..", 2) == 0) // Ignore ".." in Root Directory
-               continue;
+			if (strcmp(cwd, ROOT_PATH) == 0 && strncmp(entries[i]->d_name, "..", 2) == 0) // Ignore ".." in Root Directory
+				continue;
+
+			char isDir[2];
 
 			// Allocate Memory
 			File *item = (File *)malloc(sizeof(File));
@@ -72,10 +147,14 @@ void Dirbrowse_PopulateFiles(bool clear)
 			memset(item, 0, sizeof(File));
 
 			// Copy File Name
-			strcpy(item->name, entries->d_name);
+			strcpy(item->name, entries[i]->d_name);
+
+			strcpy(path, cwd);
+			strcpy(path + strlen(path), item->name);
+			item->size = FS_GetFileSize(path); // Copy file size
 
 			// Set Folder Flag
-			item->isDir = entries->d_type == DT_DIR;
+			item->isDir = entries[i]->d_type == DT_DIR;
 
 			// New List
 			if (files == NULL) 
@@ -93,9 +172,7 @@ void Dirbrowse_PopulateFiles(bool clear)
 				// Link Item
 				list->next = item;
 			}
-
-			// Increase File Count
-			fileCount++;
+			}
 		}
 
 		// Close Directory
@@ -164,7 +241,7 @@ void Dirbrowse_DisplayFiles(void)
 				SDL_DrawText(Roboto, 170, 160 + (73 * printed), BLACK, "Parent folder");*/
 			if (!file->isDir)
 			{
-				Utils_GetSizeString(size, FS_GetFileSize(path));
+				Utils_GetSizeString(size, file->size);
 				int width = 0;
 				TTF_SizeText(Roboto_small, size, &width, NULL);
 				SDL_DrawText(Roboto_small, 1260 - width, 180 + (73 * printed), dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, size);
