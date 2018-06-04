@@ -1,5 +1,6 @@
 #include "common.h"
 #include "config.h"
+#include "dirbrowse.h"
 #include "menu_settings.h"
 #include "SDL_helper.h"
 #include "status_bar.h"
@@ -7,15 +8,19 @@
 
 void Menu_DisplaySortSettings(void)
 {
-	int selection = 0, max_items = 1, height = 0;
+	int selection = 0, max_items = 5, height = 0;
 
 	int title_height = 0;
 	TTF_SizeText(Roboto_large, "Settings", NULL, &title_height);
 
 	const char *main_menu_items[] =
 	{
-		"Alphabetical (ascending order)",
-		"Alphabetical (descending order)"
+		"By name (ascending)",
+		"By name (descending)",
+		"By date (newest first)",
+		"By date (oldest first)",
+		"By size (largest first)",
+		"By size (smallest first)"
 	};
 
 	int radio_button_width = 0, radio_button_height = 0; //1180
@@ -57,6 +62,18 @@ void Menu_DisplaySortSettings(void)
 		config_sort_by == 1? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 225, 50, 50) : 
 			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 225, 50, 50);
 
+		config_sort_by == 2? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 298, 50, 50) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 298, 50, 50);
+		
+		config_sort_by == 3? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371, 50, 50) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371, 50, 50);
+
+		config_sort_by == 4? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 444, 50, 50) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 444, 50, 50);
+		
+		config_sort_by == 5? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 517, 50, 50) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 517, 50, 50);
+
 		SDL_RenderPresent(RENDERER);
 
 		hidScanInput();
@@ -86,16 +103,28 @@ void Menu_DisplaySortSettings(void)
 			{
 				case 0:
 					config_sort_by = 0;
-					Config_Save(config_dark_theme, config_sort_by);
 					break;
 				case 1:
 					config_sort_by = 1;
-					Config_Save(config_dark_theme, config_sort_by);
+					break;
+				case 2:
+					config_sort_by = 2;
+					break;
+				case 3:
+					config_sort_by = 3;
+					break;
+				case 4:
+					config_sort_by = 4;
+					break;
+				case 5:
+					config_sort_by = 5;
 					break;
 			}
+
+			Config_Save(config_dark_theme, config_sort_by);
 		}
 	}
-
+	Dirbrowse_PopulateFiles(true);
 }
 
 void Menu_DisplaySettings(void)

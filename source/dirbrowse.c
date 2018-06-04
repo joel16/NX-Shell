@@ -76,7 +76,9 @@ static int Dirbrowse_ScanDir(const char *dir, struct dirent ***namelist, int (*s
 
 static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2) 
 {
-	char isDir[2];
+	int ret = 0;
+	char isDir[2], path1[256], path2[256];
+	struct stat sbuf1, sbuf2;
 	
 	// push '..' to beginning
 	if (strcmp("..", (*dent1)->d_name) == 0)
@@ -86,6 +88,21 @@ static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2)
 
 	isDir[0] = TYPE_DIR((*dent1)->d_type);
 	isDir[1] = TYPE_DIR((*dent2)->d_type);
+
+	strcpy(path1, cwd);
+	strcpy(path1 + strlen(path1), (*dent1)->d_name);
+	ret = stat(path1, &sbuf1);
+	if (ret)
+		return 0;
+
+	strcpy(path2, cwd);
+	strcpy(path2 + strlen(path2), (*dent2)->d_name);
+	ret = stat(path2, &sbuf2);
+	if (ret)
+		return 0;
+
+	u64 sizeA = FS_GetFileSize(path1);
+	u64 sizeB = FS_GetFileSize(path2);
 
 	switch(config_sort_by)
 	{
@@ -102,7 +119,34 @@ static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2)
 			else
 				return isDir[1] - isDir[0]; // put directories first
 			break;
-
+		
+		case 2:
+			if (isDir[0] == isDir[1])
+				return sbuf1.st_mtime < sbuf2.st_mtime;
+			else
+				return isDir[1] - isDir[0]; // put directories first
+			break;
+		
+		case 3:
+			if (isDir[0] == isDir[1])
+				return sbuf2.st_mtime < sbuf1.st_mtime;
+			else
+				return isDir[1] - isDir[0]; // put directories first
+			break;
+		
+		case 4:
+			if (isDir[0] == isDir[1])
+   	    		return sizeA > sizeB ? -1 : sizeA < sizeB ? 1 : 0;
+   	    	else
+				return isDir[1] - isDir[0]; // put directories first
+			break;
+		
+		case 5:
+			if (isDir[0] == isDir[1])
+   	    		return sizeB > sizeA ? -1 : sizeB < sizeA ? 1 : 0;
+   	    	else
+				return isDir[1] - isDir[0]; // put directories first
+			break;
 	}
 }
 
