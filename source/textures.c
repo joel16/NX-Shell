@@ -33,10 +33,16 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &icon_radio_on, "romfs:/res/drawable/btn_material_light_radio_on_normal.png");
 	SDL_LoadImage(RENDERER, &icon_radio_dark_off, "romfs:/res/drawable/btn_material_light_radio_off_normal_dark.png");
 	SDL_LoadImage(RENDERER, &icon_radio_dark_on, "romfs:/res/drawable/btn_material_light_radio_on_normal_dark.png");
+	SDL_LoadImage(RENDERER, &icon_toggle_on, "romfs:/res/drawable/btn_material_light_toggle_on_normal.png");
+	SDL_LoadImage(RENDERER, &icon_toggle_dark_on, "romfs:/res/drawable/btn_material_light_toggle_on_normal_dark.png");
+	SDL_LoadImage(RENDERER, &icon_toggle_off, "romfs:/res/drawable/btn_material_light_toggle_off_normal.png");
 }
 
 void Textures_Free(void)
 {
+	SDL_DestroyTexture(icon_toggle_off);
+	SDL_DestroyTexture(icon_toggle_dark_on);
+	SDL_DestroyTexture(icon_toggle_on);
 	SDL_DestroyTexture(icon_radio_dark_on);
 	SDL_DestroyTexture(icon_radio_dark_off);
 	SDL_DestroyTexture(icon_radio_on);
