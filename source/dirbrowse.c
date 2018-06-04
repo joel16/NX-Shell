@@ -190,6 +190,11 @@ void Dirbrowse_PopulateFiles(bool clear)
 
 		// Close Directory
 		closedir(directory);
+
+		for (int i = 0; i < fileCount; i++)
+			free(entries[i]);
+
+		free(entries);
 	}
 	
 
@@ -205,7 +210,9 @@ void Dirbrowse_PopulateFiles(bool clear)
 
 void Dirbrowse_DisplayFiles(void)
 {
-	SDL_DrawText(Roboto, 170, 77, WHITE, cwd);
+	int title_height = 0;
+	TTF_SizeText(Roboto_large, cwd, NULL, &title_height);
+	SDL_DrawText(Roboto_large, 170, 40 + ((100 - title_height)/2), WHITE, cwd);
 
 	int i = 0, printed = 0;
 	File *file = files; // Draw file list
