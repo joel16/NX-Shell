@@ -67,7 +67,7 @@ static int Dirbrowse_ScanDir(const char *dir, struct dirent ***namelist, int (*s
 	if (closedir(d)) 
 		return(-1);
 	if (i == 0) 
-		return(-1);
+		return(0);
 	if (compar != NULL)
 		qsort((void *)(*namelist), (size_t)i, sizeof(struct dirent *), (qsort_compar)compar);
 

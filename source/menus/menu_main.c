@@ -44,7 +44,7 @@ static void Menu_HomeControls(u64 input)
 	if (input & KEY_PLUS)
 		longjmp(exitJmp, 1);
 
-	if (fileCount > 0)
+	if (fileCount >= 0)
 	{
 		if (input & KEY_DUP)
 		{
