@@ -10,27 +10,33 @@
 #include "status_bar.h"
 #include "textures.h"
 
+#define MENUBAR_X_BOUNDARY  0
+static int menubar_x = -400;
+
 static void Menu_ControlMenuBar(u64 input)
 {
 	if (input & KEY_A)
 		MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 
 	if ((input & KEY_Y) || (input & KEY_B))
+	{
+		menubar_x = -400;
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	}
 }
 
 static void Menu_DisplayMenuBar(void)
 {
-	SDL_DrawRect(RENDERER, 0, 0, 400, 720, config_dark_theme? BLACK_BG : WHITE);
-	SDL_DrawRect(RENDERER, 400, 0, 1, 720, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
-	SDL_DrawImage(RENDERER, bg_header, 0, 0, 400, 214);
-	SDL_DrawText(Roboto_large, 15, 164, WHITE, "NX Shell");
-	SDL_DrawImage(RENDERER, config_dark_theme? icon_sd_dark : icon_sd, 20, 254, 60, 60);
-	SDL_DrawText(Roboto, 100, 254, config_dark_theme? WHITE : BLACK, "External storage");
-	SDL_DrawText(Roboto_small, 100, 284, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
+	SDL_DrawRect(RENDERER, menubar_x, 0, 400, 720, config_dark_theme? BLACK_BG : WHITE);
+	SDL_DrawRect(RENDERER, menubar_x + 400, 0, 1, 720, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
+	SDL_DrawImage(RENDERER, bg_header, menubar_x, 0, 400, 214);
+	SDL_DrawText(Roboto_large, menubar_x + 15, 164, WHITE, "NX Shell");
+	SDL_DrawImage(RENDERER, config_dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 254, 60, 60);
+	SDL_DrawText(Roboto, menubar_x + 100, 254, config_dark_theme? WHITE : BLACK, "External storage");
+	SDL_DrawText(Roboto_small, menubar_x + 100, 284, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
 	int settings_width = 0, settings_height = 0;
-	SDL_DrawRect(RENDERER, 10, 630, 80, 80, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawImage(RENDERER, config_dark_theme? icon_settings_dark : icon_settings, 20, 640, 60, 60);
+	SDL_DrawRect(RENDERER, menubar_x + 10, 630, 80, 80, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawImage(RENDERER, config_dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640, 60, 60);
 }
 
 static void Menu_HomeControls(u64 input)
@@ -130,7 +136,14 @@ void Menu_Main(void)
 		else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG)
 			Menu_DisplayDeleteDialog();
 		else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
+		{
 			Menu_DisplayMenuBar();
+
+			menubar_x += 20;
+
+			if (menubar_x > -1)
+				menubar_x = MENUBAR_X_BOUNDARY;
+		}
 		else if (MENU_DEFAULT_STATE == MENU_STATE_SETTINGS)
 			Menu_DisplaySettings();
 		
