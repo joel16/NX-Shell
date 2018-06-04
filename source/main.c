@@ -85,7 +85,6 @@ static void Init_Services(void)
 int main(int argc, char **argv)
 {
 	Init_Services();
-	dark_theme = false;
 	Config_Load();
 
 	if (setjmp(exitJmp)) 

@@ -6,12 +6,13 @@
 #include "fs.h"
 
 const char * configFile =
-	"theme = %d";
+	"theme = %d\n"
+	"sortBy = %d";
 
-int Config_Save(bool dark_theme)
+int Config_Save(bool config_dark_theme, int config_sort_by)
 {
 	char *buf = (char *)malloc(64);
-	snprintf(buf, 64, configFile, dark_theme);
+	snprintf(buf, 64, configFile, config_dark_theme, config_sort_by);
 
 	FILE *file = fopen("/switch/NX-Shell/config.cfg", "w");
 	fprintf(file, buf);
@@ -25,8 +26,9 @@ int Config_Load(void)
 {
 	if (!FS_FileExists("/switch/NX-Shell/config.cfg"))
 	{
-		dark_theme = false;
-		return Config_Save(false);
+		config_dark_theme = false;
+		config_sort_by = 0;
+		return Config_Save(config_dark_theme, config_sort_by);
 	}
 
 	u64 size = FS_GetFileSize("/switch/NX-Shell/config.cfg");
@@ -37,7 +39,7 @@ int Config_Load(void)
 	fclose(file);
 
 	buf[size] = '\0';
-	sscanf(buf, configFile, &dark_theme);
+	sscanf(buf, configFile, &config_dark_theme, &config_sort_by);
 	free(buf);
 
 	return 0;

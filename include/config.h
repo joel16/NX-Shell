@@ -3,9 +3,10 @@
 
 #include <switch.h>
 
-bool dark_theme;
+bool config_dark_theme;
+int config_sort_by;
 
-int Config_Save(bool dark_theme);
+int Config_Save(bool config_dark_theme, int config_sort_by);
 int Config_Load(void);
 
 #endif

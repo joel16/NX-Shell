@@ -87,10 +87,23 @@ static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2)
 	isDir[0] = TYPE_DIR((*dent1)->d_type);
 	isDir[1] = TYPE_DIR((*dent2)->d_type);
 
-	if (isDir[0] == isDir[1]) // sort by name
-		return strcasecmp((*dent1)->d_name, (*dent2)->d_name);
-	else
-		return isDir[1] - isDir[0]; // put directories first
+	switch(config_sort_by)
+	{
+		case 0:
+			if (isDir[0] == isDir[1]) // sort by name
+				return strcasecmp((*dent1)->d_name, (*dent2)->d_name);
+			else
+				return isDir[1] - isDir[0]; // put directories first
+			break;
+
+		case 1:
+			if (isDir[0] == isDir[1]) // sort by name
+				return strcasecmp((*dent2)->d_name, (*dent1)->d_name);
+			else
+				return isDir[1] - isDir[0]; // put directories first
+			break;
+
+	}
 }
 
 void Dirbrowse_PopulateFiles(bool clear)
@@ -127,51 +140,51 @@ void Dirbrowse_PopulateFiles(bool clear)
 			for (int i = 0; i < (fileCount); i++)
 			{
 				// Ingore null filename
-			if (entries[i]->d_name[0] == '\0') 
-				continue;
+				if (entries[i]->d_name[0] == '\0') 
+					continue;
 
-			// Ignore "." in all Directories
-			if (strcmp(entries[i]->d_name, ".") == 0) 
-				continue;
+				// Ignore "." in all Directories
+				if (strcmp(entries[i]->d_name, ".") == 0) 
+					continue;
 
-			// Ignore ".." in Root Directory
-			if (strcmp(cwd, ROOT_PATH) == 0 && strncmp(entries[i]->d_name, "..", 2) == 0) // Ignore ".." in Root Directory
-				continue;
+				// Ignore ".." in Root Directory
+				if (strcmp(cwd, ROOT_PATH) == 0 && strncmp(entries[i]->d_name, "..", 2) == 0) // Ignore ".." in Root Directory
+					continue;
 
-			char isDir[2];
+				char isDir[2];
 
-			// Allocate Memory
-			File *item = (File *)malloc(sizeof(File));
+				// Allocate Memory
+				File *item = (File *)malloc(sizeof(File));
 
-			// Clear Memory
-			memset(item, 0, sizeof(File));
+				// Clear Memory
+				memset(item, 0, sizeof(File));
 
-			// Copy File Name
-			strcpy(item->name, entries[i]->d_name);
+				// Copy File Name
+				strcpy(item->name, entries[i]->d_name);
 
-			strcpy(path, cwd);
-			strcpy(path + strlen(path), item->name);
-			item->size = FS_GetFileSize(path); // Copy file size
+				strcpy(path, cwd);
+				strcpy(path + strlen(path), item->name);
+				item->size = FS_GetFileSize(path); // Copy file size
 
-			// Set Folder Flag
-			item->isDir = entries[i]->d_type == DT_DIR;
+				// Set Folder Flag
+				item->isDir = entries[i]->d_type == DT_DIR;
 
-			// New List
-			if (files == NULL) 
-				files = item;
+				// New List
+				if (files == NULL) 
+					files = item;
 
-			// Existing List
-			else
-			{
-				File *list = files;
+				// Existing List
+				else
+				{
+					File *list = files;
 
-				// Append to List
-				while(list->next != NULL) 
-					list = list->next;
+					// Append to List
+					while(list->next != NULL) 
+						list = list->next;
 	
-				// Link Item
-				list->next = item;
-			}
+					// Link Item
+					list->next = item;
+				}
 			}
 		}
 
@@ -205,16 +218,16 @@ void Dirbrowse_DisplayFiles(void)
 		if (position < FILES_PER_PAGE || i > (position - FILES_PER_PAGE))
 		{
 			if (i == position)
-				SDL_DrawRect(RENDERER, 0, 140 + (73 * printed), 1280, 73, dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+				SDL_DrawRect(RENDERER, 0, 140 + (73 * printed), 1280, 73, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-			SDL_DrawImage(RENDERER, dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
 
 			char path[500];
 			strcpy(path, cwd);
 			strcpy(path + strlen(path), file->name);
 
 			if (file->isDir)
-				SDL_DrawImage(RENDERER, dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(RENDERER, config_dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "nro", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "elf", 3) == 0)
 					|| (strncasecmp(FS_GetFileExt(file->name), "bin", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_app, 80, 141 + (73 * printed), 72, 72);
@@ -244,12 +257,12 @@ void Dirbrowse_DisplayFiles(void)
 				Utils_GetSizeString(size, file->size);
 				int width = 0;
 				TTF_SizeText(Roboto_small, size, &width, NULL);
-				SDL_DrawText(Roboto_small, 1260 - width, 180 + (73 * printed), dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, size);
+				SDL_DrawText(Roboto_small, 1260 - width, 180 + (73 * printed), config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, size);
 			}
 
 			int height = 0;
 			TTF_SizeText(Roboto, buf, NULL, &height);
-			SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), dark_theme? WHITE : BLACK, buf);
+			SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, buf);
 
 			printed++; // Increase printed counter
 		}
