@@ -28,6 +28,14 @@ static char copysource[1024];
 static int delete_dialog_selection = 0, row = 0, column = 0;
 static bool copy_status = false, cut_status = false;
 
+static int delete_width = 0, delete_height = 0;
+static int delete_confirm_width = 0, delete_confirm_height = 0;
+static int delete_cancel_width = 0, delete_cancel_height = 0;
+
+static int properties_ok_width = 0, properties_ok_height = 0;
+
+static int options_cancel_width = 0, options_cancel_height = 0;
+
 static int FileOptions_RmdirRecursive(char *path)
 {
 	File *filelist = NULL;
@@ -358,6 +366,13 @@ static Result FileOptions_Paste(void)
 	return ret; // Return result
 }
 
+void HandleDelete() {
+	if (FileOptions_DeleteFile() == 0)
+		Dirbrowse_PopulateFiles(true);
+	
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;
+}
+
 void Menu_ControlDeleteDialog(u64 input)
 {
 	if (input & KEY_RIGHT)
@@ -380,11 +395,7 @@ void Menu_ControlDeleteDialog(u64 input)
 	{
 		if (delete_dialog_selection == 0)
 		{
-			if (FileOptions_DeleteFile() == 0)
-				Dirbrowse_PopulateFiles(true);
-			
-			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-
+			HandleDelete();
 		}
 		else
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
@@ -393,37 +404,68 @@ void Menu_ControlDeleteDialog(u64 input)
 	}
 }
 
+void Menu_TouchDeleteDialog(TouchInfo touchInfo)
+{
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		// Touched outside
+		if (touchInfo.firstTouch.px < (1280 - delete_width) / 2 || touchInfo.firstTouch.px > (1280 + delete_width) / 2 || touchInfo.firstTouch.py < (720 - delete_height) / 2 || touchInfo.firstTouch.py > (720 + delete_height) / 2) {
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+			return;
+		}
+
+		// Confirm Button
+		if (touchInfo.firstTouch.px >= 1010 - delete_confirm_width && touchInfo.firstTouch.px <= 1050 + delete_confirm_width && touchInfo.firstTouch.py >= (720 - delete_height) / 2 + 225 && touchInfo.firstTouch.py <= (720 - delete_height) / 2 + 265 + delete_confirm_height) {
+			HandleDelete();
+		}
+		// Cancel Button
+		else if (touchInfo.firstTouch.px >= 895 - delete_confirm_width && touchInfo.firstTouch.px <= 935 + delete_confirm_width && touchInfo.firstTouch.py >= (720 - delete_height) / 2 + 225 && touchInfo.firstTouch.py <= (720 - delete_height) / 2 + 265 + delete_cancel_height) {
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+		}
+	}
+}
+
 void Menu_DisplayDeleteDialog(void)
 {
 	int text_width = 0;
 	TTF_SizeText(Roboto, "Do you want to continue?", &text_width, NULL);
 
-	int confirm_width = 0, confirm_height = 0;
-	TTF_SizeText(Roboto, "YES", &confirm_width, &confirm_height);
+	TTF_SizeText(Roboto, "YES", &delete_confirm_width, &delete_confirm_height);
+	TTF_SizeText(Roboto, "NO", &delete_cancel_width, &delete_cancel_height);
 
-	int cancel_width = 0, cancel_height = 0;
-	TTF_SizeText(Roboto, "NO", &cancel_width, &cancel_height);
+	SDL_QueryTexture(dialog, NULL, NULL, &delete_width, &delete_height);
 
-	int width = 0, height = 0;
-	SDL_QueryTexture(dialog, NULL, NULL, &width, &height);
-
-	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (width)) / 2), ((720 - (height)) / 2), 880, 320);
-	SDL_DrawText(Roboto, ((1280 - (width)) / 2) + 80, ((720 - (height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
-	SDL_DrawText(Roboto, ((1280 - (text_width)) / 2), ((720 - (height)) / 2) + 130, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
+	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (delete_width)) / 2), ((720 - (delete_height)) / 2), 880, 320);
+	SDL_DrawText(Roboto, ((1280 - (delete_width)) / 2) + 80, ((720 - (delete_height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
+	SDL_DrawText(Roboto, ((1280 - (text_width)) / 2), ((720 - (delete_height)) / 2) + 130, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
 
 	if (delete_dialog_selection == 0)
-		SDL_DrawRect(RENDERER, (1030 - (confirm_width)) - 20, (((720 - (height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(RENDERER, (1030 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_confirm_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (delete_dialog_selection == 1)
-		SDL_DrawRect(RENDERER, (915 - (confirm_width)) - 20, (((720 - (height)) / 2) + 245) - 20, confirm_width + 40, cancel_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(RENDERER, (915 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_cancel_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-	SDL_DrawText(Roboto, 1030 - (confirm_width), ((720 - (height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "YES");
-	SDL_DrawText(Roboto, 910 - (cancel_width), ((720 - (height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
+	SDL_DrawText(Roboto, 1030 - (delete_confirm_width), ((720 - (delete_height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "YES");
+	SDL_DrawText(Roboto, 910 - (delete_cancel_width), ((720 - (delete_height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
 }
 
 void Menu_ControlProperties(u64 input)
 {
 	if ((input & KEY_A) || (input & KEY_B))
 		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+}
+
+void Menu_TouchProperties(TouchInfo touchInfo)
+{
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		// Touched outside
+		if (touchInfo.firstTouch.px < 350 || touchInfo.firstTouch.px > 930 || touchInfo.firstTouch.py < 85 || touchInfo.firstTouch.py > 635) {
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+			return;
+		}
+
+		if (touchInfo.firstTouch.px >= 870 - properties_ok_width && touchInfo.firstTouch.px <= 910 + properties_ok_width && touchInfo.firstTouch.py >= 575 - properties_ok_height && touchInfo.firstTouch.py <= 615 + properties_ok_height) {
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+		}
+	}
 }
 
 void Menu_DisplayProperties(void)
@@ -463,10 +505,47 @@ void Menu_DisplayProperties(void)
 		SDL_DrawText(Roboto, 390, 383, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
 	}*/
 
-	int width = 0, height = 0;
-	TTF_SizeText(Roboto, "OK", &width, &height);
-	SDL_DrawRect(RENDERER, (890 - width) - 20, (595 - height) - 20, width + 40, height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawText(Roboto, 890 - width, 595 - height, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
+	TTF_SizeText(Roboto, "OK", &properties_ok_width, &properties_ok_height);
+	SDL_DrawRect(RENDERER, (890 - properties_ok_width) - 20, (595 - properties_ok_height) - 20, properties_ok_width + 40, properties_ok_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawText(Roboto, 890 - properties_ok_width, 595 - properties_ok_height, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
+}
+
+void HandleCopy()
+{
+	if (copy_status == false && cut_status == false)
+	{
+		copy_status = true;
+		FileOptions_Copy(COPY_KEEP_ON_FINISH);
+		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	}
+	else if (copy_status == true)
+	{
+		if (FileOptions_Paste() == 0)
+		{
+			copy_status = false;
+			Dirbrowse_PopulateFiles(true);
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		}
+	}
+}
+
+void HandleCut()
+{
+	if (cut_status == false && copy_status == false)
+	{
+		cut_status = true;
+		FileOptions_Copy(COPY_DELETE_ON_FINISH);
+		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	}
+	else if (cut_status == true)
+	{
+		if (FileOptions_Paste() == 0)
+		{
+			cut_status = false;
+			Dirbrowse_PopulateFiles(true);
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		}
+	}
 }
 
 void Menu_ControlOptions(u64 input)
@@ -497,39 +576,11 @@ void Menu_ControlOptions(u64 input)
 			MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
 		if (row == 1 && column == 1)
 		{
-			if (copy_status == false && cut_status == false)
-			{
-				copy_status = true;
-				FileOptions_Copy(COPY_KEEP_ON_FINISH);
-				MENU_DEFAULT_STATE = MENU_STATE_HOME;
-			}
-			else if (copy_status == true)
-			{
-				if (FileOptions_Paste() == 0)
-				{
-					copy_status = false;
-					Dirbrowse_PopulateFiles(true);
-					MENU_DEFAULT_STATE = MENU_STATE_HOME;
-				}
-			}
+			HandleCopy();
 		}
 		else if (row == 0 && column == 2)
 		{
-			if (cut_status == false && copy_status == false)
-			{
-				cut_status = true;
-				FileOptions_Copy(COPY_DELETE_ON_FINISH);
-				MENU_DEFAULT_STATE = MENU_STATE_HOME;
-			}
-			else if (cut_status == true)
-			{
-				if (FileOptions_Paste() == 0)
-				{
-					cut_status = false;
-					Dirbrowse_PopulateFiles(true);
-					MENU_DEFAULT_STATE = MENU_STATE_HOME;
-				}
-			}
+			HandleCut();
 		}
 		else if (row == 1 && column == 2)
 			MENU_DEFAULT_STATE = MENU_STATE_DIALOG;
@@ -548,14 +599,62 @@ void Menu_ControlOptions(u64 input)
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
 
+void Menu_TouchOptions(TouchInfo touchInfo)
+{
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		// Touched outside
+		if (touchInfo.firstTouch.px < 350 || touchInfo.firstTouch.px > 930 || touchInfo.firstTouch.py < 85 || touchInfo.firstTouch.py > 635) {
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+			return;
+		}
+
+		// Column 0
+		if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289) {
+			// Row 0
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+				MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
+			}
+			// Row 1
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+				// TODO
+			}
+		}
+		// Column 1
+		else if (touchInfo.firstTouch.py >= 291 && touchInfo.firstTouch.py <= 392) {
+			// Row 0
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+				// TODO
+			}
+			// Row 1
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+				HandleCopy();
+			}
+		}
+		// Column 2
+		else if (touchInfo.firstTouch.py >= 393 && touchInfo.firstTouch.py <= 494) {
+			// Row 0
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+				HandleCut();
+			}
+			// Row 1
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+				MENU_DEFAULT_STATE = MENU_STATE_DIALOG;
+			}
+		}
+		// Cancel Button
+		else if (touchInfo.firstTouch.px >= 880 - options_cancel_width && touchInfo.firstTouch.px <= 920 + options_cancel_width && touchInfo.firstTouch.py >= 585 - options_cancel_height && touchInfo.firstTouch.py <= 625 + options_cancel_height) {
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		}
+	}
+}
+
 void Menu_DisplayOptions(void)
 {
 	SDL_DrawImage(RENDERER, config_dark_theme? options_dialog_dark : options_dialog, 350, 85, 580, 550);
 	SDL_DrawText(Roboto, 370, 133, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
-	int width = 0, height = 0;
-	TTF_SizeText(Roboto, "CANCEL", &width, &height);
-	SDL_DrawText(Roboto, 900 - width, 605 - height, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "CANCEL");
+	TTF_SizeText(Roboto, "CANCEL", &options_cancel_width, &options_cancel_height);
+	SDL_DrawText(Roboto, 900 - options_cancel_width, 605 - options_cancel_height, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "CANCEL");
 	
 	if (row == 0 && column == 0)
 		SDL_DrawRect(RENDERER, 354, 188, 287, 101, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);

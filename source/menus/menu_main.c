@@ -9,9 +9,11 @@
 #include "SDL_helper.h"
 #include "status_bar.h"
 #include "textures.h"
+#include "touch_helper.h"
 
 #define MENUBAR_X_BOUNDARY  0
 static int menubar_x = -400;
+static TouchInfo touchInfo;
 
 static void Menu_ControlMenuBar(u64 input)
 {
@@ -23,6 +25,11 @@ static void Menu_ControlMenuBar(u64 input)
 		menubar_x = -400;
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
+}
+
+static void Menu_TouchMenuBar(TouchInfo touchInfo)
+{
+
 }
 
 static void Menu_DisplayMenuBar(void)
@@ -39,7 +46,7 @@ static void Menu_DisplayMenuBar(void)
 	SDL_DrawImage(RENDERER, config_dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640, 60, 60);
 }
 
-static void Menu_HomeControls(u64 input)
+static void Menu_ControlHome(u64 input)
 {
 	if (input & KEY_PLUS)
 		longjmp(exitJmp, 1);
@@ -96,25 +103,41 @@ static void Menu_HomeControls(u64 input)
 	}
 }
 
+static void Menu_TouchHome(TouchInfo touchInfo) {
+
+}
+
 static void Menu_Main_Controls(void)
 {
 	u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+	Touch_Process(&touchInfo);
 	
-	if (MENU_DEFAULT_STATE == MENU_STATE_HOME)
-		Menu_HomeControls(kDown);
-	else if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
+	if (MENU_DEFAULT_STATE == MENU_STATE_HOME) {
+		Menu_ControlHome(kDown);
+		Menu_TouchHome(touchInfo);
+	}
+	else if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS) {
 		Menu_ControlOptions(kDown);
-	else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES)
+		Menu_TouchOptions(touchInfo);
+	}
+	else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES) {
 		Menu_ControlProperties(kDown);
-	else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG)
+		Menu_TouchProperties(touchInfo);
+	}
+	else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG) {
 		Menu_ControlDeleteDialog(kDown);
-	else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
+		Menu_TouchDeleteDialog(touchInfo);
+	}
+	else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR) {
 		Menu_ControlMenuBar(kDown);
+		Menu_TouchMenuBar(touchInfo);
+	}
 }
 
 void Menu_Main(void)
 {
 	Dirbrowse_PopulateFiles(false);
+	Touch_Init(&touchInfo);
 
 	while(appletMainLoop())
 	{
