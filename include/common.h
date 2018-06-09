@@ -3,7 +3,9 @@
 
 #include <setjmp.h>
 #include <SDL.h>
+#include <SDL2/SDL2_gfxPrimitives.h> 
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL_ttf.h>
 
 #define wait(msec) svcSleepThread(10000000 * (s64)msec)

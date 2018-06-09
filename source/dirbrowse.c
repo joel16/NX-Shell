@@ -1,5 +1,4 @@
 #include <dirent.h>
-#include <switch.h>
 
 #include "archive.h"
 #include "common.h"
@@ -7,6 +6,7 @@
 #include "dirbrowse.h"
 #include "fs.h"
 #include "menu_gallery.h"
+#include "menu_music.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
@@ -66,8 +66,6 @@ static int Dirbrowse_ScanDir(const char *dir, struct dirent ***namelist, int (*s
 
 	if (closedir(d)) 
 		return(-1);
-	if (i == 0) 
-		return(0);
 	if (compar != NULL)
 		qsort((void *)(*namelist), (size_t)i, sizeof(struct dirent *), (qsort_compar)compar);
 
@@ -377,19 +375,12 @@ void Dirbrowse_OpenFile(void)
 		Archive_ExtractZip(path, cwd);
 		Dirbrowse_PopulateFiles(true);
 	}
+	else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0) ||
+		(strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
+		Menu_PlayMusic(path);
 
-	/*else if (Music_GetMusicFileType(path) != 0)
-		Music_Player(path);
-	else if (strncasecmp(file->ext, "txt", 3) == 0)
-		TextViewer_DisplayText(path);
-	else if (strncasecmp(file->ext, "zip", 3) == 0)
-	{
-		Archive_ExtractZip(path, cwd);
-		Dirbrowse_PopulateFiles(true);
-		Dirbrowse_DisplayFiles();
-	}
-	else if (strncasecmp(file->ext, "txt", 3) == 0)
-		menu_displayText(path);*/
+	/*else if (strncasecmp(file->ext, "txt", 3) == 0)
+		TextViewer_DisplayText(path);*/
 }
 
 // Navigate to Folder
