@@ -296,7 +296,7 @@ static Result FileOptions_Paste(void)
 		return -1;
 
 	// Source and target folder are identical
-	char * lastslash = NULL;
+	char *lastslash = NULL;
 	int i = 0;
 
 	for(; i < strlen(copysource); i++)
@@ -335,7 +335,13 @@ static Result FileOptions_Paste(void)
 		ret = FileOptions_CopyDir(copysource, copytarget); // Copy folder recursively
 
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
+		{
+			// Needs to add a forward "/"
+			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
+				strcat(copysource, "/");
+
 			FileOptions_RmdirRecursive(copysource); // Delete dir
+		}
 	}
 
 	// Simple file copy
