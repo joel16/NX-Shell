@@ -255,6 +255,7 @@ void Dirbrowse_PopulateFiles(bool clear)
 void Dirbrowse_DisplayFiles(void)
 {
 	int title_height = 0;
+	SDL_DrawImage(RENDERER, icon_menu, 20, 66, 48, 48);
 	TTF_SizeText(Roboto_large, cwd, NULL, &title_height);
 	SDL_DrawText(Roboto_large, 170, 40 + ((100 - title_height)/2), WHITE, cwd);
 

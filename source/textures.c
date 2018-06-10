@@ -36,6 +36,8 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &icon_toggle_on, "romfs:/res/drawable/btn_material_light_toggle_on_normal.png");
 	SDL_LoadImage(RENDERER, &icon_toggle_dark_on, "romfs:/res/drawable/btn_material_light_toggle_on_normal_dark.png");
 	SDL_LoadImage(RENDERER, &icon_toggle_off, "romfs:/res/drawable/btn_material_light_toggle_off_normal.png");
+	SDL_LoadImage(RENDERER, &icon_menu, "romfs:/res/drawable/ic_menu_normal.png");
+	SDL_LoadImage(RENDERER, &icon_back, "romfs:/res/drawable/ic_arrow_back_normal.png");
 }
 
 void Textures_Free(void)
@@ -72,4 +74,6 @@ void Textures_Free(void)
 	SDL_DestroyTexture(icon_audio);
 	SDL_DestroyTexture(icon_archive);
 	SDL_DestroyTexture(icon_app);
+	SDL_DestroyTexture(icon_menu);
+	SDL_DestroyTexture(icon_back);
 }

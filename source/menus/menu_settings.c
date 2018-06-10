@@ -5,10 +5,13 @@
 #include "SDL_helper.h"
 #include "status_bar.h"
 #include "textures.h"
+#include "touch_helper.h"
 
 void Menu_DisplaySortSettings(void)
 {
 	int selection = 0, max_items = 5, height = 0;
+	TouchInfo touchInfo;
+	Touch_Init(&touchInfo);
 
 	int title_height = 0;
 	TTF_SizeText(Roboto_large, "Settings", NULL, &title_height);
@@ -35,7 +38,8 @@ void Menu_DisplaySortSettings(void)
 
 		StatusBar_DisplayTime();
 
-		SDL_DrawText(Roboto_large, 40, 40 + ((100 - title_height)/2), WHITE, "Sorting Options");
+		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Sorting Options");
 
 		int printed = 0; // Print counter
 
@@ -77,6 +81,7 @@ void Menu_DisplaySortSettings(void)
 		SDL_RenderPresent(RENDERER);
 
 		hidScanInput();
+		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
 		if (kDown & KEY_B)
@@ -123,6 +128,41 @@ void Menu_DisplaySortSettings(void)
 
 			Config_Save(config_dark_theme, config_sort_by);
 		}
+
+		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+			if (tapped_inside(touchInfo, 40, 66, 108, 114))
+			{
+				break;
+			}
+			else if (touchInfo.firstTouch.py >= 140)
+			{
+				int tapped_selection = (touchInfo.firstTouch.py - 140) / 73;
+
+				switch (tapped_selection)
+				{
+					case 0:
+						config_sort_by = 0;
+						break;
+					case 1:
+						config_sort_by = 1;
+						break;
+					case 2:
+						config_sort_by = 2;
+						break;
+					case 3:
+						config_sort_by = 3;
+						break;
+					case 4:
+						config_sort_by = 4;
+						break;
+					case 5:
+						config_sort_by = 5;
+						break;
+				}
+
+				Config_Save(config_dark_theme, config_sort_by);
+			}
+		}
 	}
 	Dirbrowse_PopulateFiles(true);
 }
@@ -130,6 +170,8 @@ void Menu_DisplaySortSettings(void)
 void Menu_DisplaySettings(void)
 {
 	int selection = 0, max_items = 2, height = 0;
+	TouchInfo touchInfo;
+	Touch_Init(&touchInfo);
 
 	int title_height = 0;
 	TTF_SizeText(Roboto_large, "Settings", NULL, &title_height);
@@ -153,7 +195,8 @@ void Menu_DisplaySettings(void)
 
 		StatusBar_DisplayTime();
 
-		SDL_DrawText(Roboto_large, 40, 40 + ((100 - title_height)/2), WHITE, "Settings");
+		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Settings");
 
 		int printed = 0; // Print counter
 
@@ -182,6 +225,7 @@ void Menu_DisplaySettings(void)
 		SDL_RenderPresent(RENDERER);
 
 		hidScanInput();
+		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
 		if (kDown & KEY_B)
@@ -215,7 +259,30 @@ void Menu_DisplaySettings(void)
 					break;
 			}
 		}
+
+		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+			if (tapped_inside(touchInfo, 40, 66, 108, 114)) {
+				break;
+			}
+			else if (touchInfo.firstTouch.py >= 140)
+			{
+				int tapped_selection = (touchInfo.firstTouch.py - 140) / 73;
+
+				switch (tapped_selection)
+				{
+					case 1:
+						config_dark_theme = !config_dark_theme;
+						Config_Save(config_dark_theme, config_sort_by);
+						break;
+					case 2:
+						Menu_DisplaySortSettings();
+						break;
+				}
+
+				Config_Save(config_dark_theme, config_sort_by);
+			}
+		}
 	}
 
-	MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }

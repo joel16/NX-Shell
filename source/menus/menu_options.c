@@ -408,17 +408,15 @@ void Menu_TouchDeleteDialog(TouchInfo touchInfo)
 {
 	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 		// Touched outside
-		if (touchInfo.firstTouch.px < (1280 - delete_width) / 2 || touchInfo.firstTouch.px > (1280 + delete_width) / 2 || touchInfo.firstTouch.py < (720 - delete_height) / 2 || touchInfo.firstTouch.py > (720 + delete_height) / 2) {
+		if (tapped_outside(touchInfo, (1280 - delete_width) / 2, (720 - delete_height) / 2, (1280 + delete_width) / 2, (720 + delete_height) / 2)) {
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-			return;
 		}
-
 		// Confirm Button
-		if (touchInfo.firstTouch.px >= 1010 - delete_confirm_width && touchInfo.firstTouch.px <= 1050 + delete_confirm_width && touchInfo.firstTouch.py >= (720 - delete_height) / 2 + 225 && touchInfo.firstTouch.py <= (720 - delete_height) / 2 + 265 + delete_confirm_height) {
+		else if (tapped_inside(touchInfo, 1010 - delete_confirm_width, (720 - delete_height) / 2 + 225, 1050 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_confirm_height)) {
 			HandleDelete();
 		}
 		// Cancel Button
-		else if (touchInfo.firstTouch.px >= 895 - delete_confirm_width && touchInfo.firstTouch.px <= 935 + delete_confirm_width && touchInfo.firstTouch.py >= (720 - delete_height) / 2 + 225 && touchInfo.firstTouch.py <= (720 - delete_height) / 2 + 265 + delete_cancel_height) {
+		else if (tapped_inside(touchInfo, 895 - delete_confirm_width, (720 - delete_height) / 2 + 225, 935 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_cancel_height)) {
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 		}
 	}
@@ -456,13 +454,11 @@ void Menu_ControlProperties(u64 input)
 void Menu_TouchProperties(TouchInfo touchInfo)
 {
 	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
-		// Touched outside
-		if (touchInfo.firstTouch.px < 350 || touchInfo.firstTouch.px > 930 || touchInfo.firstTouch.py < 85 || touchInfo.firstTouch.py > 635) {
+		if (tapped_outside(touchInfo, 350, 85, 930, 635)) {
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-			return;
 		}
-
-		if (touchInfo.firstTouch.px >= 870 - properties_ok_width && touchInfo.firstTouch.px <= 910 + properties_ok_width && touchInfo.firstTouch.py >= 575 - properties_ok_height && touchInfo.firstTouch.py <= 615 + properties_ok_height) {
+		// Ok Button
+		else if (tapped_inside(touchInfo, 870 - properties_ok_width, touchInfo.firstTouch.py >= 575 - properties_ok_height, 910 + properties_ok_width, 615 + properties_ok_height)) {
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 		}
 	}
@@ -603,13 +599,11 @@ void Menu_TouchOptions(TouchInfo touchInfo)
 {
 	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 		// Touched outside
-		if (touchInfo.firstTouch.px < 350 || touchInfo.firstTouch.px > 930 || touchInfo.firstTouch.py < 85 || touchInfo.firstTouch.py > 635) {
+		if (tapped_outside(touchInfo, 350, 85, 930, 635)) {
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-			return;
 		}
-
 		// Column 0
-		if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289) {
+		else if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289) {
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
 				MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
@@ -642,7 +636,7 @@ void Menu_TouchOptions(TouchInfo touchInfo)
 			}
 		}
 		// Cancel Button
-		else if (touchInfo.firstTouch.px >= 880 - options_cancel_width && touchInfo.firstTouch.px <= 920 + options_cancel_width && touchInfo.firstTouch.py >= 585 - options_cancel_height && touchInfo.firstTouch.py <= 625 + options_cancel_height) {
+		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height)) {
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
 		}
 	}

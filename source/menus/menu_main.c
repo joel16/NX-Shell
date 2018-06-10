@@ -22,14 +22,19 @@ static void Menu_ControlMenuBar(u64 input)
 
 	if ((input & KEY_Y) || (input & KEY_B))
 	{
-		menubar_x = -400;
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
 }
 
 static void Menu_TouchMenuBar(TouchInfo touchInfo)
 {
-
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		if (touchInfo.firstTouch.px >= menubar_x + 400) {
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		} else if (tapped_inside(touchInfo, menubar_x + 20, 630, menubar_x + 80, 710)) {
+			MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
+		}
+	}
 }
 
 static void Menu_DisplayMenuBar(void)
@@ -85,8 +90,10 @@ static void Menu_ControlHome(u64 input)
 		{
 			if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
 				MENU_DEFAULT_STATE = MENU_STATE_HOME;
-			else
+			else {
+				menubar_x = -400;
 				MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
+			}
 		}
 
 		if (input & KEY_A)
@@ -104,7 +111,12 @@ static void Menu_ControlHome(u64 input)
 }
 
 static void Menu_TouchHome(TouchInfo touchInfo) {
-
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		if (tapped_inside(touchInfo, 20, 66, 68, 114)) {
+			menubar_x = -400;
+			MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
+		}
+	}
 }
 
 static void Menu_Main_Controls(void)
