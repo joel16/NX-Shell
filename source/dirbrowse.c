@@ -283,8 +283,8 @@ void Dirbrowse_DisplayFiles(void)
 			else if ((strncasecmp(FS_GetFileExt(file->name), "zip", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "tar", 3) == 0)
 				|| (strncasecmp(FS_GetFileExt(file->name), "lz4", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_archive, 80, 141 + (73 * printed), 72, 72);
-			else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) 
-				|| (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0))
+			else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0)
+				|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_audio, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0) || 
 				(strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
