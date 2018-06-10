@@ -1,6 +1,8 @@
 #ifndef NX_SHELL_DIRBROWSE_H
 #define NX_SHELL_DIRBROWSE_H
 
+#include <switch.h>
+
 typedef struct File
 {
 	struct File * next; // Next item

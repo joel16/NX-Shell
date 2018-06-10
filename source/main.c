@@ -41,6 +41,8 @@ static void Init_Services(void)
 
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 
+	Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG);
+
 	TTF_Init();
 	Roboto_large = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 30);
 	Roboto = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 25);

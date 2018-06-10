@@ -11,9 +11,14 @@ void SDL_DrawRect(SDL_Renderer* renderer, int x, int y, int w, int h, SDL_Color 
 {
 	SDL_Rect rect;
 	rect.x = x; rect.y = y; rect.w = w; rect.h = h;
-	
 	SDL_SetRenderDrawColor(RENDERER, colour.r, colour.g, colour.b, 255);
 	SDL_RenderFillRect(RENDERER, &rect);
+}
+
+void SDL_DrawCircle(SDL_Renderer* renderer, int x, int y, int r, SDL_Color colour)
+{
+	filledCircleRGBA(renderer, x, y, r, colour.r, colour.g, colour.b, 255);
+	return;
 }
 
 void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, const char *text)
@@ -42,7 +47,7 @@ SDL_Surface *SDL_LoadImage(SDL_Renderer* renderer, SDL_Texture **texture, char *
 
 void SDL_DrawImage(SDL_Renderer* renderer, SDL_Texture *texture, int x, int y, int w, int h)
 {
-	SDL_Rect viewport;
-	viewport.x = x; viewport.y = y; viewport.w = w; viewport.h = h;
-	SDL_RenderCopy(renderer, texture, NULL, &viewport);
+	SDL_Rect position;
+	position.x = x; position.y = y; position.w = w; position.h = h;
+	SDL_RenderCopy(renderer, texture, NULL, &position);
 }

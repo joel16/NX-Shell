@@ -232,7 +232,7 @@ static Result FileOptions_CopyDir(char *src, char *dst)
 		// Create Output Directory (is allowed to fail, we can merge folders after all)
 		FS_MakeDir(dst);
 		
-		struct dirent * entries;
+		struct dirent *entries;
 
 		// Iterate Files
 		while ((entries = readdir(directory)) != NULL)
@@ -244,8 +244,8 @@ static Result FileOptions_CopyDir(char *src, char *dst)
 				int outsize = strlen(dst) + strlen(entries->d_name) + 2;
 
 				// Allocate Buffer
-				char * inbuffer = (char *)malloc(insize);
-				char * outbuffer = (char *)malloc(outsize);
+				char *inbuffer = (char *)malloc(insize);
+				char *outbuffer = (char *)malloc(outsize);
 
 				// Puzzle Input Path
 				strcpy(inbuffer, src);
@@ -304,7 +304,7 @@ static Result FileOptions_Paste(void)
 		return -1;
 
 	// Source and target folder are identical
-	char * lastslash = NULL;
+	char *lastslash = NULL;
 	int i = 0;
 
 	for(; i < strlen(copysource); i++)
@@ -319,10 +319,10 @@ static Result FileOptions_Paste(void)
 	if (identical)
 		return -2;
 
-	char * filename = lastslash + 1; // Source filename
+	char *filename = lastslash + 1; // Source filename
 
 	int requiredlength = strlen(cwd) + strlen(filename) + 1; // Required target path buffer size
-	char * copytarget = (char *)malloc(requiredlength); // Allocate target path buffer
+	char *copytarget = (char *)malloc(requiredlength); // Allocate target path buffer
 
 	// Puzzle target path
 	strcpy(copytarget, cwd);
@@ -334,7 +334,7 @@ static Result FileOptions_Paste(void)
 	if ((copymode & COPY_FOLDER_RECURSIVE) == COPY_FOLDER_RECURSIVE)
 	{
 		// Check files in current folder
-		File * node = files; for(; node != NULL; node = node->next)
+		File *node = files; for(; node != NULL; node = node->next)
 		{
 			if ((strcmp(filename, node->name) == 0) && (!node->isDir)) // Found a file matching the name (folder = ok, file = not)
 				return -4; // Error out
@@ -343,7 +343,13 @@ static Result FileOptions_Paste(void)
 		ret = FileOptions_CopyDir(copysource, copytarget); // Copy folder recursively
 
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
+		{
+			// Needs to add a forward "/"
+			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
+				strcat(copysource, "/");
+
 			FileOptions_RmdirRecursive(copysource); // Delete dir
+		}
 	}
 
 	// Simple file copy
