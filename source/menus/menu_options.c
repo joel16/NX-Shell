@@ -464,7 +464,7 @@ void Menu_TouchProperties(TouchInfo touchInfo)
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 		}
 		// Ok Button
-		else if (tapped_inside(touchInfo, 870 - properties_ok_width, touchInfo.firstTouch.py >= 575 - properties_ok_height, 910 + properties_ok_width, 615 + properties_ok_height)) {
+		else if (tapped_inside(touchInfo, 870 - properties_ok_width, 575 - properties_ok_height, 910 + properties_ok_width, 615 + properties_ok_height)) {
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 		}
 	}
