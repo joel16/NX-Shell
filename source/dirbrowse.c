@@ -13,6 +13,7 @@
 
 #define TYPE_DIR(n) (n == DT_DIR ? 1 : 0)
 
+int initialPosition = 0;
 int position = 0; // menu position
 int fileCount = 0; // file count
 File * files = NULL; // file list

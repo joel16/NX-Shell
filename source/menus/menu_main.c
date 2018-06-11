@@ -112,7 +112,20 @@ static void Menu_ControlHome(u64 input)
 }
 
 static void Menu_TouchHome(TouchInfo touchInfo) {
-	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+	if (touchInfo.state == TouchStart && tapped_inside(touchInfo, 0, 140, 1280, 720)) {
+		initialPosition = (position == 0) ? 7 : position;
+	}
+	else if (touchInfo.state == TouchMoving && touchInfo.tapType == TapNone && tapped_inside(touchInfo, 0, 140, 1280, 720)) {
+		int lastPosition = (strcmp(cwd, ROOT_PATH) == 0) ? fileCount - 2 : fileCount - 1;
+		position = initialPosition + floor(((double) touchInfo.firstTouch.py - (double) touchInfo.prevTouch.py) / 73);
+		
+		if (position < 7) {
+			position = 7;
+		} else if (position >= lastPosition) {
+			position = lastPosition;
+		}
+	}
+	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 		if (tapped_inside(touchInfo, 20, 66, 68, 114)) {
 			menubar_x = -400;
 			MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
