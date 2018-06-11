@@ -9,8 +9,9 @@ static char *Clock_GetCurrentTime(bool _12hour)
 {
 	static char buffer[10];
 
-	time_t unix_time = time(NULL);
-	struct tm* time_struct = gmtime((const time_t *)&unix_time);
+    u64 current_time;
+	timeGetCurrentTime(TimeType_UserSystemClock, &current_time);
+	struct tm* time_struct = gmtime((const time_t *)&current_time);
 	int hours = time_struct->tm_hour;
 	int minutes = time_struct->tm_min;
 	int amOrPm = 0;

@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <switch.h>
 
+#ifdef DEBUG
+#include <sys/socket.h>
+#endif
+
 #include "common.h"
 #include "config.h"
 #include "fs.h"
@@ -22,6 +26,11 @@ static void Term_Services(void)
 	SDL_FreeSurface(WINDOW_SURFACE);
 	SDL_DestroyWindow(WINDOW);
 
+	#ifdef DEBUG
+	socketExit();
+	#endif
+
+	timeExit();
 	SDL_Quit();
 	romfsExit();
 }
@@ -30,6 +39,12 @@ static void Init_Services(void)
 {
 	romfsInit();
 	SDL_Init(SDL_INIT_EVERYTHING);
+	timeInitialize();
+
+	#ifdef DEBUG
+	socketInitializeDefault();
+	nxlinkStdio();
+	#endif
 
 	SDL_CreateWindowAndRenderer(1280, 720, 0, &WINDOW, &RENDERER);
 

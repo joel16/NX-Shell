@@ -25,7 +25,7 @@ typedef struct TouchInfo {
     touchPosition firstTouch;
     touchPosition prevTouch;
     TapType tapType;
-    time_t touchStart;
+    u64 touchStart;
 } TouchInfo;
 
 void Touch_Init(TouchInfo * touchInfo);

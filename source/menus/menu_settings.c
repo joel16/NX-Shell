@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "common.h"
 #include "config.h"
 #include "dirbrowse.h"
@@ -136,7 +138,7 @@ void Menu_DisplaySortSettings(void)
 			}
 			else if (touchInfo.firstTouch.py >= 140)
 			{
-				int tapped_selection = (touchInfo.firstTouch.py - 140) / 73;
+				int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
 
 				switch (tapped_selection)
 				{
@@ -266,7 +268,7 @@ void Menu_DisplaySettings(void)
 			}
 			else if (touchInfo.firstTouch.py >= 140)
 			{
-				int tapped_selection = (touchInfo.firstTouch.py - 140) / 73;
+				int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
 
 				switch (tapped_selection)
 				{

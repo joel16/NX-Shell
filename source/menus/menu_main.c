@@ -1,4 +1,5 @@
 #include <switch.h>
+#include <math.h>
 
 #include "common.h"
 #include "config.h"
@@ -115,6 +116,21 @@ static void Menu_TouchHome(TouchInfo touchInfo) {
 		if (tapped_inside(touchInfo, 20, 66, 68, 114)) {
 			menubar_x = -400;
 			MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
+		}
+		else if (touchInfo.firstTouch.py >= 140)
+		{
+			int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
+
+			if (position > 7) {
+				tapped_selection += position - 7;
+			}
+
+			position = tapped_selection;
+			if ((strcmp(cwd, ROOT_PATH) != 0 && position == 0) || touchInfo.tapType == TapShort) {
+				Dirbrowse_OpenFile();
+			} else if (touchInfo.tapType == TapLong) {
+				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+			}
 		}
 	}
 }
