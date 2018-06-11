@@ -23,11 +23,12 @@ static inline SDL_Color SDL_MakeColour(Uint8 r, Uint8 g, Uint8 b)
 #define BAR_COLOUR            SDL_MakeColour(200, 200, 200)
 #define PROGRESS_COLOUR       SDL_MakeColour(48, 174, 222)
 
-void SDL_ClearScreen(SDL_Renderer* renderer, SDL_Color colour);
-void SDL_DrawRect(SDL_Renderer* renderer, int x, int y, int w, int h, SDL_Color colour);
-void SDL_DrawCircle(SDL_Renderer* renderer, int x, int y, int r, SDL_Color colour);
+void SDL_ClearScreen(SDL_Renderer *renderer, SDL_Color colour);
+void SDL_DrawRect(SDL_Renderer *renderer, int x, int y, int w, int h, SDL_Color colour);
+void SDL_DrawCircle(SDL_Renderer *renderer, int x, int y, int r, SDL_Color colour);
 void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, const char *text);
-SDL_Surface *SDL_LoadImage(SDL_Renderer* renderer, SDL_Texture **texture, char *path);
-void SDL_DrawImage(SDL_Renderer* renderer, SDL_Texture *texture, int x, int y, int w, int h);
+void SDL_LoadImage(SDL_Renderer *renderer, SDL_Texture **texture, char *path);
+void SDL_LoadImageBuf(SDL_Renderer *renderer, SDL_Texture **texture, void *mem, int size);
+void SDL_DrawImage(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y, int w, int h);
 
 #endif

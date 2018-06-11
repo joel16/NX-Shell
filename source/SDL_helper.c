@@ -1,13 +1,13 @@
 #include "common.h"
 #include "SDL_helper.h"
 
-void SDL_ClearScreen(SDL_Renderer* renderer, SDL_Color colour)
+void SDL_ClearScreen(SDL_Renderer *renderer, SDL_Color colour)
 {
 	SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, 255);
 	SDL_RenderClear(renderer);
 }
 
-void SDL_DrawRect(SDL_Renderer* renderer, int x, int y, int w, int h, SDL_Color colour)
+void SDL_DrawRect(SDL_Renderer *renderer, int x, int y, int w, int h, SDL_Color colour)
 {
 	SDL_Rect rect;
 	rect.x = x; rect.y = y; rect.w = w; rect.h = h;
@@ -15,7 +15,7 @@ void SDL_DrawRect(SDL_Renderer* renderer, int x, int y, int w, int h, SDL_Color 
 	SDL_RenderFillRect(RENDERER, &rect);
 }
 
-void SDL_DrawCircle(SDL_Renderer* renderer, int x, int y, int r, SDL_Color colour)
+void SDL_DrawCircle(SDL_Renderer *renderer, int x, int y, int r, SDL_Color colour)
 {
 	filledCircleRGBA(renderer, x, y, r, colour.r, colour.g, colour.b, 255);
 	return;
@@ -30,7 +30,7 @@ void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, const char *te
 	SDL_FreeSurface(surface);
 }
 
-SDL_Surface *SDL_LoadImage(SDL_Renderer* renderer, SDL_Texture **texture, char *path)
+void SDL_LoadImage(SDL_Renderer *renderer, SDL_Texture **texture, char *path)
 {
 	SDL_Surface *loaded_surface = NULL;
 	loaded_surface = IMG_Load(path);
@@ -45,7 +45,23 @@ SDL_Surface *SDL_LoadImage(SDL_Renderer* renderer, SDL_Texture **texture, char *
 	SDL_FreeSurface(loaded_surface);
 }
 
-void SDL_DrawImage(SDL_Renderer* renderer, SDL_Texture *texture, int x, int y, int w, int h)
+void SDL_LoadImageBuf(SDL_Renderer *renderer, SDL_Texture **texture, void *mem, int size)
+{
+	SDL_Surface *loaded_surface = NULL;
+	SDL_RWops *rw = SDL_RWFromMem(mem, size);
+	loaded_surface = IMG_Load_RW(rw, 1);
+
+	if (loaded_surface)
+	{
+		Uint32 colorkey = SDL_MapRGB(loaded_surface->format, 0, 0, 0);
+		SDL_SetColorKey(loaded_surface, SDL_TRUE, colorkey);
+		*texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
+	}
+
+	SDL_FreeSurface(loaded_surface);
+}
+
+void SDL_DrawImage(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y, int w, int h)
 {
 	SDL_Rect position;
 	position.x = x; position.y = y; position.w = w; position.h = h;
