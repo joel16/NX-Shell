@@ -123,6 +123,7 @@ static void Menu_ControlHome(u64 input)
 	}
 }
 
+
 static void Menu_TouchHome(TouchInfo touchInfo) 
 {
 	if (touchInfo.state == TouchStart && tapped_inside(touchInfo, 0, 140, 1280, 720))
@@ -130,6 +131,8 @@ static void Menu_TouchHome(TouchInfo touchInfo)
 	else if (touchInfo.state == TouchMoving && touchInfo.tapType == TapNone && tapped_inside(touchInfo, 0, 140, 1280, 720))
 	{
 		int lastPosition = (strcmp(cwd, ROOT_PATH) == 0) ? fileCount - 2 : fileCount - 1;
+		if (lastPosition < 8)
+			return;
 		position = initialPosition + floor(((double) touchInfo.firstTouch.py - (double) touchInfo.prevTouch.py) / 73);
 		
 		if (position < 7)
