@@ -36,17 +36,6 @@ static void Menu_TouchMenuBar(TouchInfo touchInfo)
 	}
 }
 
-static void Menu_TouchMenuBar(TouchInfo touchInfo)
-{
-	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
-		if (touchInfo.firstTouch.px >= menubar_x + 400) {
-			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-		} else if (tapped_inside(touchInfo, menubar_x + 20, 630, menubar_x + 80, 710)) {
-			MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
-		}
-	}
-}
-
 static void Menu_DisplayMenuBar(void)
 {
 	SDL_DrawRect(RENDERER, menubar_x, 0, 400, 720, config_dark_theme? BLACK_BG : WHITE);
