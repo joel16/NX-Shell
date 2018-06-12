@@ -131,7 +131,10 @@ void Menu_DisplaySortSettings(void)
 			Config_Save(config_dark_theme, config_sort_by);
 		}
 
-		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		if (touchInfo.state == TouchStart) {
+			selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
+		}
+		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 			if (tapped_inside(touchInfo, 40, 66, 108, 114))
 			{
 				break;
@@ -262,7 +265,10 @@ void Menu_DisplaySettings(void)
 			}
 		}
 
-		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		if (touchInfo.state == TouchStart) {
+			selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
+		}
+		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 			if (tapped_inside(touchInfo, 40, 66, 108, 114)) {
 				break;
 			}
