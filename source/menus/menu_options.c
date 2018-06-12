@@ -372,7 +372,8 @@ static Result FileOptions_Paste(void)
 	return ret; // Return result
 }
 
-void HandleDelete() {
+void HandleDelete() 
+{
 	if (FileOptions_DeleteFile() == 0)
 		Dirbrowse_PopulateFiles(true);
 	
@@ -605,46 +606,65 @@ void Menu_TouchOptions(TouchInfo touchInfo)
 {
 	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 		// Touched outside
-		if (tapped_outside(touchInfo, 350, 85, 930, 635)) {
+		if (tapped_outside(touchInfo, 350, 85, 930, 635))
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-		}
 		// Column 0
-		else if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289) {
+		else if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289) 
+		{
+			column = 0;
+			
 			// Row 0
-			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
+			{
+				row = 0;
 				MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
 			}
 			// Row 1
-			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) 
+			{
 				// TODO
+				row = 1;
 			}
 		}
 		// Column 1
-		else if (touchInfo.firstTouch.py >= 291 && touchInfo.firstTouch.py <= 392) {
+		else if (touchInfo.firstTouch.py >= 291 && touchInfo.firstTouch.py <= 392) 
+		{
+			column = 1;
+
 			// Row 0
-			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) 
+			{
 				// TODO
+				row = 0;
 			}
 			// Row 1
-			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
+			{
+				row = 1;
 				HandleCopy();
 			}
 		}
 		// Column 2
-		else if (touchInfo.firstTouch.py >= 393 && touchInfo.firstTouch.py <= 494) {
+		else if (touchInfo.firstTouch.py >= 393 && touchInfo.firstTouch.py <= 494) 
+		{
+			column = 2;
+
 			// Row 0
-			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
+			{
+				row = 0;
 				HandleCut();
 			}
 			// Row 1
-			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
+			{
+				row = 1;
 				MENU_DEFAULT_STATE = MENU_STATE_DIALOG;
 			}
 		}
 		// Cancel Button
-		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height)) {
+		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height))
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-		}
 	}
 }
 
