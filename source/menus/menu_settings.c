@@ -131,7 +131,8 @@ void Menu_DisplaySortSettings(void)
 			Config_Save(config_dark_theme, config_sort_by);
 		}
 
-		if (touchInfo.state == TouchStart) {
+		if (touchInfo.state == TouchStart)
+		{
 			int touch_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
 
 			if (touch_selection >= 0 && touch_selection <= max_items)
