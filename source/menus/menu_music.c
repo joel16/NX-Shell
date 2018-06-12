@@ -6,6 +6,7 @@
 #include "SDL_helper.h"
 #include "status_bar.h"
 #include "textures.h"
+#include "touch_helper.h"
 #include "utils.h"
 
 #include "mp3.h"
@@ -46,6 +47,9 @@ void Menu_PlayMusic(char *path)
 	int btn_width = 0, btn_height = 0;
 	SDL_QueryTexture(btn_pause, NULL, NULL, &btn_width, &btn_height);
 
+	TouchInfo touchInfo;
+	Touch_Init(&touchInfo);
+
 	while(appletMainLoop())
 	{
 		SDL_ClearScreen(RENDERER, MUSIC_STATUS_BG_COLOUR);
@@ -55,7 +59,9 @@ void Menu_PlayMusic(char *path)
 		SDL_DrawRect(RENDERER, 0, 40, 1280, 100, MUSIC_STATUS_BG_COLOUR); // Menu bar
 		SDL_DrawRect(RENDERER, 0, 140, 1280, 1, MUSIC_SEPARATOR_COLOUR); // Separator
 
-		SDL_DrawText(Roboto_large, 40, 40 + ((100 - title_height)/2), WHITE, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : strupr(ID3.title)); // Audio filename
+		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+
+		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : strupr(ID3.title)); // Audio filename
 
 		SDL_DrawRect(RENDERER, 0, 141, 560, 560, SDL_MakeColour(158, 158, 158)); // Draw album art background
 		SDL_DrawImage(RENDERER, default_artwork, 0, 141, 560, 560); // Default album art
@@ -85,6 +91,7 @@ void Menu_PlayMusic(char *path)
 		SDL_RenderPresent(RENDERER);
 
 		hidScanInput();
+		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
 		if ((kDown & KEY_B) || (!Mix_PlayingMusic()))
@@ -104,6 +111,29 @@ void Menu_PlayMusic(char *path)
 			{
 				Mix_ResumeMusic();
 				isPlaying = true;
+			}
+		}
+
+		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+		{
+			if (tapped_inside(touchInfo, 40, 66, 108, 114))
+			{
+				Mix_HaltMusic();
+				break;
+			}
+
+			if (tapped_inside(touchInfo, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
+			{
+				if (isPlaying)
+				{
+					Mix_PauseMusic();
+					isPlaying = false;
+				}
+				else
+				{
+					Mix_ResumeMusic();
+					isPlaying = true;
+				}
 			}
 		}
 	}
