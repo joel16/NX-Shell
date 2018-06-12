@@ -13,6 +13,7 @@
 
 #define TYPE_DIR(n) (n == DT_DIR ? 1 : 0)
 
+int initialPosition = 0;
 int position = 0; // menu position
 int fileCount = 0; // file count
 File * files = NULL; // file list
@@ -253,6 +254,7 @@ void Dirbrowse_PopulateFiles(bool clear)
 void Dirbrowse_DisplayFiles(void)
 {
 	int title_height = 0;
+	SDL_DrawImage(RENDERER, icon_menu, 20, 66, 48, 48);
 	TTF_SizeText(Roboto_large, cwd, NULL, &title_height);
 	SDL_DrawText(Roboto_large, 170, 40 + ((100 - title_height)/2), WHITE, cwd);
 

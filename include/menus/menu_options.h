@@ -1,6 +1,8 @@
 #ifndef NX_SHELL_MENU_OPTIONS_H
 #define NX_SHELL_MENU_OPTIONS_H
 
+#include "touch_helper.h"
+
 /*
 *	Copy Flags
 */
@@ -10,10 +12,13 @@
 #define NOTHING_TO_COPY      -1
 
 void Menu_ControlDeleteDialog(u64 input);
+void Menu_TouchDeleteDialog(TouchInfo touchInfo);
 void Menu_DisplayDeleteDialog(void);
 void Menu_ControlProperties(u64 input);
+void Menu_TouchProperties(TouchInfo touchInfo);
 void Menu_DisplayProperties(void);
 void Menu_ControlOptions(u64 input);
+void Menu_TouchOptions(TouchInfo touchInfo);
 void Menu_DisplayOptions(void);
 
 #endif
