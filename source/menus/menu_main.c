@@ -22,8 +22,17 @@ static void Menu_ControlMenuBar(u64 input)
 		MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 
 	if ((input & KEY_Y) || (input & KEY_B))
-	{
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+}
+
+static void Menu_TouchMenuBar(TouchInfo touchInfo)
+{
+	if ((touchInfo.state == TouchEnded) && (touchInfo.tapType != TapNone)) 
+	{
+		if (touchInfo.firstTouch.px >= menubar_x + 400)
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		else if (tapped_inside(touchInfo, menubar_x + 20, 630, menubar_x + 80, 710))
+			MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 	}
 }
 
@@ -80,6 +89,7 @@ static void Menu_ControlHome(u64 input)
 				position = 0;
 		}
 
+		// Open options
 		if (input & KEY_X)
 		{
 			if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
@@ -87,7 +97,20 @@ static void Menu_ControlHome(u64 input)
 			else
 				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 		}
-		else if (input & KEY_Y)
+
+		// Touch options
+		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+		{
+			if (tapped_inside(touchInfo, (1260 - 64), 58, (1260 - 64) + 64, (58 + 64)))
+			{
+				if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
+					MENU_DEFAULT_STATE = MENU_STATE_HOME;
+				else
+					MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+			}
+		}
+
+		if (input & KEY_Y)
 		{
 			if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
 				MENU_DEFAULT_STATE = MENU_STATE_HOME;
@@ -111,32 +134,26 @@ static void Menu_ControlHome(u64 input)
 	}
 }
 
-static void Menu_TouchHome(TouchInfo touchInfo)
+
+static void Menu_TouchHome(TouchInfo touchInfo) 
 {
 	if (touchInfo.state == TouchStart && tapped_inside(touchInfo, 0, 140, 1280, 720))
-	{
 		initialPosition = (position == 0) ? 7 : position;
-	}
 	else if (touchInfo.state == TouchMoving && touchInfo.tapType == TapNone && tapped_inside(touchInfo, 0, 140, 1280, 720))
 	{
 		int lastPosition = (strcmp(cwd, ROOT_PATH) == 0) ? fileCount - 2 : fileCount - 1;
 		if (lastPosition < 8)
 			return;
-		}
 		position = initialPosition + floor(((double) touchInfo.firstTouch.py - (double) touchInfo.prevTouch.py) / 73);
 		
 		if (position < 7)
-		{
 			position = 7;
-		}
 		else if (position >= lastPosition)
-		{
 			position = lastPosition;
-		}
 	}
-	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
 	{
-		if (tapped_inside(touchInfo, 20, 66, 68, 114))
+		if (tapped_inside(touchInfo, 20, 66, 68, 114)) 
 		{
 			menubar_x = -400;
 			MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
@@ -146,18 +163,13 @@ static void Menu_TouchHome(TouchInfo touchInfo)
 			int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
 
 			if (position > 7)
-			{
 				tapped_selection += position - 7;
-			}
 
 			position = tapped_selection;
-			if ((strcmp(cwd, ROOT_PATH) != 0 && position == 0) || touchInfo.tapType == TapShort)
-			{
+			if ((strcmp(cwd, ROOT_PATH) != 0 && position == 0) || touchInfo.tapType == TapShort) 
 				Dirbrowse_OpenFile();
-			} else if (touchInfo.tapType == TapLong)
-			{
+			else if (touchInfo.tapType == TapLong)
 				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-			}
 		}
 	}
 }
@@ -167,23 +179,28 @@ static void Menu_Main_Controls(void)
 	u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 	Touch_Process(&touchInfo);
 	
-	if (MENU_DEFAULT_STATE == MENU_STATE_HOME) {
+	if (MENU_DEFAULT_STATE == MENU_STATE_HOME) 
+	{
 		Menu_ControlHome(kDown);
 		Menu_TouchHome(touchInfo);
 	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS) {
+	else if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS) 
+	{
 		Menu_ControlOptions(kDown);
 		Menu_TouchOptions(touchInfo);
 	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES) {
+	else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES) 
+	{
 		Menu_ControlProperties(kDown);
 		Menu_TouchProperties(touchInfo);
 	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG) {
+	else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG) 
+	{
 		Menu_ControlDeleteDialog(kDown);
 		Menu_TouchDeleteDialog(touchInfo);
 	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR) {
+	else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR) 
+	{
 		Menu_ControlMenuBar(kDown);
 		Menu_TouchMenuBar(touchInfo);
 	}
@@ -217,7 +234,7 @@ void Menu_Main(void)
 		{
 			Menu_DisplayMenuBar();
 
-			menubar_x += 20;
+			menubar_x += 35;
 
 			if (menubar_x > -1)
 				menubar_x = MENUBAR_X_BOUNDARY;

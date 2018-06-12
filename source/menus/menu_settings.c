@@ -131,14 +131,12 @@ void Menu_DisplaySortSettings(void)
 			Config_Save(config_dark_theme, config_sort_by);
 		}
 
-		if (touchInfo.state == TouchStart) {
+		if (touchInfo.state == TouchStart)
 			selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
-		}
-		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+		{
 			if (tapped_inside(touchInfo, 40, 66, 108, 114))
-			{
 				break;
-			}
 			else if (touchInfo.firstTouch.py >= 140)
 			{
 				int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
@@ -265,13 +263,12 @@ void Menu_DisplaySettings(void)
 			}
 		}
 
-		if (touchInfo.state == TouchStart) {
+		if (touchInfo.state == TouchStart)
 			selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
-		}
-		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
-			if (tapped_inside(touchInfo, 40, 66, 108, 114)) {
+		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
+		{
+			if (tapped_inside(touchInfo, 40, 66, 108, 114))
 				break;
-			}
 			else if (touchInfo.firstTouch.py >= 140)
 			{
 				int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);

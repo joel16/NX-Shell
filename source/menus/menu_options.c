@@ -372,7 +372,8 @@ static Result FileOptions_Paste(void)
 	return ret; // Return result
 }
 
-void HandleDelete() {
+void HandleDelete() 
+{
 	if (FileOptions_DeleteFile() == 0)
 		Dirbrowse_PopulateFiles(true);
 	
@@ -400,9 +401,7 @@ void Menu_ControlDeleteDialog(u64 input)
 	if (input & KEY_A)
 	{
 		if (delete_dialog_selection == 0)
-		{
 			HandleDelete();
-		}
 		else
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 
@@ -416,32 +415,22 @@ void Menu_TouchDeleteDialog(TouchInfo touchInfo)
 	{
 		// Confirm Button
 		if (tapped_inside(touchInfo, 1010 - delete_confirm_width, (720 - delete_height) / 2 + 225, 1050 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_confirm_height))
-		{
 			delete_dialog_selection = 0;
-		}
 		// Cancel Button
 		else if (tapped_inside(touchInfo, 895 - delete_confirm_width, (720 - delete_height) / 2 + 225, 935 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_cancel_height))
-		{
 			delete_dialog_selection = 1;
-		}
 	}
-	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
 	{
 		// Touched outside
 		if (tapped_outside(touchInfo, (1280 - delete_width) / 2, (720 - delete_height) / 2, (1280 + delete_width) / 2, (720 + delete_height) / 2))
-		{
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		}
 		// Confirm Button
 		else if (tapped_inside(touchInfo, 1010 - delete_confirm_width, (720 - delete_height) / 2 + 225, 1050 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_confirm_height))
-		{
 			HandleDelete();
-		}
 		// Cancel Button
 		else if (tapped_inside(touchInfo, 895 - delete_confirm_width, (720 - delete_height) / 2 + 225, 935 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_cancel_height))
-		{
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		}
 	}
 }
 
@@ -476,17 +465,13 @@ void Menu_ControlProperties(u64 input)
 
 void Menu_TouchProperties(TouchInfo touchInfo)
 {
-	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
 	{
 		if (tapped_outside(touchInfo, 350, 85, 930, 635))
-		{
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		}
 		// Ok Button
 		else if (tapped_inside(touchInfo, 870 - properties_ok_width, 575 - properties_ok_height, 910 + properties_ok_width, 615 + properties_ok_height))
-		{
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		}
 	}
 }
 
@@ -597,13 +582,9 @@ void Menu_ControlOptions(u64 input)
 		if (row == 0 && column == 0)
 			MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
 		if (row == 1 && column == 1)
-		{
 			HandleCopy();
-		}
 		else if (row == 0 && column == 2)
-		{
 			HandleCut();
-		}
 		else if (row == 1 && column == 2)
 			MENU_DEFAULT_STATE = MENU_STATE_DIALOG;
 	}
@@ -628,67 +609,51 @@ void Menu_TouchOptions(TouchInfo touchInfo)
 		// Column 0
 		if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289)
 		{
+			column = 0;
+
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-			{
-				column = 0;
 				row = 0;
-			}
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-			{
-				column = 0;
 				row = 1;
-			}
 		}
 		// Column 1
 		else if (touchInfo.firstTouch.py >= 291 && touchInfo.firstTouch.py <= 392)
 		{
+			column = 1;
+
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-			{
-				column = 1;
 				row = 0;
-			}
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-			{
-				column = 1;
 				row = 1;
-			}
 		}
 		// Column 2
 		else if (touchInfo.firstTouch.py >= 393 && touchInfo.firstTouch.py <= 494)
 		{
+			column = 2;
+
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-			{
-				column = 2;
 				row = 0;
-			}
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-			{
-				column = 2;
 				row = 1;
-			}
 		}
 	}
 	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
 	{
 		// Touched outside
 		if (tapped_outside(touchInfo, 350, 85, 930, 635))
-		{
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-		}
 		// Column 0
 		else if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289)
 		{
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-			{
 				MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
-			}
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
 			{
@@ -705,29 +670,21 @@ void Menu_TouchOptions(TouchInfo touchInfo)
 			}
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-			{
 				HandleCopy();
-			}
 		}
 		// Column 2
 		else if (touchInfo.firstTouch.py >= 393 && touchInfo.firstTouch.py <= 494)
 		{
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-			{
 				HandleCut();
-			}
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-			{
 				MENU_DEFAULT_STATE = MENU_STATE_DIALOG;
-			}
 		}
 		// Cancel Button
 		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height))
-		{
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
-		}
 	}
 }
 
