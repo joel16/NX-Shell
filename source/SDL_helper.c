@@ -3,7 +3,7 @@
 
 void SDL_ClearScreen(SDL_Renderer *renderer, SDL_Color colour)
 {
-	SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, 255);
+	SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);
 	SDL_RenderClear(renderer);
 }
 
@@ -11,13 +11,13 @@ void SDL_DrawRect(SDL_Renderer *renderer, int x, int y, int w, int h, SDL_Color 
 {
 	SDL_Rect rect;
 	rect.x = x; rect.y = y; rect.w = w; rect.h = h;
-	SDL_SetRenderDrawColor(RENDERER, colour.r, colour.g, colour.b, 255);
+	SDL_SetRenderDrawColor(RENDERER, colour.r, colour.g, colour.b, colour.a);
 	SDL_RenderFillRect(RENDERER, &rect);
 }
 
 void SDL_DrawCircle(SDL_Renderer *renderer, int x, int y, int r, SDL_Color colour)
 {
-	filledCircleRGBA(renderer, x, y, r, colour.r, colour.g, colour.b, 255);
+	filledCircleRGBA(renderer, x, y, r, colour.r, colour.g, colour.b, colour.a);
 	return;
 }
 
@@ -28,6 +28,16 @@ void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, const char *te
 	SDL_Rect position = {x, y, surface->w, surface->h};
 	SDL_BlitSurface(surface, NULL, WINDOW_SURFACE, &position);
 	SDL_FreeSurface(surface);
+}
+
+void SDL_DrawTextf(TTF_Font *font, int x, int y, SDL_Color colour, const char* text, ...)
+{
+	char buffer[256];
+	va_list args;
+	va_start(args, text);
+	vsnprintf(buffer, 256, text, args);
+	SDL_DrawText(font, x, y, colour, buffer);
+	va_end(args);
 }
 
 void SDL_LoadImage(SDL_Renderer *renderer, SDL_Texture **texture, char *path)

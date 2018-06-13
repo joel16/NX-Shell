@@ -9,7 +9,11 @@
 #include "textures.h"
 #include "touch_helper.h"
 
-void Menu_DisplaySortSettings(void)
+static bool displayAbout;
+static int confirm_width = 0, confirm_height = 0;
+static int dialog_width = 0, dialog_height = 0;
+
+static void Menu_DisplaySortSettings(void)
 {
 	int selection = 0, max_items = 5, height = 0;
 	TouchInfo touchInfo;
@@ -175,6 +179,44 @@ void Menu_DisplaySortSettings(void)
 	Dirbrowse_PopulateFiles(true);
 }
 
+static void Menu_ControlAboutDialog(u64 input)
+{
+	if ((input & KEY_A) || (input & KEY_B))
+		displayAbout = false;
+}
+
+static void Menu_TouchAboutDialog(TouchInfo touchInfo)
+{
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
+	{
+		// Touched outside
+		if (tapped_outside(touchInfo, (1280 - dialog_width) / 2, (720 - dialog_height) / 2, (1280 + dialog_width) / 2, (720 + dialog_height) / 2))
+			displayAbout = false;
+		// Confirm Button
+		if (tapped_inside(touchInfo, 1010 - confirm_width, (720 - dialog_height) / 2 + 225, 1050 + confirm_width, (720 - dialog_height) / 2 + 265 + confirm_height))
+			displayAbout = false;
+	}
+}
+
+static void Menu_DisplayAboutDialog(void)
+{
+	int text_width = 0, text2_width = 0;
+	TTF_SizeText(Roboto, "NX Shell vX.X.X", &text_width, NULL);
+	TTF_SizeText(Roboto, "Author: Joel16", &text2_width, NULL);
+
+	TTF_SizeText(Roboto, "OK", &confirm_width, &confirm_height);
+
+	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
+
+	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2), 880, 320);
+	SDL_DrawText(Roboto, ((1280 - (dialog_width)) / 2) + 80, ((720 - (dialog_height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
+	SDL_DrawTextf(Roboto, ((1280 - (text_width)) / 2), ((720 - (dialog_height)) / 2) + 130, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
+	SDL_DrawText(Roboto, ((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 165, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
+
+	SDL_DrawRect(RENDERER, (1030 - (confirm_width)) - 20, (((720 - (dialog_height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawText(Roboto, 1030 - (confirm_width), ((720 - (dialog_height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
+}
+
 void Menu_DisplaySettings(void)
 {
 	int selection = 0, max_items = 2, height = 0;
@@ -186,13 +228,15 @@ void Menu_DisplaySettings(void)
 
 	const char *main_menu_items[] =
 	{
-		"General settings",
+		"Sorting options",
 		"Dark theme",
-		"Sorting options"
+		"About"
 	};
 
 	int toggle_button_width = 0, toggle_button_height = 0; //1180
 	SDL_QueryTexture(icon_toggle_on, NULL, NULL, &toggle_button_width, &toggle_button_height);
+
+	displayAbout = false;
 
 	while(appletMainLoop())
 	{
@@ -230,71 +274,88 @@ void Menu_DisplaySettings(void)
 			}
 		}
 
+		if (displayAbout)
+			Menu_DisplayAboutDialog();
+
 		SDL_RenderPresent(RENDERER);
 
 		hidScanInput();
 		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
-		if (kDown & KEY_B)
-			break;
-
-		if (kDown & KEY_DDOWN)
+		if (displayAbout)
 		{
-			if (selection < (max_items))
-				selection++;
-			else 
-				selection = 0;
+			Menu_ControlAboutDialog(kDown);
+			Menu_TouchAboutDialog(touchInfo);
 		}
-		else if (kDown & KEY_DUP)
+		else
 		{
-			if (selection > 0)
-				selection--;
-			else 
-				selection = (max_items);
-		}
-
-		if (kDown & KEY_A)
-		{
-			switch (selection)
-			{
-				case 1:
-					config_dark_theme = !config_dark_theme;
-					Config_Save(config_dark_theme, config_sort_by);
-					break;
-				case 2:
-					Menu_DisplaySortSettings();
-					break;
-			}
-		}
-
-		if (touchInfo.state == TouchStart)
-		{
-			int touch_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
-
-			if (touch_selection > 0 && touch_selection <= max_items)
-				selection = touch_selection;
-		}
-		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
-		{
-			if (tapped_inside(touchInfo, 40, 66, 108, 114))
+			if (kDown & KEY_B)
 				break;
-			else if (touchInfo.firstTouch.py >= 140)
-			{
-				int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
 
-				switch (tapped_selection)
+			if (kDown & KEY_DDOWN)
+			{
+				if (selection < (max_items))
+					selection++;
+				else 
+					selection = 0;
+			}
+			else if (kDown & KEY_DUP)
+			{
+				if (selection > 0)
+					selection--;
+				else 
+					selection = (max_items);
+			}
+
+			if (kDown & KEY_A)
+			{
+				switch (selection)
 				{
+					case 0:
+						Menu_DisplaySortSettings();
+						break;
 					case 1:
 						config_dark_theme = !config_dark_theme;
 						Config_Save(config_dark_theme, config_sort_by);
 						break;
 					case 2:
-						Menu_DisplaySortSettings();
+						displayAbout = true;
 						break;
 				}
+			}
 
-				Config_Save(config_dark_theme, config_sort_by);
+			if (touchInfo.state == TouchStart)
+			{
+				int touch_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
+
+				if (touch_selection > 0 && touch_selection <= max_items)
+					selection = touch_selection;
+			}
+			else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
+			{
+				if (tapped_inside(touchInfo, 40, 66, 108, 114))
+					break;
+				else if (touchInfo.firstTouch.py >= 140)
+				{
+					int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
+
+					switch (tapped_selection)
+					{
+						case 0:
+							Menu_DisplaySortSettings();
+							break;
+						case 1:
+							config_dark_theme = !config_dark_theme;
+							Config_Save(config_dark_theme, config_sort_by);
+							break;
+						case 2:
+							displayAbout = true;
+							break;
+					}
+
+					Config_Save(config_dark_theme, config_sort_by);
+				}
 			}
 		}
 	}

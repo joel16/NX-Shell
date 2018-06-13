@@ -11,9 +11,9 @@
 
 #include "mp3.h"
 
-#define MUSIC_STATUS_BAR_COLOUR SDL_MakeColour(97, 97, 97)
-#define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61)
-#define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48)
+#define MUSIC_STATUS_BAR_COLOUR SDL_MakeColour(97, 97, 97, 255)
+#define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61, 255)
+#define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
 void Menu_PlayMusic(char *path)
 {
@@ -71,11 +71,11 @@ void Menu_PlayMusic(char *path)
 
 		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : strupr(ID3.title)); // Audio filename
 
-		SDL_DrawRect(RENDERER, 0, 141, 560, 560, SDL_MakeColour(158, 158, 158)); // Draw album art background
+		SDL_DrawRect(RENDERER, 0, 141, 560, 560, SDL_MakeColour(158, 158, 158, 255)); // Draw album art background
 		SDL_DrawImage(RENDERER, default_artwork, 0, 141, 560, 560); // Default album art
 
-		SDL_DrawRect(RENDERER, 570, 141, 710, 559, SDL_MakeColour(45, 48, 50)); // Draw info box (outer)
-		SDL_DrawRect(RENDERER, 575, 146, 700, 549, SDL_MakeColour(46, 49, 51)); // Draw info box (inner)
+		SDL_DrawRect(RENDERER, 570, 141, 710, 559, SDL_MakeColour(45, 48, 50, 255)); // Draw info box (outer)
+		SDL_DrawRect(RENDERER, 575, 146, 700, 549, SDL_MakeColour(46, 49, 51, 255)); // Draw info box (inner)
 
 		if (strlen(ID3.artist) != 0)
 			SDL_DrawText(Roboto_large, 590, 161, WHITE, ID3.artist);
@@ -86,8 +86,8 @@ void Menu_PlayMusic(char *path)
 		if (strlen(ID3.genre) != 0)
 			SDL_DrawText(Roboto_large, 590, 281, WHITE, ID3.genre);
 
-		SDL_DrawCircle(RENDERER, 615 + ((710 - btn_width) / 2), 186 + ((559 - btn_height) / 2), 80, SDL_MakeColour(98, 100, 101)); // Render outer circle
-		SDL_DrawCircle(RENDERER, (615 + ((710 - btn_width) / 2)), (186 + ((559 - btn_height) / 2)), 60, SDL_MakeColour(46, 49, 51)); // Render inner circle
+		SDL_DrawCircle(RENDERER, 615 + ((710 - btn_width) / 2), 186 + ((559 - btn_height) / 2), 80, SDL_MakeColour(98, 100, 101, 255)); // Render outer circle
+		SDL_DrawCircle(RENDERER, (615 + ((710 - btn_width) / 2)), (186 + ((559 - btn_height) / 2)), 60, SDL_MakeColour(46, 49, 51, 255)); // Render inner circle
 
 		if (isPlaying)
 			SDL_DrawImage(RENDERER, btn_pause, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Playing

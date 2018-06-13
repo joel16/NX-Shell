@@ -487,18 +487,12 @@ void Menu_DisplayProperties(void)
 	SDL_DrawImage(RENDERER, config_dark_theme? properties_dialog_dark : properties_dialog, 350, 85, 580, 550);
 	SDL_DrawText(Roboto, 370, 133, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
-	char name[50], parent[50], size[30], contains[50]; //created[50], modified[50];
-
-	snprintf(name, 50, "Name: %s", file->name);
-	snprintf(parent, 50, "Parent: %s", cwd);
-
 	char utils_size[16];
 	Utils_GetSizeString(utils_size, FS_GetFileSize(path));
-	snprintf(size, 50, "Size: %s", utils_size);
 
-	SDL_DrawText(Roboto, 390, 183, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, name);
-	SDL_DrawText(Roboto, 390, 233, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, parent);
-	SDL_DrawText(Roboto, 390, 283, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, size);
+	SDL_DrawTextf(Roboto, 390, 183, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
+	SDL_DrawTextf(Roboto, 390, 233, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Parent: %s", cwd);
+	SDL_DrawTextf(Roboto, 390, 283, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
 
 	if (file->isDir)
 	{
