@@ -17,8 +17,15 @@
 
 void Menu_PlayMusic(char *path)
 {
-	Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 640);
+	Result ret = 0;
+
+	if (R_FAILED(ret = Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096)))
+		return;
+
 	Mix_Music *audio = Mix_LoadMUS(path);
+
+	if (audio == NULL)
+		return;
 
 	switch(Mix_GetMusicType(audio))
 	{
@@ -37,7 +44,8 @@ void Menu_PlayMusic(char *path)
 			break;
 	}
 
-	Mix_PlayMusic(audio, 1);
+	if (R_FAILED(ret = Mix_PlayMusic(audio, 1)))
+		return;
 
 	int title_height = 0;
 	TTF_SizeText(Roboto_large, Utils_Basename(path), NULL, &title_height);
