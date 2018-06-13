@@ -13,6 +13,7 @@ typedef struct
 
 ID3_Tag ID3;
 
+int MP3_GetProgress(void);
 void MP3_Init(char *path);
 void MP3_Exit(void);
 

@@ -29,6 +29,7 @@ typedef long ssize_p;
 #endif
 
 static int errors = 0;
+static off_t numberOfSamples;
 
 static struct
 {
@@ -364,6 +365,11 @@ static void store_pictures(const char* prefix, mpg123_id3v2 *v2)
 	}
 }
 
+int MP3_GetProgress(void)
+{
+	return (mpg123_tell(mp3_handle) / (numberOfSamples / 100.0));
+}
+
 void MP3_Init(char *path)
 {
 	int err = 0, meta = 0;
@@ -376,13 +382,15 @@ void MP3_Init(char *path)
 	if (err != MPG123_OK)
 		return;
 
-	err = mpg123_param(mp3_handle, MPG123_ADD_FLAGS, MPG123_PICTURE, 0.);
+	err = mpg123_param(mp3_handle, MPG123_ADD_FLAGS, MPG123_PICTURE, 0.0);
 	if (err != MPG123_OK)
 		return;
 
 	err = mpg123_open(mp3_handle, path);
 	if (err != MPG123_OK)
 		return;
+
+	numberOfSamples = mpg123_length(mp3_handle);
 
 	mpg123_id3v1 *v1;
 	mpg123_id3v2 *v2;
