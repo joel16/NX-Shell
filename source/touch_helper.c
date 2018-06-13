@@ -4,7 +4,7 @@
 #include "touch_helper.h"
 
 #define TAP_MOVEMENT_GAP 20
-#define LONG_TAP_PERIOD 2
+#define LONG_TAP_PERIOD 1.5
 
 
 void Touch_Init(TouchInfo * touchInfo)

@@ -78,6 +78,12 @@ static void Menu_ControlHome(u64 input)
 				position = 0;
 		}
 
+		if (input & KEY_LEFT)
+			position = 0;
+		else if (input & KEY_RIGHT)
+			position = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
+		
+
 		// Open options
 		if (input & KEY_X)
 		{
@@ -99,6 +105,7 @@ static void Menu_ControlHome(u64 input)
 			}
 		}
 
+		// Menu bar
 		if (input & KEY_Y)
 		{
 			if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
