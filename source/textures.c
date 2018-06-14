@@ -39,6 +39,8 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &default_artwork, "romfs:/res/drawable/default_artwork.png");
 	SDL_LoadImage(RENDERER, &btn_play, "romfs:/res/drawable/btn_playback_play.png");
 	SDL_LoadImage(RENDERER, &btn_pause, "romfs:/res/drawable/btn_playback_pause.png");
+	SDL_LoadImage(RENDERER, &btn_rewind, "romfs:/res/drawable/btn_playback_rewind.png");
+	SDL_LoadImage(RENDERER, &btn_forward, "romfs:/res/drawable/btn_playback_forward.png");
 	SDL_LoadImage(RENDERER, &icon_nav_drawer, "romfs:/res/drawable/ic_material_light_navigation_drawer.png");
 	SDL_LoadImage(RENDERER, &icon_actions, "romfs:/res/drawable/ic_material_light_contextual_action.png");
 	SDL_LoadImage(RENDERER, &icon_back, "romfs:/res/drawable/ic_arrow_back_normal.png");
@@ -49,6 +51,8 @@ void Textures_Free(void)
 	SDL_DestroyTexture(icon_back);
 	SDL_DestroyTexture(icon_actions);
 	SDL_DestroyTexture(icon_nav_drawer);
+	SDL_DestroyTexture(btn_forward);
+	SDL_DestroyTexture(btn_rewind);
 	SDL_DestroyTexture(btn_pause);
 	SDL_DestroyTexture(btn_play);
 	SDL_DestroyTexture(default_artwork);

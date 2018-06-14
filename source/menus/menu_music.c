@@ -1,7 +1,9 @@
+#include <dirent.h>
 #include <switch.h>
 
 #include "common.h"
 #include "dirbrowse.h"
+#include "fs.h"
 #include "menu_music.h"
 #include "SDL_helper.h"
 #include "status_bar.h"
@@ -15,6 +17,89 @@
 #define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61, 255)
 #define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
+char playlist[255][500];
+static int count;
+
+static void Menu_GetMusicList(void)
+{
+	DIR *dir;
+	struct dirent *entries;
+	dir = opendir(cwd);
+
+	if (dir != NULL)
+	{
+		while ((entries = readdir (dir)) != NULL) 
+		{
+			int length = strlen(entries->d_name);
+			if ((strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "ogg", 3) == 0)
+					|| (strncasecmp(FS_GetFileExt(entries->d_name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "mod", 3) == 0))
+			{
+				strcpy(playlist[count], cwd);
+				strcpy(playlist[count] + strlen(playlist[count]), entries->d_name);
+				count++;
+			}
+		}
+
+		closedir(dir);
+	}
+}
+
+static int Music_GetCurrentIndex(char *path)
+{
+	for(int i = 0; i < count; ++i)
+	{
+		if(!strcmp(playlist[i], path))
+		{
+			return i;
+		}
+	}
+}
+
+static void Music_HandleNext(Mix_Music *audio, bool forward)
+{
+	Mix_HaltMusic();
+	Mix_FreeMusic(audio);
+
+	if (forward)
+	{
+		if (position < (count + 1))
+			position++;
+		else
+			position = 0;
+	}
+	else
+	{
+		if (position > 0)
+			position--;
+		else
+			position = count;
+	}
+
+	switch(Mix_GetMusicType(audio))
+	{
+		case MUS_MP3:
+			MP3_Exit();
+			break;
+	}
+
+	//Mix_CloseAudio();
+	Menu_PlayMusic(playlist[position]);
+}
+
+static void Music_HandlePause(bool status)
+{
+	if (status)
+	{
+		Mix_PauseMusic();
+		status = false;
+	}
+	else
+	{
+		Mix_ResumeMusic();
+		status = true;
+	}
+}
+
 void Menu_PlayMusic(char *path)
 {
 	Result ret = 0;
@@ -26,6 +111,8 @@ void Menu_PlayMusic(char *path)
 
 	if (audio == NULL)
 		return;
+
+	Menu_GetMusicList();
 
 	switch(Mix_GetMusicType(audio))
 	{
@@ -57,6 +144,8 @@ void Menu_PlayMusic(char *path)
 
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
+
+	int position = Music_GetCurrentIndex(path);
 
 	while(appletMainLoop())
 	{
@@ -94,6 +183,9 @@ void Menu_PlayMusic(char *path)
 		else
 			SDL_DrawImage(RENDERER, btn_play, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Paused
 
+		SDL_DrawImage(RENDERER, btn_rewind, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Rewind
+		SDL_DrawImage(RENDERER, btn_forward, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Forward
+
 		StatusBar_DisplayTime();
 
 		SDL_RenderPresent(RENDERER);
@@ -109,18 +201,12 @@ void Menu_PlayMusic(char *path)
 		}
 
 		if (kDown & KEY_A)
-		{
-			if (isPlaying)
-			{
-				Mix_PauseMusic();
-				isPlaying = false;
-			}
-			else
-			{
-				Mix_ResumeMusic();
-				isPlaying = true;
-			}
-		}
+			Music_HandlePause(isPlaying);
+
+		if (kDown & KEY_LEFT)
+			Music_HandleNext(audio, false);
+		else if (kDown & KEY_RIGHT)
+			Music_HandleNext(audio, true);
 
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
 		{
@@ -131,23 +217,15 @@ void Menu_PlayMusic(char *path)
 			}
 
 			if (tapped_inside(touchInfo, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
-			{
-				if (isPlaying)
-				{
-					Mix_PauseMusic();
-					isPlaying = false;
-				}
-				else
-				{
-					Mix_ResumeMusic();
-					isPlaying = true;
-				}
-			}
+				Music_HandlePause(isPlaying);
+			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) - (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
+				Music_HandleNext(audio, false);
+			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
+				Music_HandleNext(audio, true);
 		}
 	}
 
 	Mix_FreeMusic(audio);
-	Mix_CloseAudio();
 
 	switch(Mix_GetMusicType(audio))
 	{
@@ -155,6 +233,8 @@ void Menu_PlayMusic(char *path)
 			MP3_Exit();
 			break;
 	}
+
+	Mix_CloseAudio();
 
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
