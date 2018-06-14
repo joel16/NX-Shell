@@ -14,7 +14,6 @@
 
 #define MENUBAR_X_BOUNDARY  0
 static int menubar_x = -400;
-static TouchInfo touchInfo;
 
 static void Menu_ControlMenuBar(u64 input)
 {
@@ -82,7 +81,6 @@ static void Menu_ControlHome(u64 input)
 			position = 0;
 		else if (input & KEY_RIGHT)
 			position = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
-		
 
 		// Open options
 		if (input & KEY_X)
@@ -91,18 +89,6 @@ static void Menu_ControlHome(u64 input)
 				MENU_DEFAULT_STATE = MENU_STATE_HOME;
 			else
 				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		}
-
-		// Touch options
-		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
-		{
-			if (tapped_inside(touchInfo, (1260 - 64), 58, (1260 - 64) + 64, (58 + 64)))
-			{
-				if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
-					MENU_DEFAULT_STATE = MENU_STATE_HOME;
-				else
-					MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-			}
 		}
 
 		// Menu bar
@@ -130,7 +116,6 @@ static void Menu_ControlHome(u64 input)
 	}
 }
 
-
 static void Menu_TouchHome(TouchInfo touchInfo) 
 {
 	if (touchInfo.state == TouchStart && tapped_inside(touchInfo, 0, 140, 1280, 720))
@@ -149,7 +134,14 @@ static void Menu_TouchHome(TouchInfo touchInfo)
 	}
 	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
 	{
-		if (tapped_inside(touchInfo, 20, 66, 68, 114)) 
+		if (tapped_inside(touchInfo, (1260 - 64), 58, (1260 - 64) + 64, (58 + 64)))
+		{
+			if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
+				MENU_DEFAULT_STATE = MENU_STATE_HOME;
+			else
+				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+		}
+		else if (tapped_inside(touchInfo, 20, 66, 68, 114)) 
 		{
 			menubar_x = -400;
 			MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
@@ -170,42 +162,12 @@ static void Menu_TouchHome(TouchInfo touchInfo)
 	}
 }
 
-static void Menu_Main_Controls(void)
-{
-	u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
-	Touch_Process(&touchInfo);
-	
-	if (MENU_DEFAULT_STATE == MENU_STATE_HOME) 
-	{
-		Menu_ControlHome(kDown);
-		Menu_TouchHome(touchInfo);
-	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS) 
-	{
-		Menu_ControlOptions(kDown);
-		Menu_TouchOptions(touchInfo);
-	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES) 
-	{
-		Menu_ControlProperties(kDown);
-		Menu_TouchProperties(touchInfo);
-	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG) 
-	{
-		Menu_ControlDeleteDialog(kDown);
-		Menu_TouchDeleteDialog(touchInfo);
-	}
-	else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR) 
-	{
-		Menu_ControlMenuBar(kDown);
-		Menu_TouchMenuBar(touchInfo);
-	}
-}
-
 void Menu_Main(void)
 {
-	Dirbrowse_PopulateFiles(false);
+	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
+
+	Dirbrowse_PopulateFiles(false);
 
 	while(appletMainLoop())
 	{
@@ -218,15 +180,33 @@ void Menu_Main(void)
 		Dirbrowse_DisplayFiles();
 
 		hidScanInput();
-		Menu_Main_Controls();
-
-		if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS)
+		Touch_Process(&touchInfo);
+		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+	
+		if (MENU_DEFAULT_STATE == MENU_STATE_HOME) 
+		{
+			Menu_ControlHome(kDown);
+			Menu_TouchHome(touchInfo);
+		}
+		else if (MENU_DEFAULT_STATE == MENU_STATE_OPTIONS) 
+		{
 			Menu_DisplayOptions();
-		else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES)
+			Menu_ControlOptions(kDown);
+			Menu_TouchOptions(touchInfo);
+		}
+		else if (MENU_DEFAULT_STATE == MENU_STATE_PROPERTIES) 
+		{
 			Menu_DisplayProperties();
-		else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG)
+			Menu_ControlProperties(kDown);
+			Menu_TouchProperties(touchInfo);
+		}
+		else if (MENU_DEFAULT_STATE == MENU_STATE_DIALOG) 
+		{
 			Menu_DisplayDeleteDialog();
-		else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
+			Menu_ControlDeleteDialog(kDown);
+			Menu_TouchDeleteDialog(touchInfo);
+		}
+		else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR) 
 		{
 			Menu_DisplayMenuBar();
 
@@ -234,6 +214,9 @@ void Menu_Main(void)
 
 			if (menubar_x > -1)
 				menubar_x = MENUBAR_X_BOUNDARY;
+
+			Menu_ControlMenuBar(kDown);
+			Menu_TouchMenuBar(touchInfo);
 		}
 		else if (MENU_DEFAULT_STATE == MENU_STATE_SETTINGS)
 			Menu_DisplaySettings();
