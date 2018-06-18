@@ -63,7 +63,7 @@ void OSK_Display(char *title, char *msg)
 
 	if (strlen(msg) != 0)
 	{
-		osk_index = strlen(msg) - 1;
+		osk_index = strlen(msg);
 		strcpy(osk_buffer, msg);
 	}
 

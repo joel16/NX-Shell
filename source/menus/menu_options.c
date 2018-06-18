@@ -39,7 +39,7 @@ static int options_cancel_width = 0, options_cancel_height = 0;
 
 static Result FileOptions_CreateFolder(void)
 {
-	OSK_Display("Create Folder", NULL);
+	OSK_Display("Create Folder", "");
 
 	if (strncmp(osk_buffer, "", 1) == 0)
 		return -1;
