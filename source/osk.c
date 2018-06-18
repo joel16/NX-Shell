@@ -85,9 +85,9 @@ void OSK_Display(char *title, char *msg)
 		if (strlen(osk_buffer) != 0)
 		{
 			int buf_width = 0, buf_height = 0;
-			TTF_SizeText(Roboto_OSK, osk_buffer, &buf_width, &buf_height);
+			TTF_SizeText(Roboto_large, osk_buffer, &buf_width, &buf_height);
 
-			SDL_DrawText(Roboto_OSK, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
+			SDL_DrawText(Roboto_large, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
 		}
 
 		for (int x = 0; x <= MAX_X; x++)
@@ -97,20 +97,20 @@ void OSK_Display(char *title, char *msg)
 				if (osk_text_shift)
 				{
 					if (config_dark_theme)
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 4)) + (50 * y), (x == osk_pos_x && y == osk_pos_y)? 
-							OSK_SELECTED_COLOUR : WHITE, osk_textdisp_shift[x + y * 10]);
+						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
+							TITLE_COLOUR : WHITE, osk_textdisp_shift[x + y * 10]);
 					else
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 4)) + (50 * y), (x == osk_pos_x && y == osk_pos_y)? 
-							OSK_SELECTED_COLOUR : BLACK, osk_textdisp_shift[x + y * 10]);
+						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
+							PROGRESS_COLOUR : BLACK, osk_textdisp_shift[x + y * 10]);
 				}
 				else
 				{
 					if (config_dark_theme)
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 4)) + (50 * y),  (x == osk_pos_x && y == osk_pos_y)?
-							OSK_SELECTED_COLOUR : WHITE, osk_textdisp[x + y * 10]);
+						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)?
+							TITLE_COLOUR : WHITE, osk_textdisp[x + y * 10]);
 					else
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 4)) + (50 * y),  (x == osk_pos_x && y == osk_pos_y)? 
-							OSK_SELECTED_COLOUR : BLACK, osk_textdisp[x + y * 10]);
+						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)? 
+							PROGRESS_COLOUR : BLACK, osk_textdisp[x + y * 10]);
 				}
 			}
 		}
