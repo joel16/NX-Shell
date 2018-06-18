@@ -9,6 +9,7 @@
 #include "fs.h"
 #include "progress_bar.h"
 #include "menu_options.h"
+#include "osk.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
@@ -35,6 +36,58 @@ static int delete_cancel_width = 0, delete_cancel_height = 0;
 static int properties_ok_width = 0, properties_ok_height = 0;
 
 static int options_cancel_width = 0, options_cancel_height = 0;
+
+static Result FileOptions_CreateFolder(void)
+{
+	OSK_Display(NULL);
+
+	if (strncmp(osk_buffer, "", 1) == 0)
+		return -1;
+
+	char path[500];
+	strcpy(path, cwd);
+	strcat(path, osk_buffer);
+	osk_buffer[0] = '\0';
+
+	FS_RecursiveMakeDir(path);
+	Dirbrowse_PopulateFiles(true);
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	return 0;
+}
+
+static Result FileOptions_Rename(void)
+{
+	Result ret = 0;
+	File *file = Dirbrowse_GetFileIndex(position);
+
+	if (file == NULL)
+		return -1;
+
+	if (strncmp(file->name, "..", 2) == 0)
+		return -2;
+
+	char oldPath[500], newPath[500];
+
+	strcpy(oldPath, cwd);
+	strcpy(newPath, cwd);
+	strcat(oldPath, file->name);
+
+	OSK_Display(file->name);
+
+	if (strncmp(osk_buffer, "", 1) == 0)
+		return -1;
+	
+	strcat(newPath, osk_buffer);
+	osk_buffer[0] = '\0';
+
+
+	if (R_FAILED(ret = rename(oldPath, newPath)))
+		return ret;
+	
+	Dirbrowse_PopulateFiles(true);
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	return 0;
+}
 
 static int FileOptions_RmdirRecursive(char *path)
 {
@@ -575,7 +628,11 @@ void Menu_ControlOptions(u64 input)
 	{
 		if (row == 0 && column == 0)
 			MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
-		if (row == 1 && column == 1)
+		else if (row == 1 && column == 0)
+			FileOptions_CreateFolder();
+		else if (row == 0 && column == 1)
+			FileOptions_Rename();
+		else if (row == 1 && column == 1)
 			HandleCopy();
 		else if (row == 0 && column == 2)
 			HandleCut();
@@ -650,18 +707,14 @@ void Menu_TouchOptions(TouchInfo touchInfo)
 				MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-			{
-				// TODO
-			}
+				FileOptions_CreateFolder();
 		}
 		// Column 1
 		else if (touchInfo.firstTouch.py >= 291 && touchInfo.firstTouch.py <= 392)
 		{
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-			{
-				// TODO
-			}
+				FileOptions_Rename();
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
 				HandleCopy();

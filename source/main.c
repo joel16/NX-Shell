@@ -15,10 +15,14 @@ static void Term_Services(void)
 {
 	Textures_Free();
 	
+	TTF_CloseFont(Roboto_OSK);
 	TTF_CloseFont(Roboto_small);
 	TTF_CloseFont(Roboto);
 	TTF_CloseFont(Roboto_large);
 	TTF_Quit();
+
+	Mix_CloseAudio();
+	Mix_Quit();
 
 	IMG_Quit();
 
@@ -57,12 +61,14 @@ static void Init_Services(void)
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 
 	Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
 	TTF_Init();
 	Roboto_large = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 30);
 	Roboto = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 25);
 	Roboto_small = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 20);
-	if (!Roboto_large || !Roboto || !Roboto_small)
+	Roboto_OSK = TTF_OpenFont("romfs:/res/Roboto-Regular.ttf", 50);
+	if (!Roboto_large || !Roboto || !Roboto_small || !Roboto_OSK)
 		Term_Services();
 
 	Textures_Load();

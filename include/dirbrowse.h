@@ -14,13 +14,13 @@ typedef struct File
 	u64 size; // File size
 } File;
 
-extern File * files;
+extern File *files;
 
 extern int initialPosition;
 extern int position;
 extern int fileCount;
 
-void Dirbrowse_RecursiveFree(File * node);
+void Dirbrowse_RecursiveFree(File *node);
 void Dirbrowse_PopulateFiles(bool clear);
 void Dirbrowse_DisplayFiles(void);
 File *Dirbrowse_GetFileIndex(int index);

@@ -220,7 +220,7 @@ void Menu_Main(void)
 		}
 		else if (MENU_DEFAULT_STATE == MENU_STATE_SETTINGS)
 			Menu_DisplaySettings();
-		
+
 		SDL_RenderPresent(RENDERER);
 	}
 }

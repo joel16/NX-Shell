@@ -15,7 +15,7 @@ jmp_buf exitJmp;
 SDL_Window *WINDOW;
 SDL_Surface *WINDOW_SURFACE;
 SDL_Renderer *RENDERER;
-TTF_Font *Roboto_large, *Roboto, *Roboto_small;
+TTF_Font *Roboto_large, *Roboto, *Roboto_small, *Roboto_OSK;
 
 #define ROOT_PATH "/"
 #define START_PATH ROOT_PATH
