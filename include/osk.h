@@ -6,6 +6,6 @@
 
 char osk_buffer[256];
 
-void OSK_Display(char *msg);
+void OSK_Display(char *title, char *msg);
 
 #endif

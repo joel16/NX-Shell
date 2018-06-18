@@ -6,6 +6,7 @@
 #include "SDL_helper.h"
 #include "status_bar.h"
 #include "touch_helper.h"
+#include "textures.h"
 
 #define OSK_BG_COLOUR_LIGHT SDL_MakeColour(236, 239, 241, 255)
 #define OSK_BG_COLOUR_DARK  SDL_MakeColour(39, 50, 56, 255)
@@ -42,16 +43,29 @@ static void OSK_DeleteChar(char *str, int i)
 	str[i] = '\0';
 }
 
-void OSK_Display(char *msg)
+static void OSK_ResetIndex(void)
+{
+	if (strlen(osk_buffer) != 0)
+		osk_index -= 1;
+	else 
+		osk_index = 0;
+}
+
+void OSK_Display(char *title, char *msg)
 {
 	int text_width = 0, text_height = 0;
 	TTF_SizeText(Roboto_OSK, " Q W E R T Y U I O P ", &text_width, &text_height);
 
-	/*if (strlen(msg) != 0)
+	int title_height = 0;
+	TTF_SizeText(Roboto_large, title, NULL, &title_height);
+
+	OSK_ResetIndex();
+
+	if (strlen(msg) != 0)
 	{
-		osk_index = strlen(msg);
+		osk_index = strlen(msg) - 1;
 		strcpy(osk_buffer, msg);
-	}*/
+	}
 
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
@@ -60,6 +74,12 @@ void OSK_Display(char *msg)
 	{	
 		SDL_ClearScreen(RENDERER, config_dark_theme? BLACK_BG : WHITE);
 		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, config_dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
+		SDL_DrawRect(RENDERER, 0, 40, 1280, 100, config_dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
+
+		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+
+		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title);
+
 		SDL_DrawRect(RENDERER, 0, (660 - (text_height * 5)) - 30, 1280, 720 - ((660 - (text_height * 5)) - 30), config_dark_theme? OSK_BG_COLOUR_DARK : OSK_BG_COLOUR_LIGHT);
 
 		if (strlen(osk_buffer) != 0)
@@ -67,7 +87,7 @@ void OSK_Display(char *msg)
 			int buf_width = 0, buf_height = 0;
 			TTF_SizeText(Roboto_OSK, osk_buffer, &buf_width, &buf_height);
 
-			SDL_DrawText(Roboto_OSK, (1280 - buf_width) / 2, (660 - (text_height * 5)) - 20, config_dark_theme? WHITE : BLACK, osk_buffer);
+			SDL_DrawText(Roboto_OSK, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
 		}
 
 		for (int x = 0; x <= MAX_X; x++)
@@ -147,6 +167,15 @@ void OSK_Display(char *msg)
 		{
 			osk_buffer[0] = '\0';
 			break;
+		}
+
+		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+		{
+			if (tapped_inside(touchInfo, 40, 66, 108, 114))
+			{
+				osk_buffer[0] = '\0';
+				break;
+			}
 		}
 	}
 }
