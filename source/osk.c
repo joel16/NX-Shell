@@ -43,12 +43,41 @@ static void OSK_DeleteChar(char *str, int i)
 	str[i] = '\0';
 }
 
+static void OSK_Append(char subject[], const char insert[], int pos)
+{
+	char buf[100] = {}; // 100 so that it's big enough. fill with 0
+	// or you could use malloc() to allocate sufficient space
+	
+	strncpy(buf, subject, pos); // copy at most first pos characters
+	int len = strlen(buf);
+	strcpy(buf+len, insert); // copy all of insert[] at the end
+	len += strlen(insert);  // increase the length by length of insert[]
+	strcpy(buf+len, subject+pos); // copy the rest
+	
+	strcpy(subject, buf);   // copy it back to subject
+	// deallocate buf[] here, if used malloc()
+}
+
 static void OSK_ResetIndex(void)
 {
 	if (strlen(osk_buffer) != 0)
 		osk_index -= 1;
 	else 
 		osk_index = 0;
+}
+
+void OSK_BlinkText(int x, int y)
+{
+	int transp = 0;
+
+	SDL_Color FADE_WHITE, FADE_BLACK;
+
+	for (transp = 255; transp > 0; transp -= 3)
+	{
+		FADE_WHITE = SDL_MakeColour(255, 255, 255, transp);
+		FADE_BLACK = SDL_MakeColour(0, 0, 0, transp);
+		SDL_DrawText(Roboto_large, x, y, config_dark_theme? FADE_WHITE : FADE_BLACK, "|");
+	}
 }
 
 void OSK_Display(char *title, char *msg)
@@ -58,6 +87,11 @@ void OSK_Display(char *title, char *msg)
 
 	int title_height = 0;
 	TTF_SizeText(Roboto_large, title, NULL, &title_height);
+
+	int cursor_width = 0;
+	TTF_SizeText(Roboto_large, "I", &cursor_width, NULL);
+
+	int buf_width = 0, buf_height = 0;
 
 	OSK_ResetIndex();
 
@@ -84,11 +118,11 @@ void OSK_Display(char *title, char *msg)
 
 		if (strlen(osk_buffer) != 0)
 		{
-			int buf_width = 0, buf_height = 0;
 			TTF_SizeText(Roboto_large, osk_buffer, &buf_width, &buf_height);
-
 			SDL_DrawText(Roboto_large, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
 		}
+
+		OSK_BlinkText(((1280 - cursor_width) / 2) + (strlen(osk_buffer) * cursor_width), 210);
 
 		for (int x = 0; x <= MAX_X; x++)
 		{
@@ -122,18 +156,40 @@ void OSK_Display(char *title, char *msg)
 		hidScanInput();
 		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+		u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
 
 		if (kDown & KEY_LEFT)
 			osk_pos_x--;
-		else if (kDown & KEY_RIGHT)
+		/*else if (kHeld & KEY_LEFT)
+			osk_pos_x--;*/
+		
+		if (kDown & KEY_RIGHT)
 			osk_pos_x++;
+		/*else if (kHeld & KEY_RIGHT)
+			osk_pos_x++;*/
 
 		if (kDown & KEY_UP)
 			osk_pos_y--;
-		else if (kDown & KEY_DOWN)
-			osk_pos_y++; 
+		/*else if (kHeld & KEY_UP)
+			osk_pos_y--;*/
+
+		if (kDown & KEY_DOWN)
+			osk_pos_y++;
+		/*else if (kHeld & KEY_DOWN)
+			osk_pos_y++;*/
 
 		if (kDown & KEY_L)
+		{
+			if (strlen(osk_buffer) != 0)
+				osk_index--;
+		}
+		else if (kDown & KEY_R)
+		{
+			if (strlen(osk_buffer) != 0)
+				osk_index++;
+		}
+
+		if ((kDown & KEY_ZL) || (kDown & KEY_ZR))
 			osk_text_shift = !osk_text_shift;
 
 		if (osk_pos_y > MAX_Y)
@@ -146,9 +202,15 @@ void OSK_Display(char *title, char *msg)
 		else if (osk_pos_x < 0)
 			osk_pos_x = MAX_X;
 
+		if (osk_index < 0)
+			osk_index = 0;
+		else if (osk_index > (strlen(osk_buffer)))
+			osk_index = (strlen(osk_buffer));
+
 		if (kDown & KEY_A)
 		{
-			strcat(osk_buffer, osk_text_shift? osk_textdisp_shift[osk_pos_x + osk_pos_y * 10] : osk_textdisp[osk_pos_x + osk_pos_y * 10]);
+			OSK_Append(osk_buffer, osk_text_shift? osk_textdisp_shift[osk_pos_x + osk_pos_y * 10] : osk_textdisp[osk_pos_x + osk_pos_y * 10], osk_index);
+			//strcat(osk_buffer, osk_text_shift? osk_textdisp_shift[osk_pos_x + osk_pos_y * 10] : osk_textdisp[osk_pos_x + osk_pos_y * 10]);
 			osk_index += 1;
 		}
 		else if (kDown & KEY_B)
