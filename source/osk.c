@@ -7,6 +7,7 @@
 #include "status_bar.h"
 #include "touch_helper.h"
 #include "textures.h"
+#include "utils.h"
 
 #define OSK_BG_COLOUR_LIGHT SDL_MakeColour(236, 239, 241, 255)
 #define OSK_BG_COLOUR_DARK  SDL_MakeColour(39, 50, 56, 255)
@@ -66,18 +67,13 @@ static void OSK_ResetIndex(void)
 		osk_index = 0;
 }
 
-void OSK_BlinkText(int x, int y)
+void OSK_BlinkText(int fade, int x, int y)
 {
-	int transp = 0;
-
 	SDL_Color FADE_WHITE, FADE_BLACK;
 
-	for (transp = 255; transp > 0; transp -= 3)
-	{
-		FADE_WHITE = SDL_MakeColour(255, 255, 255, transp);
-		FADE_BLACK = SDL_MakeColour(0, 0, 0, transp);
-		SDL_DrawText(Roboto_large, x, y, config_dark_theme? FADE_WHITE : FADE_BLACK, "|");
-	}
+	FADE_WHITE = SDL_MakeColour(255, 255, 255, fade);
+	FADE_BLACK = SDL_MakeColour(0, 0, 0, fade);
+	SDL_DrawText(Roboto_large, x, y, config_dark_theme? FADE_WHITE : FADE_BLACK, "|");
 }
 
 void OSK_Display(char *title, char *msg)
@@ -89,7 +85,7 @@ void OSK_Display(char *title, char *msg)
 	TTF_SizeText(Roboto_large, title, NULL, &title_height);
 
 	int cursor_width = 0;
-	TTF_SizeText(Roboto_large, "I", &cursor_width, NULL);
+	TTF_SizeText(Roboto_large, "|", &cursor_width, NULL);
 
 	int buf_width = 0, buf_height = 0;
 
@@ -103,6 +99,8 @@ void OSK_Display(char *title, char *msg)
 
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
+
+	int transp = 255;
 
 	while(appletMainLoop())
 	{	
@@ -122,7 +120,8 @@ void OSK_Display(char *title, char *msg)
 			SDL_DrawText(Roboto_large, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
 		}
 
-		OSK_BlinkText(((1280 - cursor_width) / 2) + (strlen(osk_buffer) * cursor_width), 210);
+		OSK_BlinkText(transp, (((1280 - buf_width) / 2) + (buf_width + cursor_width)) - 8, 210);
+		transp -= 14;
 
 		for (int x = 0; x <= MAX_X; x++)
 		{
@@ -159,53 +158,63 @@ void OSK_Display(char *title, char *msg)
 		u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
 
 		if (kDown & KEY_LEFT)
-			osk_pos_x--;
-		/*else if (kHeld & KEY_LEFT)
-			osk_pos_x--;*/
+		{
+			if (osk_pos_x > 0)
+				osk_pos_x--;
+			else
+				osk_pos_x = MAX_X;
+		}
 		
 		if (kDown & KEY_RIGHT)
-			osk_pos_x++;
-		/*else if (kHeld & KEY_RIGHT)
-			osk_pos_x++;*/
+		{
+			if (osk_pos_x < MAX_X)
+				osk_pos_x++;
+			else
+				osk_pos_x = 0;
+		}
 
 		if (kDown & KEY_UP)
-			osk_pos_y--;
-		/*else if (kHeld & KEY_UP)
-			osk_pos_y--;*/
+		{
+			if (osk_pos_y > 0)
+				osk_pos_y--;
+			else
+				osk_pos_y = MAX_Y;
+		}
 
 		if (kDown & KEY_DOWN)
-			osk_pos_y++;
-		/*else if (kHeld & KEY_DOWN)
-			osk_pos_y++;*/
+		{
+			if (osk_pos_y < MAX_Y)
+				osk_pos_y++;
+			else
+				osk_pos_y = 0;
+		}
 
-		if (kDown & KEY_L)
+		/*if (kDown & KEY_L)
 		{
 			if (strlen(osk_buffer) != 0)
-				osk_index--;
+			{
+				if (osk_index > 0)
+					osk_index--;
+				else 
+					osk_index = 0;
+			}
 		}
 		else if (kDown & KEY_R)
 		{
 			if (strlen(osk_buffer) != 0)
-				osk_index++;
-		}
+			{
+				if (osk_index < strlen(osk_buffer))
+					osk_index++;
+				else
+					osk_index = strlen(osk_buffer);
+			}
+		}*/
 
 		if ((kDown & KEY_ZL) || (kDown & KEY_ZR))
 			osk_text_shift = !osk_text_shift;
 
-		if (osk_pos_y > MAX_Y)
-			osk_pos_y = 0;
-		else if (osk_pos_y < 0)
-			osk_pos_y = MAX_Y;
-
-		if (osk_pos_x > MAX_X)
-			osk_pos_x = 0;
-		else if (osk_pos_x < 0)
-			osk_pos_x = MAX_X;
-
-		if (osk_index < 0)
-			osk_index = 0;
-		else if (osk_index > (strlen(osk_buffer)))
-			osk_index = (strlen(osk_buffer));
+		Utils_SetMax(transp, 0, 255);
+		Utils_SetMin(transp, 255, 0);
 
 		if (kDown & KEY_A)
 		{

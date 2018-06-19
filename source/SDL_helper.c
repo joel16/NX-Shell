@@ -24,7 +24,7 @@ void SDL_DrawCircle(SDL_Renderer *renderer, int x, int y, int r, SDL_Color colou
 void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, const char *text)
 {
 	SDL_Surface *surface = TTF_RenderText_Blended_Wrapped(font, text, colour, 1280);
-	SDL_SetSurfaceAlphaMod(surface, 255);
+	SDL_SetSurfaceAlphaMod(surface, colour.a);
 	SDL_Rect position = {x, y, surface->w, surface->h};
 	SDL_BlitSurface(surface, NULL, WINDOW_SURFACE, &position);
 	SDL_FreeSurface(surface);
