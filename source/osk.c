@@ -13,8 +13,7 @@
 #define OSK_BG_COLOUR_DARK  SDL_MakeColour(39, 50, 56, 255)
 #define OSK_SELECTED_COLOUR SDL_MakeColour(77, 182, 172, 255)
 
-static int osk_pos_x = 0, osk_pos_y = 0, osk_index = 0;
-static bool osk_text_shift;
+static int osk_index = 0;
 
 static const char *osk_textdisp[] = 
 {
@@ -100,7 +99,8 @@ void OSK_Display(char *title, char *msg)
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
 
-	int transp = 255;
+	int osk_pos_x = 0, osk_pos_y = 0, transp = 255;
+	bool osk_text_shift = false, osk_text_caps = false;
 
 	while(appletMainLoop())
 	{	
@@ -127,7 +127,7 @@ void OSK_Display(char *title, char *msg)
 		{
 			for (int y = 0; y <= MAX_Y; y++)
 			{
-				if (osk_text_shift)
+				if (osk_text_shift || osk_text_caps)
 				{
 					if (config_dark_theme)
 						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
@@ -210,17 +210,35 @@ void OSK_Display(char *title, char *msg)
 			}
 		}*/
 
-		if ((kDown & KEY_ZL) || (kDown & KEY_ZR))
-			osk_text_shift = !osk_text_shift;
+		if (kDown & KEY_ZL)
+		{
+			if (osk_text_caps)
+			{
+				osk_text_shift = false;
+				osk_text_caps = false;
+			}
+			else
+				osk_text_shift = !osk_text_shift;
+		}
+		else if (kDown & KEY_ZR)
+		{
+			if (osk_text_shift)
+			{
+				osk_text_shift = false;
+				osk_text_caps = false;
+			}
+			else
+				osk_text_caps = !osk_text_caps;
+		}
 
 		Utils_SetMax(transp, 0, 255);
 		Utils_SetMin(transp, 255, 0);
 
 		if (kDown & KEY_A)
 		{
-			OSK_Append(osk_buffer, osk_text_shift? osk_textdisp_shift[osk_pos_x + osk_pos_y * 10] : osk_textdisp[osk_pos_x + osk_pos_y * 10], osk_index);
-			//strcat(osk_buffer, osk_text_shift? osk_textdisp_shift[osk_pos_x + osk_pos_y * 10] : osk_textdisp[osk_pos_x + osk_pos_y * 10]);
+			OSK_Append(osk_buffer, (osk_text_shift || osk_text_caps)? osk_textdisp_shift[osk_pos_x + osk_pos_y * 10] : osk_textdisp[osk_pos_x + osk_pos_y * 10], osk_index);
 			osk_index += 1;
+			osk_text_shift = false;
 		}
 		else if (kDown & KEY_B)
 		{
