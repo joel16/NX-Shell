@@ -436,14 +436,19 @@ void HandleDelete()
 void Menu_ControlDeleteDialog(u64 input)
 {
 	if (input & KEY_RIGHT)
-		delete_dialog_selection++;
+	{
+		if (delete_dialog_selection < 1)
+			delete_dialog_selection++;
+		else
+			delete_dialog_selection = 0;
+	}
 	else if (input & KEY_LEFT)
-		delete_dialog_selection--;
-
-	if (delete_dialog_selection > 1)
-		delete_dialog_selection = 0;
-	else if (delete_dialog_selection < 0)
-		delete_dialog_selection = 1;
+	{
+		if (delete_dialog_selection > 0)
+			delete_dialog_selection--;
+		else
+			delete_dialog_selection = 1;
+	}
 
 	if (input & KEY_B)
 	{
@@ -605,25 +610,35 @@ void HandleCut()
 void Menu_ControlOptions(u64 input)
 {
 	if (input & KEY_RIGHT)
-		row++;
+	{
+		if (row < 1)
+			row++;
+		else
+			row = 0;
+	}
 	else if (input & KEY_LEFT)
-		row--;
+	{
+		if (row > 0)
+			row--;
+		else
+			row = 1;
+	}
 
 	if (input & KEY_DDOWN)
-		column++;
+	{
+		if (column < 2)
+			column++;
+		else
+			column = 0;
+	}
 	else if (input & KEY_DUP)
-		column--;
-
-	if (row > 1)
-		row = 0;
-	else if (row < 0)
-		row = 1;
-
-	if (column > 2)
-		column = 0;
-	else if (column < 0)
-		column = 2;
-
+	{
+		if (column > 0)
+			column--;
+		else
+			column = 2;
+	}
+	
 	if (input & KEY_A)
 	{
 		if (row == 0 && column == 0)
