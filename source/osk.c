@@ -66,13 +66,36 @@ static void OSK_ResetIndex(void)
 		osk_index = 0;
 }
 
-void OSK_BlinkText(int fade, int x, int y)
+static void OSK_BlinkText(int fade, int x, int y)
 {
 	SDL_Color FADE_WHITE, FADE_BLACK;
 
 	FADE_WHITE = SDL_MakeColour(255, 255, 255, fade);
 	FADE_BLACK = SDL_MakeColour(0, 0, 0, fade);
 	SDL_DrawText(Roboto_large, x, y, config_dark_theme? FADE_WHITE : FADE_BLACK, "|");
+}
+
+static void OSK_HandleDelete(void)
+{
+	OSK_DeleteChar(osk_buffer, osk_index == 0? osk_index : osk_index - 1);
+
+	if (strlen(osk_buffer) != 0)
+		osk_index -= 1;
+	else 
+		osk_index = 0;
+}
+
+static void OSK_HandleAppend(bool shift, bool caps, int x, int y)
+{
+	if (strcasecmp((shift || caps)? osk_textdisp_shift[x + y * 10] : osk_textdisp[x + y * 10], "[_]") == 0)
+		OSK_Append(osk_buffer, " ", osk_index);
+	else if (strcasecmp((shift || caps)? osk_textdisp_shift[x + y * 10] : osk_textdisp[x + y * 10], "[x]") == 0)
+		OSK_HandleDelete();
+	else
+		OSK_Append(osk_buffer, (shift || caps)? osk_textdisp_shift[x + y * 10] : osk_textdisp[x + y * 10], osk_index);
+	
+	osk_index += 1;
+	shift = false;
 }
 
 void OSK_Display(char *title, char *msg)
@@ -147,6 +170,9 @@ void OSK_Display(char *title, char *msg)
 				}
 			}
 		}
+
+		SDL_DrawImage(RENDERER, config_dark_theme? icon_remove_dark : icon_remove, 1190, 480, 60, 60);
+		SDL_DrawImage(RENDERER, config_dark_theme? icon_accept_dark : icon_accept, 1190, 600, 60, 60);
 
 		StatusBar_DisplayTime();
 
@@ -235,20 +261,9 @@ void OSK_Display(char *title, char *msg)
 		Utils_SetMin(transp, 255, 0);
 
 		if (kDown & KEY_A)
-		{
-			OSK_Append(osk_buffer, (osk_text_shift || osk_text_caps)? osk_textdisp_shift[osk_pos_x + osk_pos_y * 10] : osk_textdisp[osk_pos_x + osk_pos_y * 10], osk_index);
-			osk_index += 1;
-			osk_text_shift = false;
-		}
+			OSK_HandleAppend(osk_text_shift, osk_text_caps, osk_pos_x, osk_pos_y);
 		else if (kDown & KEY_B)
-		{
-			OSK_DeleteChar(osk_buffer, osk_index == 0? osk_index : osk_index - 1);
-
-			if (strlen(osk_buffer) != 0)
-				osk_index -= 1;
-			else 
-				osk_index = 0;
-		}
+			OSK_HandleDelete();
 
 		if (kDown & KEY_PLUS)
 			break;
@@ -258,12 +273,39 @@ void OSK_Display(char *title, char *msg)
 			break;
 		}
 
+		if (touchInfo.state == TouchStart)
+		{
+			int touch_selection_y = floor(((double) touchInfo.firstTouch.py - (660 - (text_height * 5))) / 60);
+			int touch_selection_x = floor(((double) touchInfo.firstTouch.px - ((1280 - (text_width * 2)) / 2)) / 100);
+
+			if (touch_selection_y >= (660 - (text_height * 5)) && touch_selection_y <= ((660 - (text_height * 5)) + (60 * MAX_Y)))
+				osk_pos_y = touch_selection_y;
+			if (touch_selection_x >= ((1280 - (text_width * 2)) / 2) && touch_selection_x <= (((1280 - (text_width * 2)) / 2) + (100 * MAX_X)))
+				osk_pos_x = touch_selection_x;
+		}
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
 		{
 			if (tapped_inside(touchInfo, 40, 66, 108, 114))
 			{
 				osk_buffer[0] = '\0';
 				break;
+			}
+			else if (tapped_inside(touchInfo, 1190, 480, 1250, 540))
+				OSK_HandleDelete();
+			else if (tapped_inside(touchInfo, 1190, 600, 1250, 660))
+				break;
+			else if (((touchInfo.firstTouch.px >= ((1280 - (text_width * 2)) / 2)) && (touchInfo.firstTouch.px <= (((1280 - (text_width * 2)) / 2) + (100 * (MAX_X + 1))))) 
+				&& ((touchInfo.firstTouch.py >= (660 - (text_height * 5))) && (touchInfo.firstTouch.py <= ((660 - (text_height * 5)) + (60 * (MAX_Y + 1))))))
+			{
+				int touch_selection_y = floor(((double) touchInfo.firstTouch.py - (660 - (text_height * 5))) / 60);
+				int touch_selection_x = floor(((double) touchInfo.firstTouch.px - ((1280 - (text_width * 2)) / 2)) / 100);
+
+				if (touch_selection_y >= 0 && touch_selection_y <= MAX_Y)
+					osk_pos_y = touch_selection_y;
+				if (touch_selection_x >= 0 && touch_selection_x <= MAX_X)
+					osk_pos_x = touch_selection_x;
+
+				OSK_HandleAppend(osk_text_shift, osk_text_caps, osk_pos_x, osk_pos_y);
 			}
 		}
 	}

@@ -44,10 +44,18 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &icon_nav_drawer, "romfs:/res/drawable/ic_material_light_navigation_drawer.png");
 	SDL_LoadImage(RENDERER, &icon_actions, "romfs:/res/drawable/ic_material_light_contextual_action.png");
 	SDL_LoadImage(RENDERER, &icon_back, "romfs:/res/drawable/ic_arrow_back_normal.png");
+	SDL_LoadImage(RENDERER, &icon_accept, "romfs:/res/drawable/ic_material_light_accept.png");
+	SDL_LoadImage(RENDERER, &icon_accept_dark, "romfs:/res/drawable/ic_material_light_accept_dark.png");
+	SDL_LoadImage(RENDERER, &icon_remove, "romfs:/res/drawable/ic_material_light_remove.png");
+	SDL_LoadImage(RENDERER, &icon_remove_dark, "romfs:/res/drawable/ic_material_light_remove_dark.png");
 }
 
 void Textures_Free(void)
 {
+	SDL_DestroyTexture(icon_remove_dark);
+	SDL_DestroyTexture(icon_remove);
+	SDL_DestroyTexture(icon_accept_dark);
+	SDL_DestroyTexture(icon_accept);
 	SDL_DestroyTexture(icon_back);
 	SDL_DestroyTexture(icon_actions);
 	SDL_DestroyTexture(icon_nav_drawer);

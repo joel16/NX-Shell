@@ -17,7 +17,7 @@
 #define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61, 255)
 #define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
-static char playlist[255][500], title[50];
+static char playlist[255][500], title[128];
 static int count = 0, selection = 0;
 static Mix_Music *audio;
 
@@ -32,9 +32,7 @@ static void Menu_GetMusicList(void)
 		while ((entries = readdir (dir)) != NULL) 
 		{
 			int length = strlen(entries->d_name);
-			if ((strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "ogg", 3) == 0)
-					|| (strncasecmp(FS_GetFileExt(entries->d_name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "mod", 3) == 0)
-					|| (strncasecmp(FS_GetFileExt(entries->d_name), "midi", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "flac", 3) == 0))
+			if (strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0)
 			{
 				strcpy(playlist[count], cwd);
 				strcpy(playlist[count] + strlen(playlist[count]), entries->d_name);
