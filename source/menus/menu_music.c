@@ -18,7 +18,24 @@
 #define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
 char playlist[255][500];
-static int count;
+static int count = 0, selection = 0;
+static Mix_Music *audio;
+
+static void log_func(const char *s, ...)
+{
+		char buf[256];
+		va_list argptr;
+		va_start(argptr, s);
+		vsnprintf(buf, sizeof(buf), s, argptr);
+		va_end(argptr);
+
+		FILE *fp;
+		fp = fopen("/switch/log.txt", "a");
+		fprintf(fp, buf);
+		fclose(fp);
+}
+
+#define DEBUG(...) log_func(__VA_ARGS__)
 
 static void Menu_GetMusicList(void)
 {
@@ -32,7 +49,8 @@ static void Menu_GetMusicList(void)
 		{
 			int length = strlen(entries->d_name);
 			if ((strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "ogg", 3) == 0)
-					|| (strncasecmp(FS_GetFileExt(entries->d_name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "mod", 3) == 0))
+					|| (strncasecmp(FS_GetFileExt(entries->d_name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "mod", 3) == 0)
+					|| (strncasecmp(FS_GetFileExt(entries->d_name), "midi", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "flac", 3) == 0))
 			{
 				strcpy(playlist[count], cwd);
 				strcpy(playlist[count] + strlen(playlist[count]), entries->d_name);
@@ -48,66 +66,15 @@ static int Music_GetCurrentIndex(char *path)
 {
 	for(int i = 0; i < count; ++i)
 	{
-		if(!strcmp(playlist[i], path))
-		{
+		if (!strcmp(playlist[i], path))
 			return i;
-		}
 	}
+
 }
 
-static void Music_HandleNext(Mix_Music *audio, bool forward)
+static void Music_Play(char *path)
 {
-	Mix_HaltMusic();
-	Mix_FreeMusic(audio);
-
-	if (forward)
-	{
-		if (position < (count + 1))
-			position++;
-		else
-			position = 0;
-	}
-	else
-	{
-		if (position > 0)
-			position--;
-		else
-			position = count;
-	}
-
-	switch(Mix_GetMusicType(audio))
-	{
-		case MUS_MP3:
-			MP3_Exit();
-			break;
-	}
-
-	//Mix_CloseAudio();
-	Menu_PlayMusic(playlist[position]);
-}
-
-static void Music_HandlePause(bool status)
-{
-	if (status)
-	{
-		Mix_PauseMusic();
-		status = false;
-	}
-	else
-	{
-		Mix_ResumeMusic();
-		status = true;
-	}
-}
-
-void Menu_PlayMusic(char *path)
-{
-	Result ret = 0;
-
-	if (R_FAILED(ret = Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096)))
-		return;
-
-	Mix_Music *audio = Mix_LoadMUS(path);
+	audio = Mix_LoadMUS(path);
 
 	if (audio == NULL)
 		return;
@@ -131,8 +98,62 @@ void Menu_PlayMusic(char *path)
 			break;
 	}
 
+	Result ret = 0;
 	if (R_FAILED(ret = Mix_PlayMusic(audio, 1)))
 		return;
+
+	selection = Music_GetCurrentIndex(path);
+}
+
+static void Music_HandleNext(bool forward)
+{
+	if (forward)
+	{
+		if (selection < (count + 1))
+			selection++;
+		else
+			position = 0;
+	}
+	else
+	{
+		if (selection > 0)
+			selection--;
+		else
+			selection = count;
+	}
+
+	switch(Mix_GetMusicType(audio))
+	{
+		case MUS_MP3:
+			MP3_Exit();
+			break;
+	}
+
+	Mix_HaltMusic();
+	Mix_FreeMusic(audio);
+
+	Music_Play(playlist[selection]);
+}
+
+static void Music_HandlePause(bool *status)
+{
+	if (*status)
+	{
+		Mix_PauseMusic();
+		*status = false;
+	}
+	else
+	{
+		Mix_ResumeMusic();
+		*status = true;
+	}
+}
+
+void Menu_PlayMusic(char *path)
+{
+	Result ret = 0;
+
+	Music_Play(path);
 
 	int title_height = 0;
 	TTF_SizeText(Roboto_large, Utils_Basename(path), NULL, &title_height);
@@ -144,8 +165,6 @@ void Menu_PlayMusic(char *path)
 
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
-
-	int position = Music_GetCurrentIndex(path);
 
 	while(appletMainLoop())
 	{
@@ -196,36 +215,48 @@ void Menu_PlayMusic(char *path)
 
 		if ((kDown & KEY_B) || (!Mix_PlayingMusic()))
 		{
+			wait(1);
 			Mix_HaltMusic();
 			break;
 		}
 
 		if (kDown & KEY_A)
-			Music_HandlePause(isPlaying);
+			Music_HandlePause(&isPlaying);
 
 		if (kDown & KEY_LEFT)
-			Music_HandleNext(audio, false);
+		{
+			wait(1);
+			Music_HandleNext(false);
+		}
 		else if (kDown & KEY_RIGHT)
-			Music_HandleNext(audio, true);
+		{
+			wait(1);
+			Music_HandleNext(true);
+		}
 
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
 		{
 			if (tapped_inside(touchInfo, 40, 66, 108, 114))
 			{
+				wait(1);
 				Mix_HaltMusic();
 				break;
 			}
 
 			if (tapped_inside(touchInfo, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
-				Music_HandlePause(isPlaying);
+				Music_HandlePause(&isPlaying);
 			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) - (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
-				Music_HandleNext(audio, false);
+			{
+				wait(1);
+				Music_HandleNext(false);
+			}
 			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
-				Music_HandleNext(audio, true);
+			{
+				wait(1);
+				Music_HandleNext(true);
+			}
 		}
 	}
-
-	Mix_FreeMusic(audio);
 
 	switch(Mix_GetMusicType(audio))
 	{
@@ -234,7 +265,7 @@ void Menu_PlayMusic(char *path)
 			break;
 	}
 
-	Mix_CloseAudio();
+	Mix_FreeMusic(audio);
 
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
