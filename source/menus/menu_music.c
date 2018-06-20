@@ -17,25 +17,9 @@
 #define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61, 255)
 #define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
-char playlist[255][500];
+static char playlist[255][500], title[50];
 static int count = 0, selection = 0;
 static Mix_Music *audio;
-
-static void log_func(const char *s, ...)
-{
-		char buf[256];
-		va_list argptr;
-		va_start(argptr, s);
-		vsnprintf(buf, sizeof(buf), s, argptr);
-		va_end(argptr);
-
-		FILE *fp;
-		fp = fopen("/switch/log.txt", "a");
-		fprintf(fp, buf);
-		fclose(fp);
-}
-
-#define DEBUG(...) log_func(__VA_ARGS__)
 
 static void Menu_GetMusicList(void)
 {
@@ -103,6 +87,8 @@ static void Music_Play(char *path)
 		return;
 
 	selection = Music_GetCurrentIndex(path);
+
+	strncpy(title, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : strupr(ID3.title), strlen(ID3.title) == 0? strlen(Utils_Basename(path)) + 1 : strlen(ID3.title) + 1);
 }
 
 static void Music_HandleNext(bool forward)
@@ -112,14 +98,14 @@ static void Music_HandleNext(bool forward)
 		if (selection < (count + 1))
 			selection++;
 		else
-			position = 0;
+			selection = 0;
 	}
 	else
 	{
 		if (selection > 0)
 			selection--;
 		else
-			selection = count;
+			selection = count-1;
 	}
 
 	switch(Mix_GetMusicType(audio))
@@ -156,7 +142,7 @@ void Menu_PlayMusic(char *path)
 	Music_Play(path);
 
 	int title_height = 0;
-	TTF_SizeText(Roboto_large, Utils_Basename(path), NULL, &title_height);
+	TTF_SizeText(Roboto_large, title, NULL, &title_height);
 
 	bool isPlaying = true;
 
@@ -177,7 +163,7 @@ void Menu_PlayMusic(char *path)
 
 		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
 
-		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : strupr(ID3.title)); // Audio filename
+		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title); // Audio filename
 
 		SDL_DrawRect(RENDERER, 0, 141, 560, 560, SDL_MakeColour(158, 158, 158, 255)); // Draw album art background
 		SDL_DrawImage(RENDERER, default_artwork, 0, 141, 560, 560); // Default album art
