@@ -15,7 +15,7 @@ static int dialog_width = 0, dialog_height = 0;
 
 static void Menu_DisplaySortSettings(void)
 {
-	int selection = 0, max_items = 5, height = 0;
+	int selection = 0, max_items = 3, height = 0;
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
 
@@ -26,8 +26,6 @@ static void Menu_DisplaySortSettings(void)
 	{
 		"By name (ascending)",
 		"By name (descending)",
-		"By date (newest first)",
-		"By date (oldest first)",
 		"By size (largest first)",
 		"By size (smallest first)"
 	};
@@ -77,13 +75,7 @@ static void Menu_DisplaySortSettings(void)
 		
 		config_sort_by == 3? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371, 50, 50) : 
 			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371, 50, 50);
-
-		config_sort_by == 4? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 444, 50, 50) : 
-			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 444, 50, 50);
 		
-		config_sort_by == 5? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 517, 50, 50) : 
-			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 517, 50, 50);
-
 		SDL_RenderPresent(RENDERER);
 
 		hidScanInput();
@@ -124,12 +116,6 @@ static void Menu_DisplaySortSettings(void)
 				case 3:
 					config_sort_by = 3;
 					break;
-				case 4:
-					config_sort_by = 4;
-					break;
-				case 5:
-					config_sort_by = 5;
-					break;
 			}
 
 			Config_Save(config_dark_theme, config_sort_by);
@@ -163,12 +149,6 @@ static void Menu_DisplaySortSettings(void)
 						break;
 					case 3:
 						config_sort_by = 3;
-						break;
-					case 4:
-						config_sort_by = 4;
-						break;
-					case 5:
-						config_sort_by = 5;
 						break;
 				}
 

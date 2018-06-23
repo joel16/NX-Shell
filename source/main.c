@@ -45,6 +45,8 @@ static void Init_Services(void)
 	SDL_Init(SDL_INIT_EVERYTHING);
 	timeInitialize();
 
+	fsMountSdcard(&fs);
+
 	#ifdef DEBUG
 	socketInitializeDefault();
 	nxlinkStdio();

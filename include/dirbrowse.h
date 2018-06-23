@@ -21,7 +21,7 @@ extern int position;
 extern int fileCount;
 
 void Dirbrowse_RecursiveFree(File *node);
-void Dirbrowse_PopulateFiles(bool clear);
+Result Dirbrowse_PopulateFiles(bool clear);
 void Dirbrowse_DisplayFiles(void);
 File *Dirbrowse_GetFileIndex(int index);
 void Dirbrowse_OpenFile(void);

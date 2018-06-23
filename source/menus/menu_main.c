@@ -63,13 +63,13 @@ static void Menu_ControlHome(u64 input)
 				position--;
 
 			// Rewind Pointer
-			else 
-				position = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
+			else
+				position = fileCount - 1;
 		}
 		else if (input & KEY_DDOWN)
 		{
 			// Increase Position
-			if (position < ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount)))
+			if (position < (fileCount - 1))
 				position++;
 
 			// Rewind Pointer
@@ -80,7 +80,7 @@ static void Menu_ControlHome(u64 input)
 		if (input & KEY_LEFT)
 			position = 0;
 		else if (input & KEY_RIGHT)
-			position = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
+			position = fileCount - 1;
 
 		// Open options
 		if (input & KEY_X)
@@ -122,7 +122,7 @@ static void Menu_TouchHome(TouchInfo touchInfo)
 		initialPosition = (position == 0) ? 7 : position;
 	else if (touchInfo.state == TouchMoving && touchInfo.tapType == TapNone && tapped_inside(touchInfo, 0, 140, 1280, 720))
 	{
-		int lastPosition = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
+		int lastPosition = position = fileCount - 1;
 		if (lastPosition < 8)
 			return;
 		position = initialPosition + floor(((double) touchInfo.firstTouch.py - (double) touchInfo.prevTouch.py) / 73);

@@ -27,228 +27,132 @@ void Dirbrowse_RecursiveFree(File *node)
 	free(node); // Free memory
 }
 
-/* function declaration */
-typedef int(*qsort_compar)(const void *, const void *);
-
-/* Basically scndir implementation */
-static int Dirbrowse_ScanDir(const char *dir, struct dirent ***namelist, int (*select)(const struct dirent *),
-	int (*compar)(const struct dirent **, const struct dirent **)) 
+// Sort directories alphabetically. Folder first, then files.
+static int cmpstringp(const void *p1, const void *p2) 
 {
-	DIR *d;
-	struct dirent *entry;
-	register int i = 0;
-	size_t entrysize;
-
-	if ((d=opendir(dir)) == NULL)
-		return(-1);
-
-	*namelist=NULL;
+   	FsDirectoryEntry* entryA = (FsDirectoryEntry*) p1;
+   	FsDirectoryEntry* entryB = (FsDirectoryEntry*) p2;
 	
-	while ((entry=readdir(d)) != NULL)
-	{
-		if (select == NULL || (select != NULL && (*select)(entry)))
+	u64 sizeA = 0, sizeB = 0;
+
+   	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
+   		return -1;
+   	else if (!(entryA->type == ENTRYTYPE_DIR) && (entryB->type == ENTRYTYPE_DIR)) 
+   		return 1;
+   	else 
+   	{
+		switch(config_sort_by)
 		{
-			*namelist = (struct dirent **)realloc((void *)(*namelist), (size_t)((i + 1) * sizeof(struct dirent *)));
-
-			if (*namelist == NULL) 
-				return(-1);
+			case 0: // Sort alphabetically (ascending - A to Z)
+				return strcasecmp(entryA->name, entryB->name);
+				break;
 			
-			entrysize = sizeof(struct dirent) - sizeof(entry->d_name) + strlen(entry->d_name) + 1;
+			case 1: // Sort alphabetically (descending - Z to A)
+				return strcasecmp(entryB->name, entryA->name);
+				break;
 			
-			(*namelist)[i] = (struct dirent *)malloc(entrysize);
+			case 2: // Sort by file size (largest first)
+				sizeA = entryA->fileSize;
+				sizeB = entryB->fileSize;
+				return sizeA > sizeB ? -1 : sizeA < sizeB ? 1 : 0;
+				break;
 			
-			if ((*namelist)[i] == NULL) 
-				return(-1);
-
-			memcpy((*namelist)[i], entry, entrysize);
-			i++;
+			case 3: // Sort by file size (smallest first)
+				sizeA = entryA->fileSize;
+				sizeB = entryB->fileSize;
+				return sizeB > sizeA ? -1 : sizeB < sizeA ? 1 : 0;
+				break;
 		}
-	}
+   	}
 
-	if (closedir(d)) 
-		return(-1);
-	if (compar != NULL)
-		qsort((void *)(*namelist), (size_t)i, sizeof(struct dirent *), (qsort_compar)compar);
-
-	return(i);
+   	return 0;
 }
 
-static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2) 
+Result Dirbrowse_PopulateFiles(bool clear)
 {
-	int ret = 0;
-	char isDir[2], path1[256], path2[256];
-	struct stat sbuf1, sbuf2;
-	
-	// push '..' to beginning
-	if (strcmp("..", (*dent1)->d_name) == 0)
-		return -1;
-	else if (strcmp("..", (*dent2)->d_name) == 0)
-		return 1;
-
-	isDir[0] = TYPE_DIR((*dent1)->d_type);
-	isDir[1] = TYPE_DIR((*dent2)->d_type);
-
-	strcpy(path1, cwd);
-	strcpy(path1 + strlen(path1), (*dent1)->d_name);
-	ret = stat(path1, &sbuf1);
-	if (ret)
-		return 0;
-
-	strcpy(path2, cwd);
-	strcpy(path2 + strlen(path2), (*dent2)->d_name);
-	ret = stat(path2, &sbuf2);
-	if (ret)
-		return 0;
-
-	u64 sizeA = FS_GetFileSize(path1);
-	u64 sizeB = FS_GetFileSize(path2);
-
-	switch(config_sort_by)
-	{
-		case 0:
-			if (isDir[0] == isDir[1]) // sort by name
-				return strcasecmp((*dent1)->d_name, (*dent2)->d_name);
-			else
-				return isDir[1] - isDir[0]; // put directories first
-			break;
-
-		case 1:
-			if (isDir[0] == isDir[1]) // sort by name
-				return strcasecmp((*dent2)->d_name, (*dent1)->d_name);
-			else
-				return isDir[1] - isDir[0]; // put directories first
-			break;
-		
-		case 2:
-			if (isDir[0] == isDir[1])
-				return sbuf1.st_mtime < sbuf2.st_mtime;
-			else
-				return isDir[1] - isDir[0]; // put directories first
-			break;
-		
-		case 3:
-			if (isDir[0] == isDir[1])
-				return sbuf2.st_mtime < sbuf1.st_mtime;
-			else
-				return isDir[1] - isDir[0]; // put directories first
-			break;
-		
-		case 4:
-			if (isDir[0] == isDir[1])
-   	    		return sizeA > sizeB ? -1 : sizeA < sizeB ? 1 : 0;
-   	    	else
-				return isDir[1] - isDir[0]; // put directories first
-			break;
-		
-		case 5:
-			if (isDir[0] == isDir[1])
-   	    		return sizeB > sizeA ? -1 : sizeB < sizeA ? 1 : 0;
-   	    	else
-				return isDir[1] - isDir[0]; // put directories first
-			break;
-	}
-}
-
-void Dirbrowse_PopulateFiles(bool clear)
-{
-	char path[512];
 	Dirbrowse_RecursiveFree(files);
 	files = NULL;
 	fileCount = 0;
-
-	// Open Working Directory
-	DIR *directory = opendir(cwd);
-
-	if (directory)
+	
+	FsDir dir;
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
 	{
 		/* Add fake ".." entry except on root */
-		if (strcmp(cwd, ROOT_PATH)) 
+		if (strcmp(cwd, ROOT_PATH))
 		{
-			// New List
-			files = (File *)malloc(sizeof(File));
-			memset(files, 0, sizeof(File));
-			
-			// Copy File Name
-			strcpy(files->name, "..");
-			files->isDir = 1;
+			files = (File *)malloc(sizeof(File)); // New list
+			memset(files, 0, sizeof(File)); // Clear memory
+			strcpy(files->name, ".."); // Copy file Name
+			files->isDir = 1; // Set folder flag
 			fileCount++;
 		}
-
-		struct dirent **entries;
-
-		fileCount = Dirbrowse_ScanDir(cwd, &entries, NULL, cmpstringp);
-
-		if (fileCount != 0)
+		
+		u64 entryCount = 0;
+		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
+			return ret;
+		
+		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		
+		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
-			for (int i = 0; i < (fileCount); i++)
-			{
-				// Ingore null filename
-				if (entries[i]->d_name[0] == '\0') 
+			qsort(entries, entryCount, sizeof(FsDirectoryEntry), cmpstringp);
+			u8 name[255] = {'\0'};
+			
+			for (u32 i = 0; i < entryCount; i++) 
+			{		
+				if (strncmp(entries[i].name, ".", 1) == 0) // Ignore "." in all Directories
 					continue;
-
-				// Ignore "." in all Directories
-				if (strcmp(entries[i]->d_name, ".") == 0) 
+				
+				if (strcmp(cwd, ROOT_PATH) == 0 && strncmp(entries[i].name, "..", 2) == 0) // Ignore ".." in Root Directory
 					continue;
-
-				// Ignore ".." in Root Directory
-				if (strcmp(cwd, ROOT_PATH) == 0 && strncmp(entries[i]->d_name, "..", 2) == 0) // Ignore ".." in Root Directory
-					continue;
-
-				char isDir[2];
-
-				// Allocate Memory
-				File *item = (File *)malloc(sizeof(File));
-
-				// Clear Memory
-				memset(item, 0, sizeof(File));
-
-				// Copy File Name
-				strcpy(item->name, entries[i]->d_name);
-
-				strcpy(path, cwd);
-				strcpy(path + strlen(path), item->name);
-				item->size = FS_GetFileSize(path); // Copy file size
-
-				// Set Folder Flag
-				item->isDir = entries[i]->d_type == DT_DIR;
-
-				// New List
-				if (files == NULL) 
+					
+				File *item = (File *)malloc(sizeof(File)); // Allocate memory
+				memset(item, 0, sizeof(File)); // Clear memory
+				strcpy(item->name, entries[i].name); // Copy file name
+				item->size = entries[i].fileSize; // Copy file size
+				item->isDir = entries[i].type == ENTRYTYPE_DIR; // Set folder flag
+				
+				if (files == NULL) // New list
 					files = item;
-
-				// Existing List
+				
+				// Existing list
 				else
 				{
 					File *list = files;
-
-					// Append to List
-					while(list->next != NULL) 
+					
+					while(list->next != NULL)  // Append to list
 						list = list->next;
-	
-					// Link Item
-					list->next = item;
+					
+					list->next = item; // Link item
 				}
+				
+				fileCount++; // Increment file count
 			}
+		}	
+		else
+		{
+			free(entries);
+			return ret;
 		}
-
-		// Close Directory
-		closedir(directory);
-
-		for (int i = 0; i < fileCount; i++)
-			free(entries[i]);
-
+		
 		free(entries);
+		fsDirClose(&dir); // Close directory
 	}
-	
-
-	// Attempt to keep Index
+	else
+		return ret;
+		
+	// Attempt to keep index
 	if (!clear)
 	{
-		if (position >= fileCount) 
-			position = fileCount - 1;
+		if (position >= fileCount)
+			position = fileCount - 1; // Fix position
 	}
-	else 
-		position = 0;
+	else
+		position = 0; // Reset position
+	
+	return 0;
 }
 
 void Dirbrowse_DisplayFiles(void)
