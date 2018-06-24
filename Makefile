@@ -31,9 +31,9 @@ include $(DEVKITPRO)/libnx/switch_rules
 #---------------------------------------------------------------------------------
 TARGET      := $(notdir $(CURDIR))
 BUILD       := build
-SOURCES     := source source/audio source/menus source/minizip
+SOURCES     := source source/audio source/menus source/minizip source/menus/menu_book_reader
 DATA        := data
-INCLUDES    := include include/audio include/menus include/minizip
+INCLUDES    := include include/audio include/menus include/minizip mupdf/include mupdf/source/fitz
 EXEFS_SRC   := exefs_src
 ROMFS       := romfs
 
@@ -59,10 +59,10 @@ CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-g $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(PWD)/$(BUILD)
 
 LIBS	:= -lSDL2_mixer -lmodplug -lmpg123 -lvorbisidec -logg -lSDL2_ttf -lSDL2_gfx -lSDL2_image \
-           -lpng -ljpeg `sdl2-config --libs` `freetype-config --libs` -lnx
+           -lpng `sdl2-config --libs` -lnx -lmupdf_core -lmupdf_thirdparty
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -136,7 +136,13 @@ endif
 .PHONY: $(BUILD) clean all
 
 #---------------------------------------------------------------------------------
-all: $(BUILD)
+all: generate_fonts build_mupdf $(BUILD)
+
+generate_fonts:
+	@cd mupdf && make generate
+
+build_mupdf:
+	@make -f Makefile.mupdf
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
@@ -145,6 +151,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
+	@make -f Makefile.mupdf clean
 	@rm -fr $(BUILD) $(TARGET).pfs0 $(TARGET).nso $(TARGET).nro $(TARGET).nacp $(TARGET).elf
 
 

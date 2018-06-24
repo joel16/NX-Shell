@@ -7,6 +7,7 @@
 #include "fs.h"
 #include "menu_gallery.h"
 #include "menu_music.h"
+#include "menu_book_reader.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
@@ -198,7 +199,9 @@ void Dirbrowse_DisplayFiles(void)
 				(strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_image, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "txt", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "lua", 3) == 0) 
-				|| (strncasecmp(FS_GetFileExt(file->name), "cfg", 3) == 0))
+                || (strncasecmp(FS_GetFileExt(file->name), "cfg", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0)
+                || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0)
+                || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
 				SDL_DrawImage(RENDERER, icon_text, 80, 141 + (73 * printed), 72, 72);
 			else
 				SDL_DrawImage(RENDERER, icon_file, 80, 141 + (73 * printed), 72, 72);
@@ -287,6 +290,9 @@ void Dirbrowse_OpenFile(void)
 			|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0)
 			|| (strncasecmp(FS_GetFileExt(file->name), "midi", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "flac", 3) == 0))
 		Menu_PlayMusic(path);
+    else if ((strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0)
+            || (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
+        Menu_OpenBook(path);
 
 	/*else if (strncasecmp(file->ext, "txt", 3) == 0)
 		TextViewer_DisplayText(path);*/
