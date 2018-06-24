@@ -49,7 +49,10 @@ static Result FileOptions_CreateFolder(void)
 	strcat(path, osk_buffer);
 	osk_buffer[0] = '\0';
 
-	FS_RecursiveMakeDir(path);
+	Result ret = 0;
+	if (R_FAILED(ret = fsFsCreateDirectory(&fs, path)))
+		return ret;
+	
 	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	return 0;
@@ -81,108 +84,20 @@ static Result FileOptions_Rename(void)
 	osk_buffer[0] = '\0';
 
 
-	if (R_FAILED(ret = rename(oldPath, newPath)))
-		return ret;
+	if (file->isDir)
+	{
+		if (R_FAILED(ret = fsFsRenameDirectory(&fs, oldPath, newPath)))
+			return ret;
+	}
+	else
+	{
+		if (R_FAILED(ret = fsFsRenameFile(&fs, oldPath, newPath)))
+			return ret;
+	}
 	
 	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	return 0;
-}
-
-static int FileOptions_RmdirRecursive(char *path)
-{
-	File *filelist = NULL;
-	DIR *directory = opendir(path);
-
-	if (directory)
-	{
-		struct dirent *entries;
-
-		while ((entries = readdir(directory)) != NULL)
-		{
-			if (strlen(entries->d_name) > 0)
-			{
-				if (strcmp(entries->d_name, ".") == 0 || strcmp(entries->d_name, "..") == 0)
-					continue;
-
-				// Allocate Memory
-				File *item = (File *)malloc(sizeof(File));
-				memset(item, 0, sizeof(File));
-
-				// Copy File Name
-				strcpy(item->name, entries->d_name);
-
-				// Set Folder Flag
-				item->isDir = entries->d_type == DT_DIR;
-
-				// New List
-				if (filelist == NULL) 
-					filelist = item;
-
-				// Existing List
-				else
-				{
-					File *list = filelist;
-
-					while(list->next != NULL) 
-						list = list->next;
-
-					list->next = item;
-				}
-			}
-		}
-	}
-
-	closedir(directory);
-
-	File *node = filelist;
-
-	// Iterate Files
-	for(; node != NULL; node = node->next)
-	{
-		// Directory
-		if (node->isDir)
-		{
-			// Required Buffer Size
-			int size = strlen(path) + strlen(node->name) + 2;
-
-			// Allocate Buffer
-			char * buffer = (char *)malloc(size);
-
-			// Combine Path
-			strcpy(buffer, path);
-			strcpy(buffer + strlen(buffer), node->name);
-			buffer[strlen(buffer) + 1] = 0;
-			buffer[strlen(buffer)] = '/';
-
-			// Recursion Delete
-			FileOptions_RmdirRecursive(buffer);
-
-			free(buffer);
-		}
-
-		// File
-		else
-		{
-			// Required Buffer Size
-			int size = strlen(path) + strlen(node->name) + 1;
-
-			// Allocate Buffer
-			char *buffer = (char *)malloc(size);
-
-			// Combine Path
-			strcpy(buffer, path);
-			strcpy(buffer + strlen(buffer), node->name);
-
-			// Delete File
-			remove(buffer);
-
-			free(buffer);
-		}
-	}
-
-	Dirbrowse_RecursiveFree(filelist);
-	return rmdir(path);
 }
 
 static int FileOptions_DeleteFile(void)
@@ -211,12 +126,12 @@ static int FileOptions_DeleteFile(void)
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		return FileOptions_RmdirRecursive(path);
+		return fsFsDeleteDirectoryRecursively(&fs, path);
 	}
 
 	// Delete File
 	else 
-		return remove(path);
+		return fsFsDeleteFile(&fs, path);
 }
 
 // Copy file from src to dst
@@ -231,7 +146,8 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim)
 	int result = 0; // Result
 
 	int in = open(src, O_RDONLY, 0777); // Open file for reading
-	u64 size = FS_GetFileSize(src);
+	u64 size = 0;
+	FS_GetFileSize(src, &size);
 
 	// Opened file for reading
 	if (in >= 0)
@@ -401,7 +317,7 @@ static Result FileOptions_Paste(void)
 			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
 				strcat(copysource, "/");
 
-			FileOptions_RmdirRecursive(copysource); // Delete dir
+			fsFsDeleteDirectoryRecursively(&fs, copysource); // Delete dir
 		}
 	}
 
@@ -546,7 +462,9 @@ void Menu_DisplayProperties(void)
 	SDL_DrawText(Roboto, 370, 133, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
 	char utils_size[16];
-	Utils_GetSizeString(utils_size, FS_GetFileSize(path));
+	u64 size = 0;
+	FS_GetFileSize(path, &size);
+	Utils_GetSizeString(utils_size, size);
 
 	SDL_DrawTextf(Roboto, 390, 183, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
 	SDL_DrawTextf(Roboto, 390, 233, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Parent: %s", cwd);

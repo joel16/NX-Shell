@@ -42,7 +42,7 @@ int FS_RecursiveMakeDir(const char * dir)
 	return ret;
 }
 
-bool FS_FileExists(char *path)
+bool FS_FileExists(const char *path)
 {
 	FILE *temp = fopen(path, "r");
 	
@@ -83,10 +83,17 @@ char *FS_GetFileModifiedTime(const char *filename)
 	return ctime(&attr.st_mtime);
 }
 
-u64 FS_GetFileSize(const char *filename)
+Result FS_GetFileSize(const char *path, u64 *size)
 {
-	struct stat st;
-	stat(filename, &st);
-	
-	return st.st_size;
+	FsFile file;
+	Result ret = 0;
+
+	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file)))
+		return ret;
+
+	if (R_FAILED(ret = fsFileGetSize(&file, size)))
+		return ret;
+
+	fsFileClose(&file);
+	return 0;
 }
