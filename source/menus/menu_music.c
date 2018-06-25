@@ -1,4 +1,3 @@
-#include <dirent.h>
 #include <switch.h>
 
 #include "common.h"
@@ -17,7 +16,7 @@
 #define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61, 255)
 #define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
-static char playlist[255][500], title[128];
+static char playlist[256][256], title[128];
 static int count = 0, selection = 0;
 static Mix_Music *audio;
 
@@ -37,11 +36,12 @@ static Result Menu_GetMusicList(void)
 		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
-			u8 name[255] = {'\0'};
+
 			for (u32 i = 0; i < entryCount; i++) 
 			{
 				int length = strlen(entries[i].name);
-				if (strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3) == 0)
+				if ((strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3) == 0) 
+					|| (strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "mod", 3) == 0))
 				{
 					strcpy(playlist[count], cwd);
 					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
@@ -260,6 +260,7 @@ void Menu_PlayMusic(char *path)
 	}
 
 	Mix_FreeMusic(audio);
-
+	memset(playlist, 0, sizeof(playlist[0][0]) * 256 * 256);
+	count = 0;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
