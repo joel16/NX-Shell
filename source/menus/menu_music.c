@@ -21,27 +21,45 @@ static char playlist[255][500], title[128];
 static int count = 0, selection = 0;
 static Mix_Music *audio;
 
-static void Menu_GetMusicList(void)
+static Result Menu_GetMusicList(void)
 {
-	DIR *dir;
-	struct dirent *entries;
-	dir = opendir(cwd);
-
-	if (dir != NULL)
+	FsDir dir;
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
 	{
-		while ((entries = readdir (dir)) != NULL) 
+		u64 entryCount = 0;
+		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
+			return ret;
+		
+		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		
+		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
-			int length = strlen(entries->d_name);
-			if (strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0)
+			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
+			u8 name[255] = {'\0'};
+			for (u32 i = 0; i < entryCount; i++) 
 			{
-				strcpy(playlist[count], cwd);
-				strcpy(playlist[count] + strlen(playlist[count]), entries->d_name);
-				count++;
+				int length = strlen(entries[i].name);
+				if (strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3) == 0)
+				{
+					strcpy(playlist[count], cwd);
+					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
+					count++;
+				}
 			}
 		}
-
-		closedir(dir);
+		else
+		{
+			free(entries);
+			return ret;
+		}
+		
+		free(entries);
+		fsDirClose(&dir); // Close directory
 	}
+	else
+		return ret;
 }
 
 static int Music_GetCurrentIndex(char *path)

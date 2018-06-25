@@ -28,19 +28,19 @@ void Dirbrowse_RecursiveFree(File *node)
 }
 
 // Sort directories alphabetically. Folder first, then files.
-static int cmpstringp(const void *p1, const void *p2) 
+static int cmpstringp(const void *p1, const void *p2)
 {
-   	FsDirectoryEntry* entryA = (FsDirectoryEntry*) p1;
-   	FsDirectoryEntry* entryB = (FsDirectoryEntry*) p2;
+	FsDirectoryEntry* entryA = (FsDirectoryEntry*) p1;
+	FsDirectoryEntry* entryB = (FsDirectoryEntry*) p2;
 	
 	u64 sizeA = 0, sizeB = 0;
-
-   	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
-   		return -1;
-   	else if (!(entryA->type == ENTRYTYPE_DIR) && (entryB->type == ENTRYTYPE_DIR)) 
-   		return 1;
-   	else 
-   	{
+	
+	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
+		return -1;
+	else if (!(entryA->type == ENTRYTYPE_DIR) && (entryB->type == ENTRYTYPE_DIR))
+		return 1;
+	else
+	{
 		switch(config_sort_by)
 		{
 			case 0: // Sort alphabetically (ascending - A to Z)
@@ -63,9 +63,9 @@ static int cmpstringp(const void *p1, const void *p2)
 				return sizeB > sizeA ? -1 : sizeB < sizeA ? 1 : 0;
 				break;
 		}
-   	}
-
-   	return 0;
+	}
+	
+	return 0;
 }
 
 Result Dirbrowse_PopulateFiles(bool clear)
@@ -98,7 +98,6 @@ Result Dirbrowse_PopulateFiles(bool clear)
 		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), cmpstringp);
-			u8 name[255] = {'\0'};
 			
 			for (u32 i = 0; i < entryCount; i++) 
 			{		
