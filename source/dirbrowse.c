@@ -16,7 +16,7 @@
 int initialPosition = 0;
 int position = 0; // menu position
 int fileCount = 0; // file count
-File * files = NULL; // file list
+File *files = NULL; // file list
 
 void Dirbrowse_RecursiveFree(File *node)
 {

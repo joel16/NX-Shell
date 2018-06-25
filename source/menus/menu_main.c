@@ -11,6 +11,7 @@
 #include "status_bar.h"
 #include "textures.h"
 #include "touch_helper.h"
+#include "utils.h"
 
 #define MENUBAR_X_BOUNDARY  0
 static int menubar_x = -400;
@@ -57,25 +58,12 @@ static void Menu_ControlHome(u64 input)
 	if (fileCount >= 0)
 	{
 		if (input & KEY_DUP)
-		{
-			// Decrease Position
-			if (position > 0)
-				position--;
-
-			// Rewind Pointer
-			else
-				position = fileCount - 1;
-		}
+			position--;
 		else if (input & KEY_DDOWN)
-		{
-			// Increase Position
-			if (position < (fileCount - 1))
-				position++;
+			position++;
 
-			// Rewind Pointer
-			else 
-				position = 0;
-		}
+		Utils_SetMax(&position, 0, (fileCount - 1));
+		Utils_SetMin(&position, (fileCount - 1), 0);
 
 		if (input & KEY_LEFT)
 			position = 0;

@@ -83,7 +83,6 @@ static Result FileOptions_Rename(void)
 	strcat(newPath, osk_buffer);
 	osk_buffer[0] = '\0';
 
-
 	if (file->isDir)
 	{
 		if (R_FAILED(ret = fsFsRenameDirectory(&fs, oldPath, newPath)))
@@ -352,19 +351,12 @@ void HandleDelete()
 void Menu_ControlDeleteDialog(u64 input)
 {
 	if (input & KEY_RIGHT)
-	{
-		if (delete_dialog_selection < 1)
-			delete_dialog_selection++;
-		else
-			delete_dialog_selection = 0;
-	}
+		delete_dialog_selection++;
 	else if (input & KEY_LEFT)
-	{
-		if (delete_dialog_selection > 0)
-			delete_dialog_selection--;
-		else
-			delete_dialog_selection = 1;
-	}
+		delete_dialog_selection--;
+
+	Utils_SetMax(&delete_dialog_selection, 0, 1);
+	Utils_SetMin(&delete_dialog_selection, 1, 0);
 
 	if (input & KEY_B)
 	{
@@ -528,34 +520,20 @@ void HandleCut()
 void Menu_ControlOptions(u64 input)
 {
 	if (input & KEY_RIGHT)
-	{
-		if (row < 1)
-			row++;
-		else
-			row = 0;
-	}
+		row++;
 	else if (input & KEY_LEFT)
-	{
-		if (row > 0)
-			row--;
-		else
-			row = 1;
-	}
+		row--;
 
 	if (input & KEY_DDOWN)
-	{
-		if (column < 2)
-			column++;
-		else
-			column = 0;
-	}
+		column++;
 	else if (input & KEY_DUP)
-	{
-		if (column > 0)
-			column--;
-		else
-			column = 2;
-	}
+		column--;
+
+	Utils_SetMax(&row, 0, 1);
+	Utils_SetMin(&row, 1, 0);
+
+	Utils_SetMax(&column, 0, 2);
+	Utils_SetMin(&column, 2, 0);
 	
 	if (input & KEY_A)
 	{

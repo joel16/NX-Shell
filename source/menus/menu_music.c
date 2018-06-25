@@ -69,7 +69,6 @@ static int Music_GetCurrentIndex(char *path)
 		if (!strcmp(playlist[i], path))
 			return i;
 	}
-
 }
 
 static void Music_Play(char *path)
@@ -110,19 +109,12 @@ static void Music_Play(char *path)
 static void Music_HandleNext(bool forward)
 {
 	if (forward)
-	{
-		if (selection < (count + 1))
-			selection++;
-		else
-			selection = 0;
-	}
+		selection++;
 	else
-	{
-		if (selection > 0)
-			selection--;
-		else
-			selection = count-1;
-	}
+		selection--;
+
+	Utils_SetMax(&selection, 0, (count - 1));
+	Utils_SetMin(&selection, (count - 1), 0);
 
 	switch(Mix_GetMusicType(audio))
 	{
@@ -225,12 +217,12 @@ void Menu_PlayMusic(char *path)
 		if (kDown & KEY_A)
 			Music_HandlePause(&isPlaying);
 
-		if (kDown & KEY_LEFT)
+		if ((kDown & KEY_LEFT) || (kDown & KEY_L))
 		{
 			wait(1);
 			Music_HandleNext(false);
 		}
-		else if (kDown & KEY_RIGHT)
+		else if ((kDown & KEY_RIGHT) || (kDown & KEY_R))
 		{
 			wait(1);
 			Music_HandleNext(true);

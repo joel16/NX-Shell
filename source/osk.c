@@ -184,36 +184,20 @@ void OSK_Display(char *title, char *msg)
 		u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
 
 		if (kDown & KEY_LEFT)
-		{
-			if (osk_pos_x > 0)
-				osk_pos_x--;
-			else
-				osk_pos_x = MAX_X;
-		}
-		
-		if (kDown & KEY_RIGHT)
-		{
-			if (osk_pos_x < MAX_X)
-				osk_pos_x++;
-			else
-				osk_pos_x = 0;
-		}
+			osk_pos_x--;
+		else if (kDown & KEY_RIGHT)
+			osk_pos_x++;
 
 		if (kDown & KEY_UP)
-		{
-			if (osk_pos_y > 0)
-				osk_pos_y--;
-			else
-				osk_pos_y = MAX_Y;
-		}
+			osk_pos_y--;
+		else if (kDown & KEY_DOWN)
+			osk_pos_y++;
 
-		if (kDown & KEY_DOWN)
-		{
-			if (osk_pos_y < MAX_Y)
-				osk_pos_y++;
-			else
-				osk_pos_y = 0;
-		}
+		Utils_SetMin(&osk_pos_x, MAX_X, 0);
+		Utils_SetMax(&osk_pos_x, 0, MAX_X);
+
+		Utils_SetMin(&osk_pos_y, MAX_Y, 0);
+		Utils_SetMax(&osk_pos_y, 0, MAX_Y);
 
 		/*if (kDown & KEY_L)
 		{
@@ -257,8 +241,8 @@ void OSK_Display(char *title, char *msg)
 				osk_text_caps = !osk_text_caps;
 		}
 
-		Utils_SetMax(transp, 0, 255);
-		Utils_SetMin(transp, 255, 0);
+		Utils_SetMax(&transp, 0, 255);
+		Utils_SetMin(&transp, 255, 0);
 
 		if (kDown & KEY_A)
 			OSK_HandleAppend(osk_text_shift, osk_text_caps, osk_pos_x, osk_pos_y);

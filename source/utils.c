@@ -26,16 +26,16 @@ void Utils_GetSizeString(char *string, u64 size)
 	sprintf(string, "%.*f %s", (i == 0) ? 0 : 2, double_size, units[i]);
 }
 
-void Utils_SetMax(int set, int value, int max)
+void Utils_SetMax(int *set, int value, int max)
 {
-	if (set > max)
-		set = value;
+	if (*set > max)
+		*set = value;
 }
 
-void Utils_SetMin(int set, int value, int min)
+void Utils_SetMin(int *set, int value, int min)
 {
-	if (set < min)
-		set = value;
+	if (*set < min)
+		*set = value;
 }
 
 int Utils_Alphasort(const void *p1, const void *p2)
