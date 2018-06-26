@@ -439,7 +439,7 @@ LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) \
 	-Dhb_free_impl=fz_hb_free
 
 ARCH		:=	-march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE
-CFLAGS		:= -Wall -O3 -ffast-math $(ARCH)
+CFLAGS		:= -Wall -Os -ffast-math $(ARCH)
 CFLAGS		+= $(INCLUDES) -DARM11 -D_SWITCH -D__SWITCH__ $(LOCAL_CFLAGS)
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11 $(LOCAL_CPPFLAGS)
 ASFLAGS		:= $(ARCH)
