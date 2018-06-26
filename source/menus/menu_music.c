@@ -1,5 +1,5 @@
-#include <dirent.h>
 #include <switch.h>
+#include <time.h>
 
 #include "common.h"
 #include "dirbrowse.h"
@@ -17,31 +17,57 @@
 #define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61, 255)
 #define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
-static char playlist[255][500], title[128];
-static int count = 0, selection = 0;
+typedef enum
+{
+	MUSIC_STATE_NONE,   // 0
+	MUSIC_STATE_REPEAT, // 1
+	MUSIC_STATE_SHUFFLE // 2
+} Music_State;
+
+static char playlist[256][256], title[128];
+static int count = 0, selection = 0, state = 0;
 static Mix_Music *audio;
 
-static void Menu_GetMusicList(void)
+static Result Menu_GetMusicList(void)
 {
-	DIR *dir;
-	struct dirent *entries;
-	dir = opendir(cwd);
-
-	if (dir != NULL)
+	FsDir dir;
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
 	{
-		while ((entries = readdir (dir)) != NULL) 
+		u64 entryCount = 0;
+		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
+			return ret;
+		
+		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		
+		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
-			int length = strlen(entries->d_name);
-			if (strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0)
+			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
+
+			for (u32 i = 0; i < entryCount; i++) 
 			{
-				strcpy(playlist[count], cwd);
-				strcpy(playlist[count] + strlen(playlist[count]), entries->d_name);
-				count++;
+				int length = strlen(entries[i].name);
+				if ((strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3) == 0) 
+					|| (strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "mod", 3) == 0))
+				{
+					strcpy(playlist[count], cwd);
+					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
+					count++;
+				}
 			}
 		}
-
-		closedir(dir);
+		else
+		{
+			free(entries);
+			return ret;
+		}
+		
+		free(entries);
+		fsDirClose(&dir); // Close directory
 	}
+	else
+		return ret;
 }
 
 static int Music_GetCurrentIndex(char *path)
@@ -51,7 +77,6 @@ static int Music_GetCurrentIndex(char *path)
 		if (!strcmp(playlist[i], path))
 			return i;
 	}
-
 }
 
 static void Music_Play(char *path)
@@ -89,22 +114,28 @@ static void Music_Play(char *path)
 	strncpy(title, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : strupr(ID3.title), strlen(ID3.title) == 0? strlen(Utils_Basename(path)) + 1 : strlen(ID3.title) + 1);
 }
 
-static void Music_HandleNext(bool forward)
+static void Music_HandleNext(bool forward, int state)
 {
-	if (forward)
+	if (state == MUSIC_STATE_NONE)
 	{
-		if (selection < (count + 1))
+		if (forward)
 			selection++;
 		else
-			selection = 0;
-	}
-	else
-	{
-		if (selection > 0)
 			selection--;
-		else
-			selection = count-1;
 	}
+	else if (state == MUSIC_STATE_SHUFFLE)
+	{
+		int old_selection = selection;
+		time_t t;
+		srand((unsigned) time(&t));
+		selection = rand() % (count - 1);
+
+		if (selection == old_selection)
+			selection++;
+	}
+
+	Utils_SetMax(&selection, 0, (count - 1));
+	Utils_SetMin(&selection, (count - 1), 0);
 
 	switch(Mix_GetMusicType(audio))
 	{
@@ -136,7 +167,6 @@ static void Music_HandlePause(bool *status)
 void Menu_PlayMusic(char *path)
 {
 	Result ret = 0;
-
 	Music_Play(path);
 
 	int title_height = 0;
@@ -186,9 +216,10 @@ void Menu_PlayMusic(char *path)
 		else
 			SDL_DrawImage(RENDERER, btn_play, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Paused
 
-		SDL_DrawImage(RENDERER, btn_rewind, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Rewind
-		SDL_DrawImage(RENDERER, btn_forward, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Forward
-
+		SDL_DrawImage(RENDERER, btn_rewind, (560 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height);  // Rewind
+		SDL_DrawImage(RENDERER, btn_forward, (580 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Forward
+		SDL_DrawImage(RENDERER, state == MUSIC_STATE_SHUFFLE? btn_shuffle_overlay : btn_shuffle, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10));  // Shuffle
+		SDL_DrawImage(RENDERER, state == MUSIC_STATE_REPEAT? btn_repeat_overlay : btn_repeat, (550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10)); // Repeat
 		StatusBar_DisplayTime();
 
 		SDL_RenderPresent(RENDERER);
@@ -197,25 +228,55 @@ void Menu_PlayMusic(char *path)
 		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
-		if ((kDown & KEY_B) || (!Mix_PlayingMusic()))
+		if (!Mix_PlayingMusic())
+		{
+			wait(1);
+
+			if (state == MUSIC_STATE_NONE)
+			{
+				Mix_HaltMusic();
+				break;
+			}
+			else if (state == MUSIC_STATE_REPEAT)
+				Music_HandleNext(false, MUSIC_STATE_REPEAT);
+			else if (state == MUSIC_STATE_SHUFFLE)
+				Music_HandleNext(false, MUSIC_STATE_SHUFFLE);
+		}
+
+		if (kDown & KEY_B)
 		{
 			wait(1);
 			Mix_HaltMusic();
 			break;
 		}
-
+		
 		if (kDown & KEY_A)
 			Music_HandlePause(&isPlaying);
 
-		if (kDown & KEY_LEFT)
+		if (kDown & KEY_Y)
 		{
-			wait(1);
-			Music_HandleNext(false);
+			if (state == MUSIC_STATE_REPEAT)
+				state = MUSIC_STATE_NONE;
+			else
+				state = MUSIC_STATE_REPEAT;
 		}
-		else if (kDown & KEY_RIGHT)
+		else if (kDown & KEY_X)
+		{
+			if (state == MUSIC_STATE_SHUFFLE)
+				state = MUSIC_STATE_NONE;
+			else
+				state = MUSIC_STATE_SHUFFLE;
+		}
+
+		if ((kDown & KEY_LEFT) || (kDown & KEY_L))
 		{
 			wait(1);
-			Music_HandleNext(true);
+			Music_HandleNext(false, MUSIC_STATE_NONE);
+		}
+		else if ((kDown & KEY_RIGHT) || (kDown & KEY_R))
+		{
+			wait(1);
+			Music_HandleNext(true, MUSIC_STATE_NONE);
 		}
 
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
@@ -232,12 +293,26 @@ void Menu_PlayMusic(char *path)
 			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) - (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
 			{
 				wait(1);
-				Music_HandleNext(false);
+				Music_HandleNext(false, MUSIC_STATE_NONE);
 			}
 			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
 			{
 				wait(1);
-				Music_HandleNext(true);
+				Music_HandleNext(true, MUSIC_STATE_NONE);
+			}
+			else if (tapped_inside(touchInfo, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, ((590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2)) + (btn_width - 10), (141 + ((559 - (btn_height - 10)) / 2) + 90) + (btn_height - 10)))
+			{
+				if (state == MUSIC_STATE_SHUFFLE)
+					state = MUSIC_STATE_NONE;
+				else
+					state = MUSIC_STATE_SHUFFLE;
+			}
+			else if (tapped_inside(touchInfo, (550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, ((550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2)) + (btn_width - 10), (141 + ((559 - (btn_height - 10)) / 2) + 90) + (btn_height - 10)))
+			{
+				if (state == MUSIC_STATE_REPEAT)
+					state = MUSIC_STATE_NONE;
+				else
+					state = MUSIC_STATE_REPEAT;
 			}
 		}
 	}
@@ -250,6 +325,7 @@ void Menu_PlayMusic(char *path)
 	}
 
 	Mix_FreeMusic(audio);
-
+	memset(playlist, 0, sizeof(playlist[0][0]) * 256 * 256);
+	count = 0;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }

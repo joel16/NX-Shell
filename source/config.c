@@ -5,7 +5,7 @@
 #include "config.h"
 #include "fs.h"
 
-const char * configFile =
+const char *configFile =
 	"theme = %d\n"
 	"sortBy = %d";
 
@@ -31,7 +31,8 @@ int Config_Load(void)
 		return Config_Save(config_dark_theme, config_sort_by);
 	}
 
-	u64 size = FS_GetFileSize("/switch/NX-Shell/config.cfg");
+	u64 size = 0;
+	FS_GetFileSize("/switch/NX-Shell/config.cfg", &size);
 	char *buf = (char *)malloc(size + 1);
 
 	FILE *file = fopen("/switch/NX-Shell/config.cfg", "r");

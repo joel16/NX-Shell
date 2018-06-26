@@ -17,7 +17,7 @@
 int initialPosition = 0;
 int position = 0; // menu position
 int fileCount = 0; // file count
-File * files = NULL; // file list
+File *files = NULL; // file list
 
 void Dirbrowse_RecursiveFree(File *node)
 {
@@ -29,19 +29,19 @@ void Dirbrowse_RecursiveFree(File *node)
 }
 
 // Sort directories alphabetically. Folder first, then files.
-static int cmpstringp(const void *p1, const void *p2) 
+static int cmpstringp(const void *p1, const void *p2)
 {
-   	FsDirectoryEntry* entryA = (FsDirectoryEntry*) p1;
-   	FsDirectoryEntry* entryB = (FsDirectoryEntry*) p2;
+	FsDirectoryEntry* entryA = (FsDirectoryEntry*) p1;
+	FsDirectoryEntry* entryB = (FsDirectoryEntry*) p2;
 	
 	u64 sizeA = 0, sizeB = 0;
-
-   	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
-   		return -1;
-   	else if (!(entryA->type == ENTRYTYPE_DIR) && (entryB->type == ENTRYTYPE_DIR)) 
-   		return 1;
-   	else 
-   	{
+	
+	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
+		return -1;
+	else if (!(entryA->type == ENTRYTYPE_DIR) && (entryB->type == ENTRYTYPE_DIR))
+		return 1;
+	else
+	{
 		switch(config_sort_by)
 		{
 			case 0: // Sort alphabetically (ascending - A to Z)
@@ -64,9 +64,9 @@ static int cmpstringp(const void *p1, const void *p2)
 				return sizeB > sizeA ? -1 : sizeB < sizeA ? 1 : 0;
 				break;
 		}
-   	}
-
-   	return 0;
+	}
+	
+	return 0;
 }
 
 Result Dirbrowse_PopulateFiles(bool clear)
@@ -99,7 +99,6 @@ Result Dirbrowse_PopulateFiles(bool clear)
 		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), cmpstringp);
-			u8 name[255] = {'\0'};
 			
 			for (u32 i = 0; i < entryCount; i++) 
 			{		
@@ -192,8 +191,7 @@ void Dirbrowse_DisplayFiles(void)
 				|| (strncasecmp(FS_GetFileExt(file->name), "lz4", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_archive, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0)
-				|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0)
-				|| (strncasecmp(FS_GetFileExt(file->name), "midi", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "flac", 3) == 0))
+				|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_audio, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0) || 
 				(strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
@@ -287,8 +285,7 @@ void Dirbrowse_OpenFile(void)
 		Dirbrowse_PopulateFiles(true);
 	}
 	else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0)
-			|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0)
-			|| (strncasecmp(FS_GetFileExt(file->name), "midi", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "flac", 3) == 0))
+			|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
 		Menu_PlayMusic(path);
     else if ((strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0)
             || (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
