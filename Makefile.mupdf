@@ -320,20 +320,6 @@ MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jmemmgr.o
 MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jquant1.o
 MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jquant2.o
 MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jutils.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcapimin.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcapistd.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcparam.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcinit.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcmaster.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcdctmgr.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcarith.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jccoefct.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcmainct.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcmarker.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jchuff.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jccolor.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcsample.o
-MUPDF_THIRDPARTY_OBJS += $(MUPDF_PATH)/thirdparty/libjpeg/jcprepct.o
 
 # --- JBIG2DEC ---
 
@@ -398,7 +384,50 @@ LOCAL_CFLAGS := \
 	-DFT2_BUILD_LIBRARY -DDARWIN_NO_CARBON \
 	'-DFT_CONFIG_MODULES_H="slimftmodules.h"' \
 	'-DFT_CONFIG_OPTIONS_H="slimftoptions.h"' \
-	-DHAVE_STDINT_H -DNO_ICC -DFZ_ENABLE_JS=0
+	-DHAVE_STDINT_H -DNO_ICC -DFZ_ENABLE_JS=0 \
+	-Djpeg_aritab=xjpeg_aritab -Djpeg_abort=xjpeg_abort -Djpeg_destroy=xjpeg_destroy -Djpeg_alloc_quant_table=xjpeg_alloc_quant_table \
+	-Djpeg_alloc_huff_table=xjpeg_alloc_huff_table -Djpeg_CreateDecompress=xjpeg_CreateDecompress -Djpeg_destroy_decompress=xjpeg_destroy_decompress \
+	-Djpeg_abort_decompress=xjpeg_abort_decompress -Djpeg_read_header=xjpeg_read_header -Djpeg_consume_input=xjpeg_consume_input \
+	-Djpeg_input_complete=xjpeg_input_complete -Djpeg_has_multiple_scans=xjpeg_has_multiple_scans -Djpeg_finish_decompress=xjpeg_finish_decompress \
+	-Djpeg_start_decompress=xjpeg_start_decompress -Djpeg_read_scanlines=xjpeg_read_scanlines -Djpeg_read_raw_data=xjpeg_read_raw_data \
+	-Djpeg_start_output=xjpeg_start_output -Djpeg_finish_output=xjpeg_finish_output -Djinit_arith_decoder=xjinit_arith_decoder \
+	-Djpeg_stdio_dest=xjpeg_stdio_dest -Djpeg_mem_dest=xjpeg_mem_dest -Djpeg_stdio_src=xjpeg_stdio_src \
+	-Djpeg_mem_src=xjpeg_mem_src -Djinit_d_coef_controller=xjinit_d_coef_controller -Djinit_color_deconverter=xjinit_color_deconverter \
+	-Djinit_inverse_dct=xjinit_inverse_dct -Djinit_huff_decoder=xjinit_huff_decoder -Djpeg_core_output_dimensions=xjpeg_core_output_dimensions \
+	-Djinit_input_controller=xjinit_input_controller -Djinit_d_main_controller=xjinit_d_main_controller -Djpeg_resync_to_restart=xjpeg_resync_to_restart \
+	-Djinit_marker_reader=xjinit_marker_reader -Djpeg_save_markers=xjpeg_save_markers -Djpeg_set_marker_processor=xjpeg_set_marker_processor \
+	-Djpeg_calc_output_dimensions=xjpeg_calc_output_dimensions -Djpeg_new_colormap=xjpeg_new_colormap -Djinit_master_decompress=xjinit_master_decompress \
+	-Djinit_merged_upsampler=xjinit_merged_upsampler -Djinit_d_post_controller=xjinit_d_post_controller -Djinit_upsampler=xjinit_upsampler \
+	-Djpeg_read_coefficients=xjpeg_read_coefficients -Djpeg_std_error=xjpeg_std_error -Djpeg_fdct_float=xjpeg_fdct_float \
+	-Djpeg_fdct_ifast=xjpeg_fdct_ifast -Djpeg_fdct_islow=xjpeg_fdct_islow -Djpeg_fdct_7x7=xjpeg_fdct_7x7 \
+	-Djpeg_fdct_6x6=xjpeg_fdct_6x6 -Djpeg_fdct_5x5=xjpeg_fdct_5x5 -Djpeg_fdct_4x4=xjpeg_fdct_4x4 \
+	-Djpeg_fdct_3x3=xjpeg_fdct_3x3 -Djpeg_fdct_2x2=xjpeg_fdct_2x2 -Djpeg_fdct_1x1=xjpeg_fdct_1x1 \
+	-Djpeg_fdct_9x9=xjpeg_fdct_9x9 -Djpeg_fdct_10x10=xjpeg_fdct_10x10 -Djpeg_fdct_11x11=xjpeg_fdct_11x11 \
+	-Djpeg_fdct_12x12=xjpeg_fdct_12x12 -Djpeg_fdct_13x13=xjpeg_fdct_13x13 -Djpeg_fdct_14x14=xjpeg_fdct_14x14 \
+	-Djpeg_fdct_15x15=xjpeg_fdct_15x15 -Djpeg_fdct_16x16=xjpeg_fdct_16x16 -Djpeg_fdct_16x8=xjpeg_fdct_16x8 \
+	-Djpeg_fdct_14x7=xjpeg_fdct_14x7 -Djpeg_fdct_12x6=xjpeg_fdct_12x6 -Djpeg_fdct_10x5=xjpeg_fdct_10x5 \
+	-Djpeg_fdct_8x4=xjpeg_fdct_8x4 -Djpeg_fdct_6x3=xjpeg_fdct_6x3 -Djpeg_fdct_4x2=xjpeg_fdct_4x2 \
+	-Djpeg_fdct_2x1=xjpeg_fdct_2x1 -Djpeg_fdct_8x16=xjpeg_fdct_8x16 -Djpeg_fdct_7x14=xjpeg_fdct_7x14 \
+	-Djpeg_fdct_6x12=xjpeg_fdct_6x12 -Djpeg_fdct_5x10=xjpeg_fdct_5x10 -Djpeg_fdct_4x8=xjpeg_fdct_4x8 \
+	-Djpeg_fdct_3x6=xjpeg_fdct_3x6 -Djpeg_fdct_2x4=xjpeg_fdct_2x4 -Djpeg_fdct_1x2=xjpeg_fdct_1x2 \
+	-Djpeg_idct_float=xjpeg_idct_float -Djpeg_idct_ifast=xjpeg_idct_ifast -Djpeg_idct_islow=xjpeg_idct_islow \
+	-Djpeg_idct_7x7=xjpeg_idct_7x7 -Djpeg_idct_6x6=xjpeg_idct_6x6 -Djpeg_idct_5x5=xjpeg_idct_5x5 \
+	-Djpeg_idct_4x4=xjpeg_idct_4x4 -Djpeg_idct_3x3=xjpeg_idct_3x3 -Djpeg_idct_2x2=xjpeg_idct_2x2 \
+	-Djpeg_idct_1x1=xjpeg_idct_1x1 -Djpeg_idct_9x9=xjpeg_idct_9x9 -Djpeg_idct_10x10=xjpeg_idct_10x10 \
+	-Djpeg_idct_11x11=xjpeg_idct_11x11 -Djpeg_idct_12x12=xjpeg_idct_12x12 -Djpeg_idct_13x13=xjpeg_idct_13x13 \
+	-Djpeg_idct_14x14=xjpeg_idct_14x14 -Djpeg_idct_15x15=xjpeg_idct_15x15 -Djpeg_idct_16x16=xjpeg_idct_16x16 \
+	-Djpeg_idct_16x8=xjpeg_idct_16x8 -Djpeg_idct_14x7=xjpeg_idct_14x7 -Djpeg_idct_12x6=xjpeg_idct_12x6 \
+	-Djpeg_idct_10x5=xjpeg_idct_10x5 -Djpeg_idct_8x4=xjpeg_idct_8x4 -Djpeg_idct_6x3=xjpeg_idct_6x3 \
+	-Djpeg_idct_4x2=xjpeg_idct_4x2 -Djpeg_idct_2x1=xjpeg_idct_2x1 -Djpeg_idct_8x16=xjpeg_idct_8x16 \
+	-Djpeg_idct_7x14=xjpeg_idct_7x14 -Djpeg_idct_6x12=xjpeg_idct_6x12 -Djpeg_idct_5x10=xjpeg_idct_5x10 \
+	-Djpeg_idct_4x8=xjpeg_idct_4x8 -Djpeg_idct_3x6=xjpeg_idct_3x6 -Djpeg_idct_2x4=xjpeg_idct_2x4 \
+	-Djpeg_idct_1x2=xjpeg_idct_1x2 -Djinit_memory_mgr=xjinit_memory_mgr -Djinit_1pass_quantizer=xjinit_1pass_quantizer \
+	-Djinit_2pass_quantizer=xjinit_2pass_quantizer -Djdiv_round_up=xjdiv_round_up -Djround_up=xjround_up \
+	-Djzero_far=xjzero_far -Djcopy_sample_rows=xjcopy_sample_rows -Djcopy_block_row=xjcopy_block_row \
+	-Djpeg_get_small=xjpeg_get_small -Djpeg_free_small=xjpeg_free_small -Djpeg_get_large=xjpeg_get_large \
+	-Djpeg_free_large=xjpeg_free_large -Djpeg_mem_available=xjpeg_mem_available -Djpeg_open_backing_store=xjpeg_open_backing_store \
+	-Djpeg_mem_init=xjpeg_mem_init -Djpeg_mem_term=xjpeg_mem_term -Djpeg_std_message_table=xjpeg_std_message_table \
+	-Djpeg_natural_order=xjpeg_natural_order
 
 LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) \
 	-ffunction-sections -fdata-sections \
