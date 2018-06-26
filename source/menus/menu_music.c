@@ -167,8 +167,6 @@ static void Music_HandlePause(bool *status)
 void Menu_PlayMusic(char *path)
 {
 	Result ret = 0;
-	state = MUSIC_STATE_NONE;
-	
 	Music_Play(path);
 
 	int title_height = 0;
@@ -220,8 +218,8 @@ void Menu_PlayMusic(char *path)
 
 		SDL_DrawImage(RENDERER, btn_rewind, (560 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height);  // Rewind
 		SDL_DrawImage(RENDERER, btn_forward, (580 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Forward
-		SDL_DrawImage(RENDERER, state == MUSIC_STATE_SHUFFLE? btn_shuffle_overlay : btn_shuffle, (600 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2) + 90, btn_width, btn_height);  // Shuffle
-		SDL_DrawImage(RENDERER, state == MUSIC_STATE_REPEAT? btn_repeat_overlay : btn_repeat, (540 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2) + 90, btn_width, btn_height); // Repeat
+		SDL_DrawImage(RENDERER, state == MUSIC_STATE_SHUFFLE? btn_shuffle_overlay : btn_shuffle, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10));  // Shuffle
+		SDL_DrawImage(RENDERER, state == MUSIC_STATE_REPEAT? btn_repeat_overlay : btn_repeat, (550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10)); // Repeat
 		StatusBar_DisplayTime();
 
 		SDL_RenderPresent(RENDERER);
@@ -302,14 +300,14 @@ void Menu_PlayMusic(char *path)
 				wait(1);
 				Music_HandleNext(true, MUSIC_STATE_NONE);
 			}
-			else if(tapped_inside(touchInfo, (600 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2) + 90, ((600 + ((710 - btn_width) / 2)) - (btn_width * 2)) + btn_width, (141 + ((559 - btn_height) / 2) + 90) + btn_height))
+			else if (tapped_inside(touchInfo, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, ((590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2)) + (btn_width - 10), (141 + ((559 - (btn_height - 10)) / 2) + 90) + (btn_height - 10)))
 			{
 				if (state == MUSIC_STATE_SHUFFLE)
 					state = MUSIC_STATE_NONE;
 				else
 					state = MUSIC_STATE_SHUFFLE;
 			}
-			else if(tapped_inside(touchInfo, (540 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2) + 90, ((540 + ((710 - btn_width) / 2)) + (btn_width * 2)) + btn_width, (141 + ((559 - btn_height) / 2) + 90) + btn_height))
+			else if (tapped_inside(touchInfo, (550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, ((550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2)) + (btn_width - 10), (141 + ((559 - (btn_height - 10)) / 2) + 90) + (btn_height - 10)))
 			{
 				if (state == MUSIC_STATE_REPEAT)
 					state = MUSIC_STATE_NONE;
