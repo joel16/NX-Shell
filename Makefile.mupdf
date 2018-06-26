@@ -1,5 +1,5 @@
 ifeq ($(strip $(DEVKITA64)),)
-$(error "Please set DEVKITA64 in your environment. export DEVKITA84=<path to>devkitA64")
+$(error "Please set DEVKITA64 in your environment. export DEVKITA64=<path to>devkitA64")
 endif
 
 include $(DEVKITA64)/base_tools

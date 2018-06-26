@@ -3,7 +3,7 @@
 #include <string>
 
 extern "C" {
-#include "SDL_Helper.h"
+#include "SDL_helper.h"
 #include "status_bar.h"
 #include "config.h"
 }
