@@ -8,6 +8,7 @@
 #include "status_bar.h"
 #include "textures.h"
 #include "touch_helper.h"
+#include "utils.h"
 
 static bool displayAbout;
 static int confirm_width = 0, confirm_height = 0;
@@ -30,7 +31,7 @@ static void Menu_DisplaySortSettings(void)
 		"By size (smallest first)"
 	};
 
-	int radio_button_width = 0, radio_button_height = 0; //1180
+	int radio_button_width = 0, radio_button_height = 0; // 1180
 	SDL_QueryTexture(icon_radio_dark_on, NULL, NULL, &radio_button_width, &radio_button_height);
 
 	while(appletMainLoop())
@@ -86,19 +87,12 @@ static void Menu_DisplaySortSettings(void)
 			break;
 
 		if (kDown & KEY_DDOWN)
-		{
-			if (selection < (max_items))
-				selection++;
-			else 
-				selection = 0;
-		}
+			selection++;
 		else if (kDown & KEY_DUP)
-		{
-			if (selection > 0)
-				selection--;
-			else 
-				selection = (max_items);
-		}
+			selection--;
+
+		Utils_SetMax(&selection, 0, max_items);
+		Utils_SetMin(&selection, max_items, 0);
 
 		if (kDown & KEY_A)
 		{
@@ -180,9 +174,12 @@ static void Menu_TouchAboutDialog(TouchInfo touchInfo)
 
 static void Menu_DisplayAboutDialog(void)
 {
-	int text_width = 0, text2_width = 0;
-	TTF_SizeText(Roboto, "NX Shell vX.X.X", &text_width, NULL);
-	TTF_SizeText(Roboto, "Author: Joel16", &text2_width, NULL);
+	int text1_width = 0, text2_width = 0, text3_width = 0, text4_width = 0, text5_width = 0;
+	TTF_SizeText(Roboto_small, "NX Shell vX.X.X", &text1_width, NULL);
+	TTF_SizeText(Roboto_small, "Author: Joel16", &text2_width, NULL);
+	TTF_SizeText(Roboto_small, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors", &text3_width, NULL);
+	TTF_SizeText(Roboto_small, "Touch screen: StevenMattera", &text4_width, NULL);
+	TTF_SizeText(Roboto_small, "E-Book Reader: rock88", &text5_width, NULL);
 
 	TTF_SizeText(Roboto, "OK", &confirm_width, &confirm_height);
 
@@ -190,8 +187,11 @@ static void Menu_DisplayAboutDialog(void)
 
 	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2), 880, 320);
 	SDL_DrawText(Roboto, ((1280 - (dialog_width)) / 2) + 80, ((720 - (dialog_height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
-	SDL_DrawTextf(Roboto, ((1280 - (text_width)) / 2), ((720 - (dialog_height)) / 2) + 130, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
-	SDL_DrawText(Roboto, ((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 165, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
+	SDL_DrawTextf(Roboto_small, ((1280 - (text1_width)) / 2), ((720 - (dialog_height)) / 2) + 70, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
+	SDL_DrawText(Roboto_small, ((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
+	SDL_DrawText(Roboto_small, ((1280 - (text3_width)) / 2), ((720 - (dialog_height)) / 2) + 130, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors");
+	SDL_DrawText(Roboto_small, ((1280 - (text4_width)) / 2), ((720 - (dialog_height)) / 2) + 160, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Touch screen: StevenMattera");
+	SDL_DrawText(Roboto_small, ((1280 - (text5_width)) / 2), ((720 - (dialog_height)) / 2) + 190, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "E-Book Reader: rock88");
 
 	SDL_DrawRect(RENDERER, (1030 - (confirm_width)) - 20, (((720 - (dialog_height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	SDL_DrawText(Roboto, 1030 - (confirm_width), ((720 - (dialog_height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
@@ -272,21 +272,14 @@ void Menu_DisplaySettings(void)
 		{
 			if (kDown & KEY_B)
 				break;
-
+			
 			if (kDown & KEY_DDOWN)
-			{
-				if (selection < (max_items))
-					selection++;
-				else 
-					selection = 0;
-			}
+				selection++;
 			else if (kDown & KEY_DUP)
-			{
-				if (selection > 0)
-					selection--;
-				else 
-					selection = (max_items);
-			}
+				selection--;
+
+			Utils_SetMax(&selection, 0, max_items);
+			Utils_SetMin(&selection, max_items, 0);
 
 			if (kDown & KEY_A)
 			{

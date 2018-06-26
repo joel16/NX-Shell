@@ -5,13 +5,13 @@
 
 typedef struct File
 {
-	struct File * next; // Next item
-	int isDir; // Folder flag
-	int isReadOnly; // Read-only flag
-	int isHidden; // Hidden file flag
-	u8 name[256]; // File name
-	char ext[4]; // File extension
-	u64 size; // File size
+	struct File *next; // Next item
+	int isDir;          // Folder flag
+	int isReadOnly;     // Read-only flag
+	int isHidden;       // Hidden file flag
+	u8 name[256];       // File name
+	char ext[4];        // File extension
+	u64 size;           // File size
 } File;
 
 extern File *files;
