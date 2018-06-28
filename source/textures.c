@@ -37,6 +37,7 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &icon_toggle_dark_on, "romfs:/res/drawable/btn_material_light_toggle_on_normal_dark.png");
 	SDL_LoadImage(RENDERER, &icon_toggle_off, "romfs:/res/drawable/btn_material_light_toggle_off_normal.png");
 	SDL_LoadImage(RENDERER, &default_artwork, "romfs:/res/drawable/default_artwork.png");
+	SDL_LoadImage(RENDERER, &default_artwork_blur, "romfs:/res/drawable/default_artwork_blur.png");
 	SDL_LoadImage(RENDERER, &btn_play, "romfs:/res/drawable/btn_playback_play.png");
 	SDL_LoadImage(RENDERER, &btn_pause, "romfs:/res/drawable/btn_playback_pause.png");
 	SDL_LoadImage(RENDERER, &btn_rewind, "romfs:/res/drawable/btn_playback_rewind.png");
@@ -71,6 +72,7 @@ void Textures_Free(void)
 	SDL_DestroyTexture(btn_rewind);
 	SDL_DestroyTexture(btn_pause);
 	SDL_DestroyTexture(btn_play);
+	SDL_DestroyTexture(default_artwork_blur);
 	SDL_DestroyTexture(default_artwork);
 	SDL_DestroyTexture(icon_toggle_off);
 	SDL_DestroyTexture(icon_toggle_dark_on);

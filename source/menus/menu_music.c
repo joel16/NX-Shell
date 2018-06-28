@@ -13,7 +13,7 @@
 
 #include "mp3.h"
 
-#define MUSIC_STATUS_BAR_COLOUR SDL_MakeColour(97, 97, 97, 255)
+#define MUSIC_GENRE_COLOUR      SDL_MakeColour(97, 97, 97, 255)
 #define MUSIC_STATUS_BG_COLOUR  SDL_MakeColour(43, 53, 61, 255)
 #define MUSIC_SEPARATOR_COLOUR  SDL_MakeColour(34, 41, 48, 255)
 
@@ -185,15 +185,15 @@ void Menu_PlayMusic(char *path)
 		SDL_ClearScreen(RENDERER, MUSIC_STATUS_BG_COLOUR);
 		SDL_RenderClear(RENDERER);
 
-		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, MUSIC_STATUS_BAR_COLOUR); // Status bar
-		SDL_DrawRect(RENDERER, 0, 40, 1280, 100, MUSIC_STATUS_BG_COLOUR); // Menu bar
+		SDL_DrawImage(RENDERER, default_artwork_blur, 0, 0, 1280, 720);
+		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, MUSIC_GENRE_COLOUR); // Status bar
 		SDL_DrawRect(RENDERER, 0, 140, 1280, 1, MUSIC_SEPARATOR_COLOUR); // Separator
 
 		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
 
 		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title); // Audio filename
 
-		SDL_DrawRect(RENDERER, 0, 141, 560, 560, SDL_MakeColour(158, 158, 158, 255)); // Draw album art background
+		SDL_DrawRect(RENDERER, 0, 141, 560, 560, MUSIC_GENRE_COLOUR); // Draw album art background
 		SDL_DrawImage(RENDERER, default_artwork, 0, 141, 560, 560); // Default album art
 
 		SDL_DrawRect(RENDERER, 570, 141, 710, 559, SDL_MakeColour(45, 48, 50, 255)); // Draw info box (outer)
