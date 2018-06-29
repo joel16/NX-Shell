@@ -37,6 +37,15 @@ static int properties_ok_width = 0, properties_ok_height = 0;
 
 static int options_cancel_width = 0, options_cancel_height = 0;
 
+static void FileOptions_ResetClipboard(void)
+{
+	multi_select_index = 0;
+	memset(multi_select, 0, sizeof(multi_select));
+	memset(multi_select_indices, 0, sizeof(multi_select_indices));
+	memset(multi_select_dir, 0, sizeof(multi_select_dir));
+	memset(multi_select_paths, 0, sizeof(multi_select_paths));
+}
+
 static Result FileOptions_CreateFolder(void)
 {
 	OSK_Display("Create Folder", "");
@@ -105,10 +114,10 @@ static int FileOptions_DeleteFile(void)
 	File *file = Dirbrowse_GetFileIndex(position);
 
 	// Not found
-	if(file == NULL) 
+	if (file == NULL) 
 		return -1;
 
-	if(strcmp(file->name, "..") == 0) 
+	if (strcmp(file->name, "..") == 0) 
 		return -2;
 
 	char path[1024];
@@ -152,7 +161,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim)
 	if (in >= 0)
 	{
 		if (FS_FileExists(dst))
-			remove(dst); // Delete output file (if existing)
+			fsFsDeleteFile(&fs, dst); // Delete output file (if existing)
 
 		int out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0777); // Open output file for writing
 
@@ -326,7 +335,7 @@ static Result FileOptions_Paste(void)
 		ret = FileOptions_CopyFile(copysource, copytarget, true); // Copy file
 		
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
-			remove(copysource); // Delete file
+			fsFsDeleteFile(&fs, copysource); // Delete file
 	}
 
 	// Paste success
@@ -340,11 +349,30 @@ static Result FileOptions_Paste(void)
 	return ret; // Return result
 }
 
-void HandleDelete() 
+static void HandleDelete(void) 
 {
-	if (FileOptions_DeleteFile() == 0)
-		Dirbrowse_PopulateFiles(true);
-	
+	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0))
+	{
+		for (int i = 0; i < multi_select_index; i++)
+		{
+			if (strlen(multi_select_paths[i]) != 0)
+			{
+				if (strncmp(multi_select_paths[i], "..", 2) != 0)
+				{
+					if (FS_DirExists(multi_select_paths[i]))
+						fsFsDeleteDirectoryRecursively(&fs, multi_select_paths[i]);
+					else if (FS_FileExists(multi_select_paths[i]))
+						fsFsDeleteFile(&fs, multi_select_paths[i]);
+				}
+			}
+		}
+
+		FileOptions_ResetClipboard();
+	}
+	else if (FileOptions_DeleteFile() != 0)
+		return;
+
+	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
 
@@ -479,7 +507,7 @@ void Menu_DisplayProperties(void)
 	SDL_DrawText(Roboto, 890 - properties_ok_width, 595 - properties_ok_height, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
 }
 
-void HandleCopy()
+static void HandleCopy()
 {
 	if (copy_status == false && cut_status == false)
 	{
@@ -489,16 +517,40 @@ void HandleCopy()
 	}
 	else if (copy_status == true)
 	{
-		if (FileOptions_Paste() == 0)
+		if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0))
 		{
-			copy_status = false;
-			Dirbrowse_PopulateFiles(true);
-			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+			char dest[512];
+			
+			for (int i = 0; i < multi_select_index; i++)
+			{
+				if (strlen(multi_select_paths[i]) != 0)
+				{
+					if (strncmp(multi_select_paths[i], "..", 2) != 0)
+					{
+						snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
+				
+						if (FS_DirExists(multi_select_paths[i]))
+							FileOptions_CopyDir(multi_select_paths[i], dest);
+						else if (FS_FileExists(multi_select_paths[i]))
+							FileOptions_CopyFile(multi_select_paths[i], dest, true);
+					}
+				}
+			}
+			
+			FileOptions_ResetClipboard();
+			copymode = NOTHING_TO_COPY;
+			
 		}
+		else if (FileOptions_Paste() != 0)
+			return;
+
+		copy_status = false;
+		Dirbrowse_PopulateFiles(true);
+		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
 }
 
-void HandleCut()
+static void HandleCut()
 {
 	if (cut_status == false && copy_status == false)
 	{
@@ -508,12 +560,39 @@ void HandleCut()
 	}
 	else if (cut_status == true)
 	{
-		if (FileOptions_Paste() == 0)
+		char dest[512];
+
+		if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0))
 		{
-			cut_status = false;
-			Dirbrowse_PopulateFiles(true);
-			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+			for (int i = 0; i < multi_select_index; i++)
+			{
+				if (strlen(multi_select_paths[i]) != 0)
+				{
+					snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
+					
+					if (FS_DirExists(multi_select_paths[i]))
+						fsFsRenameDirectory(&fs, multi_select_paths[i], dest);
+					else if (FS_FileExists(multi_select_paths[i]))
+						fsFsRenameFile(&fs, multi_select_paths[i], dest);
+				}
+			}
+
+			FileOptions_ResetClipboard();
 		}
+		else
+		{
+			snprintf(dest, 512, "%s%s", cwd, Utils_Basename(copysource));
+
+			if (FS_DirExists(copysource))
+				fsFsRenameDirectory(&fs, copysource, dest);
+			else if (FS_FileExists(copysource))
+				fsFsRenameFile(&fs, copysource, dest);
+		}
+
+		cut_status = false;
+		copymode = NOTHING_TO_COPY;
+		Dirbrowse_PopulateFiles(true);
+		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
 }
 

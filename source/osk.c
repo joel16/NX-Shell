@@ -43,21 +43,6 @@ static void OSK_DeleteChar(char *str, int i)
 	str[i] = '\0';
 }
 
-static void OSK_Append(char subject[], const char insert[], int pos)
-{
-	char buf[100] = {}; // 100 so that it's big enough. fill with 0
-	// or you could use malloc() to allocate sufficient space
-	
-	strncpy(buf, subject, pos); // copy at most first pos characters
-	int len = strlen(buf);
-	strcpy(buf+len, insert); // copy all of insert[] at the end
-	len += strlen(insert);  // increase the length by length of insert[]
-	strcpy(buf+len, subject+pos); // copy the rest
-	
-	strcpy(subject, buf);   // copy it back to subject
-	// deallocate buf[] here, if used malloc()
-}
-
 static void OSK_ResetIndex(void)
 {
 	if (strlen(osk_buffer) != 0)
@@ -88,11 +73,11 @@ static void OSK_HandleDelete(void)
 static void OSK_HandleAppend(bool shift, bool caps, int x, int y)
 {
 	if (strcasecmp((shift || caps)? osk_textdisp_shift[x + y * 10] : osk_textdisp[x + y * 10], "[_]") == 0)
-		OSK_Append(osk_buffer, " ", osk_index);
+		Utils_AppendArr(osk_buffer, " ", osk_index);
 	else if (strcasecmp((shift || caps)? osk_textdisp_shift[x + y * 10] : osk_textdisp[x + y * 10], "[x]") == 0)
 		OSK_HandleDelete();
 	else
-		OSK_Append(osk_buffer, (shift || caps)? osk_textdisp_shift[x + y * 10] : osk_textdisp[x + y * 10], osk_index);
+		Utils_AppendArr(osk_buffer, (shift || caps)? osk_textdisp_shift[x + y * 10] : osk_textdisp[x + y * 10], osk_index);
 	
 	osk_index += 1;
 	shift = false;

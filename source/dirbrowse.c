@@ -55,13 +55,13 @@ static int cmpstringp(const void *p1, const void *p2)
 			case 2: // Sort by file size (largest first)
 				sizeA = entryA->fileSize;
 				sizeB = entryB->fileSize;
-				return sizeA > sizeB ? -1 : sizeA < sizeB ? 1 : 0;
+				return sizeA > sizeB? -1 : sizeA < sizeB? 1 : 0;
 				break;
 			
 			case 3: // Sort by file size (smallest first)
 				sizeA = entryA->fileSize;
 				sizeB = entryB->fileSize;
-				return sizeB > sizeA ? -1 : sizeB < sizeA ? 1 : 0;
+				return sizeB > sizeA? -1 : sizeB < sizeA? 1 : 0;
 				break;
 		}
 	}
@@ -176,7 +176,13 @@ void Dirbrowse_DisplayFiles(void)
 			if (i == position)
 				SDL_DrawRect(RENDERER, 0, 140 + (73 * printed), 1280, 73, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-			SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
+			if (strcmp(multi_select_dir, cwd) == 0)
+			{
+				multi_select[i] == true? SDL_DrawImage(RENDERER, config_dark_theme? icon_check_dark : icon_check, 20, 156 + (73 * printed), 40, 40) : 
+					SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
+			}
+			else
+				SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
 
 			char path[500];
 			strcpy(path, cwd);
@@ -208,8 +214,6 @@ void Dirbrowse_DisplayFiles(void)
 			strncpy(buf, file->name, sizeof(buf));
 			buf[sizeof(buf) - 1] = '\0';
 
-			/*if (strncmp(file->name, "..", 2) == 0)
-				SDL_DrawText(Roboto, 170, 160 + (73 * printed), BLACK, "Parent folder");*/
 			if (!file->isDir)
 			{
 				Utils_GetSizeString(size, file->size);
@@ -220,7 +224,11 @@ void Dirbrowse_DisplayFiles(void)
 
 			int height = 0;
 			TTF_SizeText(Roboto, buf, NULL, &height);
-			SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, buf);
+			
+			if (strncmp(file->name, "..", 2) == 0)
+				SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), BLACK, "Parent folder");
+			else 
+				SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, buf);
 
 			printed++; // Increase printed counter
 		}

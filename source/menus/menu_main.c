@@ -50,10 +50,48 @@ static void Menu_DisplayMenuBar(void)
 	SDL_DrawImage(RENDERER, config_dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640, 60, 60);
 }
 
+static void Menu_HandleMultiSelect(void)
+{
+	char path[256];
+	File *file = Dirbrowse_GetFileIndex(position);
+	strcpy(path, cwd);
+	strcpy(path + strlen(path), file->name);
+			
+	snprintf(multi_select_dir, 256, cwd);
+			
+	if (!multi_select[position])
+	{
+		multi_select[position] = true;
+		multi_select_indices[position] = multi_select_index; // Store the index in the position
+		Utils_AppendArr(multi_select_paths[multi_select_index], path, multi_select_index);
+		multi_select_index += 1;
+	}
+	else
+	{
+		multi_select[position] = false;
+		strcpy(multi_select_paths[multi_select_indices[position]], "");
+		multi_select_indices[position] = -1;
+	}
+
+	Utils_SetMax(&multi_select_index, 0, 50);
+	Utils_SetMin(&multi_select_index, 50, 0);
+}
+
 static void Menu_ControlHome(u64 input)
 {
 	if (input & KEY_PLUS)
 		longjmp(exitJmp, 1);
+
+	if (input & KEY_MINUS)
+	{
+		if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		else 
+		{
+			menubar_x = -400;
+			MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
+		}
+	}
 
 	if (fileCount >= 0)
 	{
@@ -79,16 +117,8 @@ static void Menu_ControlHome(u64 input)
 				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 		}
 
-		// Menu bar
 		if (input & KEY_Y)
-		{
-			if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
-				MENU_DEFAULT_STATE = MENU_STATE_HOME;
-			else {
-				menubar_x = -400;
-				MENU_DEFAULT_STATE = MENU_STATE_MENUBAR;
-			}
-		}
+			Menu_HandleMultiSelect();
 
 		if (input & KEY_A)
 		{
@@ -142,10 +172,22 @@ static void Menu_TouchHome(TouchInfo touchInfo)
 				tapped_selection += position - 7;
 
 			position = tapped_selection;
-			if ((strcmp(cwd, ROOT_PATH) != 0 && position == 0) || touchInfo.tapType == TapShort) 
-				Dirbrowse_OpenFile();
-			else if (touchInfo.tapType == TapLong)
-				MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+
+			if ((touchInfo.firstTouch.px >= 0) && (touchInfo.firstTouch.px <= 80 ))
+			{
+				wait(1);
+				Menu_HandleMultiSelect();
+			}
+			else
+			{
+				if ((strcmp(cwd, ROOT_PATH) != 0 && position == 0) || touchInfo.tapType == TapShort)
+				{
+					wait(1);
+					Dirbrowse_OpenFile();
+				}
+				else if (touchInfo.tapType == TapLong)
+					MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+			}
 		}
 	}
 }
@@ -156,6 +198,7 @@ void Menu_Main(void)
 	Touch_Init(&touchInfo);
 
 	Dirbrowse_PopulateFiles(false);
+	memset(multi_select, 0, sizeof(multi_select)); // Reset all multi selected items
 
 	while(appletMainLoop())
 	{
