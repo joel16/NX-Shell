@@ -9,6 +9,7 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &icon_audio, "romfs:/res/drawable/ic_fso_type_audio.png");
 	SDL_LoadImage(RENDERER, &icon_dir, "romfs:/res/drawable/ic_fso_folder.png");
 	SDL_LoadImage(RENDERER, &icon_dir_dark, "romfs:/res/drawable/ic_fso_folder_dark.png");
+	SDL_LoadImage(RENDERER, &icon_doc, "romfs:/res/drawable/ic_fso_type_document.png");
 	SDL_LoadImage(RENDERER, &icon_file, "romfs:/res/drawable/ic_fso_default.png");
 	SDL_LoadImage(RENDERER, &icon_image, "romfs:/res/drawable/ic_fso_type_image.png");
 	SDL_LoadImage(RENDERER, &icon_text, "romfs:/res/drawable/ic_fso_type_text.png");
@@ -101,6 +102,7 @@ void Textures_Free(void)
 	SDL_DestroyTexture(icon_text);
 	SDL_DestroyTexture(icon_image);
 	SDL_DestroyTexture(icon_file);
+	SDL_DestroyTexture(icon_doc);
 	SDL_DestroyTexture(icon_dir_dark);
 	SDL_DestroyTexture(icon_dir);
 	SDL_DestroyTexture(icon_audio);

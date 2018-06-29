@@ -191,22 +191,23 @@ void Dirbrowse_DisplayFiles(void)
 			if (file->isDir)
 				SDL_DrawImage(RENDERER, config_dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "nro", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "elf", 3) == 0)
-				|| (strncasecmp(FS_GetFileExt(file->name), "bin", 3) == 0))
+					|| (strncasecmp(FS_GetFileExt(file->name), "bin", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_app, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "zip", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "tar", 3) == 0)
-				|| (strncasecmp(FS_GetFileExt(file->name), "lz4", 3) == 0))
+					|| (strncasecmp(FS_GetFileExt(file->name), "lz4", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_archive, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0)
-				|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
+					|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_audio, 80, 141 + (73 * printed), 72, 72);
-			else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0) || 
-				(strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
+			else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0) 
+					|| (strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_image, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "txt", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "lua", 3) == 0) 
-                || (strncasecmp(FS_GetFileExt(file->name), "cfg", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0)
-                || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0)
-                || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
+            		|| (strncasecmp(FS_GetFileExt(file->name), "cfg", 3) == 0))
 				SDL_DrawImage(RENDERER, icon_text, 80, 141 + (73 * printed), 72, 72);
+			else if ((strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0)
+					|| (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
+				SDL_DrawImage(RENDERER, icon_doc, 80, 141 + (73 * printed), 72, 72);
 			else
 				SDL_DrawImage(RENDERER, icon_file, 80, 141 + (73 * printed), 72, 72);
 
@@ -226,7 +227,7 @@ void Dirbrowse_DisplayFiles(void)
 			TTF_SizeText(Roboto, buf, NULL, &height);
 			
 			if (strncmp(file->name, "..", 2) == 0)
-				SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), BLACK, "Parent folder");
+				SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, "Parent folder");
 			else 
 				SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, buf);
 
@@ -285,7 +286,7 @@ void Dirbrowse_OpenFile(void)
 		}
 	}
 	else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0) || 
-		(strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
+			(strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
 		Gallery_DisplayImage(path);
 	else if (strncasecmp(FS_GetFileExt(file->name), "zip", 3) == 0)
 	{
@@ -295,9 +296,9 @@ void Dirbrowse_OpenFile(void)
 	else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0)
 			|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
 		Menu_PlayMusic(path);
-    else if ((strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0)
-            || (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
-        Menu_OpenBook(path);
+	else if ((strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0)
+			|| (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
+		Menu_OpenBook(path);
 
 	/*else if (strncasecmp(file->ext, "txt", 3) == 0)
 		TextViewer_DisplayText(path);*/

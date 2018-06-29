@@ -4,9 +4,10 @@
 #include "fs.h"
 #include "menu_gallery.h"
 #include "SDL_helper.h"
+#include "touch_helper.h"
 #include "utils.h"
 
-static char album[256][256];
+static char album[512][512];
 static int count = 0, selection = 0;
 static SDL_Texture *image = NULL;
 static int width = 0, height = 0;
@@ -89,6 +90,9 @@ void Gallery_DisplayImage(char *path)
 
 	Gallery_GetImageList();
 	selection = Gallery_GetCurrentIndex(path);
+	
+	TouchInfo touchInfo;
+	Touch_Init(&touchInfo);
 
 	while(appletMainLoop())
 	{
@@ -97,6 +101,7 @@ void Gallery_DisplayImage(char *path)
 		SDL_DrawImage(RENDERER, image, (1280 - width) / 2, (720 - height) / 2, width, height);
 
 		hidScanInput();
+		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
 		if ((kDown & KEY_LEFT) || (kDown & KEY_L))
@@ -109,6 +114,20 @@ void Gallery_DisplayImage(char *path)
 			wait(1);
 			Gallery_HandleNext(true);
 		}
+		
+		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
+		{
+			if (tapped_inside(touchInfo, 0, 0, 120, 720))
+			{
+				wait(1);
+				Gallery_HandleNext(false);
+			}
+			else if (tapped_inside(touchInfo, 1160, 0, 1280, 720))
+			{
+				wait(1);
+				Gallery_HandleNext(true);
+			}
+		}
 
 		SDL_RenderPresent(RENDERER);
 		
@@ -117,7 +136,7 @@ void Gallery_DisplayImage(char *path)
 	}
 
 	SDL_DestroyTexture(image);
-	memset(album, 0, sizeof(album[0][0]) * 256 * 256);
+	memset(album, 0, sizeof(album[0][0]) * 512 * 512);
 	count = 0;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }

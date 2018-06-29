@@ -24,7 +24,7 @@ typedef enum
 	MUSIC_STATE_SHUFFLE // 2
 } Music_State;
 
-static char playlist[256][256], title[128];
+static char playlist[512][512], title[128];
 static int count = 0, selection = 0, state = 0;
 static Mix_Music *audio;
 
@@ -325,7 +325,7 @@ void Menu_PlayMusic(char *path)
 	}
 
 	Mix_FreeMusic(audio);
-	memset(playlist, 0, sizeof(playlist[0][0]) * 256 * 256);
+	memset(playlist, 0, sizeof(playlist[0][0]) * 512 * 512);
 	count = 0;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
