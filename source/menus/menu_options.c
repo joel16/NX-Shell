@@ -37,7 +37,7 @@ static int properties_ok_width = 0, properties_ok_height = 0;
 
 static int options_cancel_width = 0, options_cancel_height = 0;
 
-static void FileOptions_ResetClipboard(void)
+void FileOptions_ResetClipboard(void)
 {
 	multi_select_index = 0;
 	memset(multi_select, 0, sizeof(multi_select));

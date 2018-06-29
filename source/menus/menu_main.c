@@ -15,13 +15,14 @@
 
 #define MENUBAR_X_BOUNDARY  0
 static int menubar_x = -400;
+static char multi_select_dir_old[256];
 
 static void Menu_ControlMenuBar(u64 input)
 {
 	if (input & KEY_A)
 		MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 
-	if ((input & KEY_Y) || (input & KEY_B))
+	if ((input & KEY_MINUS) || (input & KEY_B))
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
 
@@ -52,12 +53,16 @@ static void Menu_DisplayMenuBar(void)
 
 static void Menu_HandleMultiSelect(void)
 {
+	// multi_select_dir can only hold one dir
+	strcpy(multi_select_dir_old, cwd);
+	if (strcmp(multi_select_dir_old, multi_select_dir) != 0)
+		FileOptions_ResetClipboard();
+
 	char path[256];
 	File *file = Dirbrowse_GetFileIndex(position);
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
-			
-	snprintf(multi_select_dir, 256, cwd);
+	strcpy(multi_select_dir, cwd);
 			
 	if (!multi_select[position])
 	{

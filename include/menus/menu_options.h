@@ -11,6 +11,7 @@
 #define COPY_KEEP_ON_FINISH   0
 #define NOTHING_TO_COPY      -1
 
+void FileOptions_ResetClipboard(void);
 void Menu_ControlDeleteDialog(u64 input);
 void Menu_TouchDeleteDialog(TouchInfo touchInfo);
 void Menu_DisplayDeleteDialog(void);
