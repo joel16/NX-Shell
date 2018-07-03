@@ -191,7 +191,7 @@ void Menu_PlayMusic(char *path)
 
 		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
 
-		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title); // Audio filename
+		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title); // Audio filename
 
 		SDL_DrawRect(RENDERER, 0, 141, 560, 560, MUSIC_GENRE_COLOUR); // Draw album art background
 		SDL_DrawImage(RENDERER, default_artwork, 0, 141, 560, 560); // Default album art
@@ -200,13 +200,13 @@ void Menu_PlayMusic(char *path)
 		SDL_DrawRect(RENDERER, 575, 146, 700, 549, SDL_MakeColour(46, 49, 51, 255)); // Draw info box (inner)
 
 		if (strlen(ID3.artist) != 0)
-			SDL_DrawText(Roboto_large, 590, 161, WHITE, ID3.artist);
+			SDL_DrawText(RENDERER, Roboto_large, 590, 161, WHITE, ID3.artist);
 		if (strlen(ID3.album) != 0)
-			SDL_DrawText(Roboto_large, 590, 201, WHITE, ID3.album);
+			SDL_DrawText(RENDERER, Roboto_large, 590, 201, WHITE, ID3.album);
 		if (strlen(ID3.year) != 0)
-			SDL_DrawText(Roboto_large, 590, 241, WHITE, ID3.year);
+			SDL_DrawText(RENDERER, Roboto_large, 590, 241, WHITE, ID3.year);
 		if (strlen(ID3.genre) != 0)
-			SDL_DrawText(Roboto_large, 590, 281, WHITE, ID3.genre);
+			SDL_DrawText(RENDERER, Roboto_large, 590, 281, WHITE, ID3.genre);
 
 		SDL_DrawCircle(RENDERER, 615 + ((710 - btn_width) / 2), 186 + ((559 - btn_height) / 2), 80, SDL_MakeColour(98, 100, 101, 255)); // Render outer circle
 		SDL_DrawCircle(RENDERER, (615 + ((710 - btn_width) / 2)), (186 + ((559 - btn_height) / 2)), 60, SDL_MakeColour(46, 49, 51, 255)); // Render inner circle

@@ -57,7 +57,7 @@ static void OSK_BlinkText(int fade, int x, int y)
 
 	FADE_WHITE = SDL_MakeColour(255, 255, 255, fade);
 	FADE_BLACK = SDL_MakeColour(0, 0, 0, fade);
-	SDL_DrawText(Roboto_large, x, y, config_dark_theme? FADE_WHITE : FADE_BLACK, "|");
+	SDL_DrawText(RENDERER, Roboto_large, x, y, config_dark_theme? FADE_WHITE : FADE_BLACK, "|");
 }
 
 static void OSK_HandleDelete(void)
@@ -118,14 +118,14 @@ void OSK_Display(char *title, char *msg)
 
 		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
 
-		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title);
+		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title);
 
 		SDL_DrawRect(RENDERER, 0, (660 - (text_height * 5)) - 30, 1280, 720 - ((660 - (text_height * 5)) - 30), config_dark_theme? OSK_BG_COLOUR_DARK : OSK_BG_COLOUR_LIGHT);
 
 		if (strlen(osk_buffer) != 0)
 		{
 			TTF_SizeText(Roboto_large, osk_buffer, &buf_width, &buf_height);
-			SDL_DrawText(Roboto_large, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
+			SDL_DrawText(RENDERER, Roboto_large, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
 		}
 
 		OSK_BlinkText(transp, (((1280 - buf_width) / 2) + (buf_width + cursor_width)) - 8, 210);
@@ -138,19 +138,19 @@ void OSK_Display(char *title, char *msg)
 				if (osk_text_shift || osk_text_caps)
 				{
 					if (config_dark_theme)
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
+						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
 							TITLE_COLOUR : WHITE, osk_textdisp_shift[x + y * 10]);
 					else
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
+						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
 							PROGRESS_COLOUR : BLACK, osk_textdisp_shift[x + y * 10]);
 				}
 				else
 				{
 					if (config_dark_theme)
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)?
+						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)?
 							TITLE_COLOUR : WHITE, osk_textdisp[x + y * 10]);
 					else
-						SDL_DrawText(Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)? 
+						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)? 
 							PROGRESS_COLOUR : BLACK, osk_textdisp[x + y * 10]);
 				}
 			}

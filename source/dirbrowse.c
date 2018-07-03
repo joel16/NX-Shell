@@ -161,7 +161,7 @@ void Dirbrowse_DisplayFiles(void)
 	SDL_DrawImage(RENDERER, icon_nav_drawer, 20, 58, 64, 64);
 	SDL_DrawImage(RENDERER, icon_actions, (1260 - 64), 58, 64, 64);
 	TTF_SizeText(Roboto_large, cwd, NULL, &title_height);
-	SDL_DrawText(Roboto_large, 170, 40 + ((100 - title_height)/2), WHITE, cwd);
+	SDL_DrawText(RENDERER, Roboto_large, 170, 40 + ((100 - title_height)/2), WHITE, cwd);
 
 	int i = 0, printed = 0;
 	File *file = files; // Draw file list
@@ -220,16 +220,16 @@ void Dirbrowse_DisplayFiles(void)
 				Utils_GetSizeString(size, file->size);
 				int width = 0;
 				TTF_SizeText(Roboto_small, size, &width, NULL);
-				SDL_DrawText(Roboto_small, 1260 - width, 180 + (73 * printed), config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, size);
+				SDL_DrawText(RENDERER, Roboto_small, 1260 - width, 180 + (73 * printed), config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, size);
 			}
 
 			int height = 0;
 			TTF_SizeText(Roboto, buf, NULL, &height);
 			
 			if (strncmp(file->name, "..", 2) == 0)
-				SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, "Parent folder");
+				SDL_DrawText(RENDERER, Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, "Parent folder");
 			else 
-				SDL_DrawText(Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, buf);
+				SDL_DrawText(RENDERER, Roboto, 170, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, buf);
 
 			printed++; // Increase printed counter
 		}

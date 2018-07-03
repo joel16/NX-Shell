@@ -44,7 +44,7 @@ static void Menu_DisplaySortSettings(void)
 		StatusBar_DisplayTime();
 
 		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
-		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Sorting Options");
+		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Sorting Options");
 
 		int printed = 0; // Print counter
 
@@ -59,7 +59,7 @@ static void Menu_DisplaySortSettings(void)
 					SDL_DrawRect(RENDERER, 0, 140 + (73 * printed), 1280, 73, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 				
 				TTF_SizeText(Roboto, main_menu_items[i], NULL, &height);
-				SDL_DrawText(Roboto, 40, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, main_menu_items[i]);
+				SDL_DrawText(RENDERER, Roboto, 40, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, main_menu_items[i]);
 
 				printed++;
 			}
@@ -186,15 +186,15 @@ static void Menu_DisplayAboutDialog(void)
 	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
 
 	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2), 880, 320);
-	SDL_DrawText(Roboto, ((1280 - (dialog_width)) / 2) + 80, ((720 - (dialog_height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
-	SDL_DrawTextf(Roboto_small, ((1280 - (text1_width)) / 2), ((720 - (dialog_height)) / 2) + 70, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
-	SDL_DrawText(Roboto_small, ((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
-	SDL_DrawText(Roboto_small, ((1280 - (text3_width)) / 2), ((720 - (dialog_height)) / 2) + 130, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors");
-	SDL_DrawText(Roboto_small, ((1280 - (text4_width)) / 2), ((720 - (dialog_height)) / 2) + 160, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Touch screen: StevenMattera");
-	SDL_DrawText(Roboto_small, ((1280 - (text5_width)) / 2), ((720 - (dialog_height)) / 2) + 190, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "E-Book Reader: rock88");
+	SDL_DrawText(RENDERER, Roboto, ((1280 - (dialog_width)) / 2) + 80, ((720 - (dialog_height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
+	SDL_DrawTextf(RENDERER, Roboto_small, ((1280 - (text1_width)) / 2), ((720 - (dialog_height)) / 2) + 70, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
+	SDL_DrawText(RENDERER, Roboto_small, ((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
+	SDL_DrawText(RENDERER, Roboto_small, ((1280 - (text3_width)) / 2), ((720 - (dialog_height)) / 2) + 130, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors");
+	SDL_DrawText(RENDERER, Roboto_small, ((1280 - (text4_width)) / 2), ((720 - (dialog_height)) / 2) + 160, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Touch screen: StevenMattera");
+	SDL_DrawText(RENDERER, Roboto_small, ((1280 - (text5_width)) / 2), ((720 - (dialog_height)) / 2) + 190, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "E-Book Reader: rock88");
 
 	SDL_DrawRect(RENDERER, (1030 - (confirm_width)) - 20, (((720 - (dialog_height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawText(Roboto, 1030 - (confirm_width), ((720 - (dialog_height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
+	SDL_DrawText(RENDERER, Roboto, 1030 - (confirm_width), ((720 - (dialog_height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
 }
 
 void Menu_DisplaySettings(void)
@@ -228,7 +228,7 @@ void Menu_DisplaySettings(void)
 		StatusBar_DisplayTime();
 
 		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
-		SDL_DrawText(Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Settings");
+		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Settings");
 
 		int printed = 0; // Print counter
 
@@ -248,7 +248,7 @@ void Menu_DisplaySettings(void)
 					SDL_DrawImage(RENDERER, config_dark_theme? icon_toggle_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2), 65, 65);
 				
 				TTF_SizeText(Roboto, main_menu_items[i], NULL, &height);
-				SDL_DrawText(Roboto, 40, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, main_menu_items[i]);
+				SDL_DrawText(RENDERER, Roboto, 40, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, main_menu_items[i]);
 
 				printed++;
 			}

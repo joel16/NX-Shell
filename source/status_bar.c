@@ -39,5 +39,5 @@ void StatusBar_DisplayTime(void)
 	int width = 0, height = 0;
 	TTF_SizeText(Roboto, Clock_GetCurrentTime(true), &width, &height);
 
-	SDL_DrawText(Roboto, 1260 - width, (40 - height)/2, WHITE, Clock_GetCurrentTime(true));
+	SDL_DrawText(RENDERER, Roboto, 1260 - width, (40 - height)/2, WHITE, Clock_GetCurrentTime(true));
 }

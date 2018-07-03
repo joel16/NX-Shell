@@ -21,22 +21,27 @@ void SDL_DrawCircle(SDL_Renderer *renderer, int x, int y, int r, SDL_Color colou
 	return;
 }
 
-void SDL_DrawText(TTF_Font *font, int x, int y, SDL_Color colour, const char *text)
+void SDL_DrawText(SDL_Renderer *renderer, TTF_Font *font, int x, int y, SDL_Color colour, const char *text)
 {
-	SDL_Surface *surface = TTF_RenderText_Blended_Wrapped(font, text, colour, 1280);
+	SDL_Surface *surface = TTF_RenderText_Blended_Wrapped(font, text, colour, 960);
 	SDL_SetSurfaceAlphaMod(surface, colour.a);
-	SDL_Rect position = {x, y, surface->w, surface->h};
-	SDL_BlitSurface(surface, NULL, WINDOW_SURFACE, &position);
+	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
+	
+	SDL_Rect position;
+	position.x = x; position.y = y;
+	SDL_QueryTexture(texture, NULL, NULL, &position.w, &position.h);
+	SDL_RenderCopy(renderer, texture, NULL, &position);
+	SDL_DestroyTexture(texture);
 }
 
-void SDL_DrawTextf(TTF_Font *font, int x, int y, SDL_Color colour, const char* text, ...)
+void SDL_DrawTextf(SDL_Renderer *renderer, TTF_Font *font, int x, int y, SDL_Color colour, const char* text, ...)
 {
 	char buffer[256];
 	va_list args;
 	va_start(args, text);
 	vsnprintf(buffer, 256, text, args);
-	SDL_DrawText(font, x, y, colour, buffer);
+	SDL_DrawText(renderer, font, x, y, colour, buffer);
 	va_end(args);
 }
 

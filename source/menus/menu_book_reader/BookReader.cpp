@@ -102,7 +102,7 @@ void BookReader::draw() {
         SDL_Color color = config_dark_theme ? STATUS_BAR_DARK : STATUS_BAR_LIGHT;
         
         SDL_DrawRect(RENDERER, 0, 0, 1280, 40, SDL_MakeColour(color.r, color.g, color.b , 128));
-        SDL_DrawText(Roboto, (screen_bounds.x1 - title_width) / 2, (44 - title_height) / 2, WHITE, title);
+        SDL_DrawText(RENDERER, Roboto, (screen_bounds.x1 - title_width) / 2, (44 - title_height) / 2, WHITE, title);
         
         StatusBar_DisplayTime();
     }
