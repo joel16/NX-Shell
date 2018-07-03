@@ -23,7 +23,7 @@ void SDL_DrawCircle(SDL_Renderer *renderer, int x, int y, int r, SDL_Color colou
 
 void SDL_DrawText(SDL_Renderer *renderer, TTF_Font *font, int x, int y, SDL_Color colour, const char *text)
 {
-	SDL_Surface *surface = TTF_RenderText_Blended_Wrapped(font, text, colour, 960);
+	SDL_Surface *surface = TTF_RenderText_Blended_Wrapped(font, text, colour, 1280);
 	SDL_SetSurfaceAlphaMod(surface, colour.a);
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
