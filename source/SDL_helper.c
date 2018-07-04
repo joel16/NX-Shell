@@ -60,23 +60,15 @@ void SDL_LoadImage(SDL_Renderer *renderer, SDL_Texture **texture, char *path)
 	SDL_FreeSurface(loaded_surface);
 }
 
-void SDL_LoadImageBuf(SDL_Renderer *renderer, SDL_Texture **texture, void *mem, int size)
+void SDL_DrawImage(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 {
-	SDL_Surface *loaded_surface = NULL;
-	SDL_RWops *rw = SDL_RWFromMem(mem, size);
-	loaded_surface = IMG_Load_RW(rw, 1);
-
-	if (loaded_surface)
-	{
-		Uint32 colorkey = SDL_MapRGB(loaded_surface->format, 0, 0, 0);
-		SDL_SetColorKey(loaded_surface, SDL_TRUE, colorkey);
-		*texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
-	}
-
-	SDL_FreeSurface(loaded_surface);
+	SDL_Rect position;
+	position.x = x; position.y = y;
+	SDL_QueryTexture(texture, NULL, NULL, &position.w, &position.h);
+	SDL_RenderCopy(renderer, texture, NULL, &position);
 }
 
-void SDL_DrawImage(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y, int w, int h)
+void SDL_DrawImageScale(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y, int w, int h)
 {
 	SDL_Rect position;
 	position.x = x; position.y = y; position.w = w; position.h = h;

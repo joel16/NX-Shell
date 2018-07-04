@@ -158,8 +158,8 @@ Result Dirbrowse_PopulateFiles(bool clear)
 void Dirbrowse_DisplayFiles(void)
 {
 	int title_height = 0;
-	SDL_DrawImage(RENDERER, icon_nav_drawer, 20, 58, 64, 64);
-	SDL_DrawImage(RENDERER, icon_actions, (1260 - 64), 58, 64, 64);
+	SDL_DrawImage(RENDERER, icon_nav_drawer, 20, 58);
+	SDL_DrawImage(RENDERER, icon_actions, (1260 - 64), 58);
 	TTF_SizeText(Roboto_large, cwd, NULL, &title_height);
 	SDL_DrawText(RENDERER, Roboto_large, 170, 40 + ((100 - title_height)/2), WHITE, cwd);
 
@@ -178,38 +178,40 @@ void Dirbrowse_DisplayFiles(void)
 
 			if (strcmp(multi_select_dir, cwd) == 0)
 			{
-				multi_select[i] == true? SDL_DrawImage(RENDERER, config_dark_theme? icon_check_dark : icon_check, 20, 156 + (73 * printed), 40, 40) : 
-					SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
+				multi_select[i] == true? SDL_DrawImage(RENDERER, config_dark_theme? icon_check_dark : icon_check, 20, 156 + (73 * printed)) : 
+					SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed));
 			}
 			else
-				SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed), 40, 40);
+				SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed));
 
 			char path[500];
 			strcpy(path, cwd);
 			strcpy(path + strlen(path), file->name);
 
 			if (file->isDir)
-				SDL_DrawImage(RENDERER, config_dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImageScale(RENDERER, config_dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "nro", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "elf", 3) == 0)
 					|| (strncasecmp(FS_GetFileExt(file->name), "bin", 3) == 0))
-				SDL_DrawImage(RENDERER, icon_app, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImageScale(RENDERER, icon_app, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "zip", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "tar", 3) == 0)
 					|| (strncasecmp(FS_GetFileExt(file->name), "lz4", 3) == 0))
-				SDL_DrawImage(RENDERER, icon_archive, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImageScale(RENDERER, icon_archive, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0)
-					|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
-				SDL_DrawImage(RENDERER, icon_audio, 80, 141 + (73 * printed), 72, 72);
+					|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0)
+					|| (strncasecmp(FS_GetFileExt(file->name), "flac", 4) == 0) || (strncasecmp(FS_GetFileExt(file->name), "midi", 4) == 0)
+					|| (strncasecmp(FS_GetFileExt(file->name), "mid", 3) == 0))
+				SDL_DrawImageScale(RENDERER, icon_audio, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0) 
 					|| (strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
-				SDL_DrawImage(RENDERER, icon_image, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImageScale(RENDERER, icon_image, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "txt", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "lua", 3) == 0) 
             		|| (strncasecmp(FS_GetFileExt(file->name), "cfg", 3) == 0))
-				SDL_DrawImage(RENDERER, icon_text, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImageScale(RENDERER, icon_text, 80, 141 + (73 * printed), 72, 72);
 			else if ((strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0)
 					|| (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))
-				SDL_DrawImage(RENDERER, icon_doc, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImageScale(RENDERER, icon_doc, 80, 141 + (73 * printed), 72, 72);
 			else
-				SDL_DrawImage(RENDERER, icon_file, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImageScale(RENDERER, icon_file, 80, 141 + (73 * printed), 72, 72);
 
 			char buf[64], size[16];
 			strncpy(buf, file->name, sizeof(buf));
@@ -285,8 +287,8 @@ void Dirbrowse_OpenFile(void)
 			Dirbrowse_PopulateFiles(true);
 		}
 	}
-	else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0) || 
-			(strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
+	else if ((strncasecmp(FS_GetFileExt(file->name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "jpg", 3) == 0)
+			|| (strncasecmp(FS_GetFileExt(file->name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "gif", 3) == 0))
 		Gallery_DisplayImage(path);
 	else if (strncasecmp(FS_GetFileExt(file->name), "zip", 3) == 0)
 	{
@@ -294,7 +296,9 @@ void Dirbrowse_OpenFile(void)
 		Dirbrowse_PopulateFiles(true);
 	}
 	else if ((strncasecmp(FS_GetFileExt(file->name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "ogg", 3) == 0)
-			|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0))
+			|| (strncasecmp(FS_GetFileExt(file->name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "mod", 3) == 0)
+			|| (strncasecmp(FS_GetFileExt(file->name), "flac", 4) == 0) || (strncasecmp(FS_GetFileExt(file->name), "midi", 4) == 0)
+			|| (strncasecmp(FS_GetFileExt(file->name), "mid", 3) == 0))
 		Menu_PlayMusic(path);
 	else if ((strncasecmp(FS_GetFileExt(file->name), "pdf", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "cbz", 3) == 0)
 			|| (strncasecmp(FS_GetFileExt(file->name), "fb2", 3) == 0) || (strncasecmp(FS_GetFileExt(file->name), "epub", 4) == 0))

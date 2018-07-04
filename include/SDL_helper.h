@@ -30,6 +30,7 @@ void SDL_DrawText(SDL_Renderer *renderer, TTF_Font *font, int x, int y, SDL_Colo
 void SDL_DrawTextf(SDL_Renderer *renderer, TTF_Font *font, int x, int y, SDL_Color colour, const char* text, ...);
 void SDL_LoadImage(SDL_Renderer *renderer, SDL_Texture **texture, char *path);
 void SDL_LoadImageBuf(SDL_Renderer *renderer, SDL_Texture **texture, void *mem, int size);
-void SDL_DrawImage(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y, int w, int h);
+void SDL_DrawImage(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y);
+void SDL_DrawImageScale(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y, int w, int h);
 
 #endif

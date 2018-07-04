@@ -116,7 +116,7 @@ void OSK_Display(char *title, char *msg)
 		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, config_dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
 		SDL_DrawRect(RENDERER, 0, 40, 1280, 100, config_dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
 
-		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+		SDL_DrawImage(RENDERER, icon_back, 40, 66);
 
 		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title);
 
@@ -156,8 +156,8 @@ void OSK_Display(char *title, char *msg)
 			}
 		}
 
-		SDL_DrawImage(RENDERER, config_dark_theme? icon_remove_dark : icon_remove, 1190, 480, 60, 60);
-		SDL_DrawImage(RENDERER, config_dark_theme? icon_accept_dark : icon_accept, 1190, 600, 60, 60);
+		SDL_DrawImage(RENDERER, config_dark_theme? icon_remove_dark : icon_remove, 1190, 480);
+		SDL_DrawImage(RENDERER, config_dark_theme? icon_accept_dark : icon_accept, 1190, 600);
 
 		StatusBar_DisplayTime();
 

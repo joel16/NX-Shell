@@ -43,7 +43,7 @@ static void Menu_DisplaySortSettings(void)
 
 		StatusBar_DisplayTime();
 
-		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+		SDL_DrawImage(RENDERER, icon_back, 40, 66);
 		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Sorting Options");
 
 		int printed = 0; // Print counter
@@ -65,17 +65,17 @@ static void Menu_DisplaySortSettings(void)
 			}
 		}
 
-		config_sort_by == 0? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 152, 50, 50) : 
-			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 152, 50, 50);
+		config_sort_by == 0? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 152) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 152);
 		
-		config_sort_by == 1? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 225, 50, 50) : 
-			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 225, 50, 50);
+		config_sort_by == 1? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 225) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 225);
 
-		config_sort_by == 2? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 298, 50, 50) : 
-			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 298, 50, 50);
+		config_sort_by == 2? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 298) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 298);
 		
-		config_sort_by == 3? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371, 50, 50) : 
-			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371, 50, 50);
+		config_sort_by == 3? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371);
 		
 		SDL_RenderPresent(RENDERER);
 
@@ -185,7 +185,7 @@ static void Menu_DisplayAboutDialog(void)
 
 	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
 
-	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2), 880, 320);
+	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2));
 	SDL_DrawText(RENDERER, Roboto, ((1280 - (dialog_width)) / 2) + 80, ((720 - (dialog_height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
 	SDL_DrawTextf(RENDERER, Roboto_small, ((1280 - (text1_width)) / 2), ((720 - (dialog_height)) / 2) + 70, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
 	SDL_DrawText(RENDERER, Roboto_small, ((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
@@ -227,7 +227,7 @@ void Menu_DisplaySettings(void)
 
 		StatusBar_DisplayTime();
 
-		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+		SDL_DrawImage(RENDERER, icon_back, 40, 66);
 		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, "Settings");
 
 		int printed = 0; // Print counter
@@ -243,9 +243,9 @@ void Menu_DisplaySettings(void)
 					SDL_DrawRect(RENDERER, 0, 140 + (73 * printed), 1280, 73, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
 				if (config_dark_theme)
-					SDL_DrawImage(RENDERER, config_dark_theme? icon_toggle_dark_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2), 65, 65);
+					SDL_DrawImage(RENDERER, config_dark_theme? icon_toggle_dark_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2));
 				else
-					SDL_DrawImage(RENDERER, config_dark_theme? icon_toggle_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2), 65, 65);
+					SDL_DrawImage(RENDERER, config_dark_theme? icon_toggle_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2));
 				
 				TTF_SizeText(Roboto, main_menu_items[i], NULL, &height);
 				SDL_DrawText(RENDERER, Roboto, 40, 140 + ((73 - height)/2) + (73 * printed), config_dark_theme? WHITE : BLACK, main_menu_items[i]);

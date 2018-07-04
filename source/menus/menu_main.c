@@ -41,14 +41,14 @@ static void Menu_DisplayMenuBar(void)
 {
 	SDL_DrawRect(RENDERER, menubar_x, 0, 400, 720, config_dark_theme? BLACK_BG : WHITE);
 	SDL_DrawRect(RENDERER, menubar_x + 400, 0, 1, 720, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
-	SDL_DrawImage(RENDERER, bg_header, menubar_x, 0, 400, 214);
+	SDL_DrawImage(RENDERER, bg_header, menubar_x, 0);
 	SDL_DrawText(RENDERER, Roboto_large, menubar_x + 15, 164, WHITE, "NX Shell");
-	SDL_DrawImage(RENDERER, config_dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 254, 60, 60);
+	SDL_DrawImage(RENDERER, config_dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 254);
 	SDL_DrawText(RENDERER, Roboto, menubar_x + 100, 254, config_dark_theme? WHITE : BLACK, "External storage");
 	SDL_DrawText(RENDERER, Roboto_small, menubar_x + 100, 284, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
 	int settings_width = 0, settings_height = 0;
 	SDL_DrawRect(RENDERER, menubar_x + 10, 630, 80, 80, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawImage(RENDERER, config_dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640, 60, 60);
+	SDL_DrawImage(RENDERER, config_dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
 }
 
 static void Menu_HandleMultiSelect(void)

@@ -14,7 +14,7 @@ void ProgressBar_DisplayProgress(char *msg, char *src, u32 offset, u32 size)
 	int width = 0, height = 0;
 	SDL_QueryTexture(config_dark_theme? dialog_dark : dialog, NULL, NULL, &width, &height);
 
-	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (width)) / 2), ((720 - (height)) / 2), 880, 320);
+	SDL_DrawImage(RENDERER, config_dark_theme? dialog_dark : dialog, ((1280 - (width)) / 2), ((720 - (height)) / 2));
 
 	SDL_DrawText(RENDERER, Roboto, ((1280 - (width)) / 2) + 80, ((720 - (height)) / 2) + 45, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, msg);
 

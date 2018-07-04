@@ -98,7 +98,7 @@ void Gallery_DisplayImage(char *path)
 	{
 		SDL_ClearScreen(RENDERER, SDL_MakeColour(33, 39, 43, 255));
 		SDL_RenderClear(RENDERER);
-		SDL_DrawImage(RENDERER, image, (1280 - width) / 2, (720 - height) / 2, width, height);
+		SDL_DrawImageScale(RENDERER, image, (1280 - width) / 2, (720 - height) / 2, width, height);
 
 		hidScanInput();
 		Touch_Process(&touchInfo);

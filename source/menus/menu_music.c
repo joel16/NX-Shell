@@ -49,7 +49,9 @@ static Result Menu_GetMusicList(void)
 			{
 				int length = strlen(entries[i].name);
 				if ((strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3) == 0) 
-					|| (strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "mod", 3) == 0))
+					|| (strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "mod", 3) == 0)
+					|| (strncasecmp(FS_GetFileExt(entries[i].name), "flac", 4) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "midi", 4) == 0)
+					|| (strncasecmp(FS_GetFileExt(entries[i].name), "mid", 3) == 0))
 				{
 					strcpy(playlist[count], cwd);
 					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
@@ -185,16 +187,16 @@ void Menu_PlayMusic(char *path)
 		SDL_ClearScreen(RENDERER, MUSIC_STATUS_BG_COLOUR);
 		SDL_RenderClear(RENDERER);
 
-		SDL_DrawImage(RENDERER, default_artwork_blur, 0, 0, 1280, 720);
+		SDL_DrawImage(RENDERER, default_artwork_blur, 0, 0);
 		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, MUSIC_GENRE_COLOUR); // Status bar
 		SDL_DrawRect(RENDERER, 0, 140, 1280, 1, MUSIC_SEPARATOR_COLOUR); // Separator
 
-		SDL_DrawImage(RENDERER, icon_back, 40, 66, 48, 48);
+		SDL_DrawImage(RENDERER, icon_back, 40, 66);
 
 		SDL_DrawText(RENDERER, Roboto_large, 128, 40 + ((100 - title_height)/2), WHITE, title); // Audio filename
 
 		SDL_DrawRect(RENDERER, 0, 141, 560, 560, MUSIC_GENRE_COLOUR); // Draw album art background
-		SDL_DrawImage(RENDERER, default_artwork, 0, 141, 560, 560); // Default album art
+		SDL_DrawImage(RENDERER, default_artwork, 0, 141); // Default album art
 
 		SDL_DrawRect(RENDERER, 570, 141, 710, 559, SDL_MakeColour(45, 48, 50, 255)); // Draw info box (outer)
 		SDL_DrawRect(RENDERER, 575, 146, 700, 549, SDL_MakeColour(46, 49, 51, 255)); // Draw info box (inner)
@@ -212,14 +214,14 @@ void Menu_PlayMusic(char *path)
 		SDL_DrawCircle(RENDERER, (615 + ((710 - btn_width) / 2)), (186 + ((559 - btn_height) / 2)), 60, SDL_MakeColour(46, 49, 51, 255)); // Render inner circle
 
 		if (isPlaying)
-			SDL_DrawImage(RENDERER, btn_pause, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Playing
+			SDL_DrawImage(RENDERER, btn_pause, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2)); // Playing
 		else
-			SDL_DrawImage(RENDERER, btn_play, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Paused
+			SDL_DrawImage(RENDERER, btn_play, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2)); // Paused
 
-		SDL_DrawImage(RENDERER, btn_rewind, (560 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height);  // Rewind
-		SDL_DrawImage(RENDERER, btn_forward, (580 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), btn_width, btn_height); // Forward
-		SDL_DrawImage(RENDERER, state == MUSIC_STATE_SHUFFLE? btn_shuffle_overlay : btn_shuffle, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10));  // Shuffle
-		SDL_DrawImage(RENDERER, state == MUSIC_STATE_REPEAT? btn_repeat_overlay : btn_repeat, (550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10)); // Repeat
+		SDL_DrawImage(RENDERER, btn_rewind, (560 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2));  // Rewind
+		SDL_DrawImage(RENDERER, btn_forward, (580 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2)); // Forward
+		SDL_DrawImageScale(RENDERER, state == MUSIC_STATE_SHUFFLE? btn_shuffle_overlay : btn_shuffle, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10));  // Shuffle
+		SDL_DrawImageScale(RENDERER, state == MUSIC_STATE_REPEAT? btn_repeat_overlay : btn_repeat, (550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10)); // Repeat
 		StatusBar_DisplayTime();
 
 		SDL_RenderPresent(RENDERER);
