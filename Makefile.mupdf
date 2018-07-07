@@ -194,24 +194,10 @@ MUPDF_OBJS += $(MUPDF_PATH)/source/xps/xps-resource.o
 MUPDF_OBJS += $(MUPDF_PATH)/source/xps/xps-tile.o
 MUPDF_OBJS += $(MUPDF_PATH)/source/xps/xps-util.o
 MUPDF_OBJS += $(MUPDF_PATH)/source/xps/xps-zip.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/sil/CharisSIL-B.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/sil/CharisSIL-BI.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/sil/CharisSIL-I.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/sil/CharisSIL-R.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/Dingbats.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusMonoPS-Bold.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusMonoPS-BoldItalic.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusMonoPS-Italic.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusMonoPS-Regular.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusRoman-Bold.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusRoman-BoldItalic.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusRoman-Italic.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusRoman-Regular.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusSans-Bold.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusSans-BoldOblique.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusSans-Oblique.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/NimbusSans-Regular.cff.o
-MUPDF_OBJS += $(MUPDF_PATH)/generated/resources/fonts/urw/StandardSymbolsPS.cff.o
+
+MUPDF_OBJS_FONTS := $(wildcard $(MUPDF_PATH)/generated/resources/fonts/urw/*.c)
+MUPDF_OBJS_FONTS += $(wildcard $(MUPDF_PATH)/generated/resources/fonts/sil/*.c)
+MUPDF_OBJS += $(MUPDF_OBJS_FONTS:.c=.o)
 
 NXLIB	:= $(DEVKITPRO)/libnx
 INCLUDES := \
