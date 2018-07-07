@@ -10,20 +10,20 @@
 
 #define wait(msec) svcSleepThread(10000000 * (s64)msec)
 
-jmp_buf exitJmp;
+extern jmp_buf exitJmp;
 
-SDL_Window *WINDOW;
-SDL_Surface *WINDOW_SURFACE;
-SDL_Renderer *RENDERER;
-TTF_Font *Roboto_large, *Roboto, *Roboto_small, *Roboto_OSK;
+extern SDL_Window *WINDOW;
+extern SDL_Surface *WINDOW_SURFACE;
+extern SDL_Renderer *RENDERER;
+extern TTF_Font *Roboto_large, *Roboto, *Roboto_small, *Roboto_OSK;
 
 #define ROOT_PATH "/"
 #define START_PATH ROOT_PATH
 #define MAX_FILES 1024
 #define FILES_PER_PAGE 8
 
-int MENU_DEFAULT_STATE;
-int BROWSE_STATE;
+extern int MENU_DEFAULT_STATE;
+extern int BROWSE_STATE;
 
 #define MENU_STATE_HOME       0
 #define MENU_STATE_OPTIONS    1
@@ -38,7 +38,7 @@ int BROWSE_STATE;
 #define STATE_SD   0
 #define STATE_NAND 1
 
-char cwd[512];
-char fileName[255];
+extern char cwd[512];
+extern char fileName[255];
 
 #endif
