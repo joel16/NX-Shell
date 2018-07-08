@@ -2,7 +2,8 @@
 #include "PageLayout.hpp"
 #include "LandscapePageLayout.hpp"
 #include "common.h"
-#include <string>
+#include <algorithm>
+#include <libconfig.h>
 
 extern "C" {
 #include "SDL_helper.h"
@@ -11,6 +12,34 @@ extern "C" {
 }
 
 fz_context *ctx = NULL;
+config_t *config = NULL;
+
+static int load_last_page(const char *book_name) {
+    if (!config) {
+        config = (config_t *)malloc(sizeof(config_t));
+        config_init(config);
+        config_read_file(config, "/switch/NX-Shell/last_book_pages.cfg");
+    }
+    
+    config_setting_t *setting = config_setting_get_member(config_root_setting(config), book_name);
+    if (setting) {
+        return config_setting_get_int(setting);
+    }
+    return 0;
+}
+
+static void save_last_page(const char *book_name, int current_page) {
+    config_setting_t *setting = config_setting_get_member(config_root_setting(config), book_name);
+    
+    if (!setting) {
+        setting = config_setting_add(config_root_setting(config), book_name, CONFIG_TYPE_INT);
+    }
+    
+    if (setting) {
+        config_setting_set_int(setting, current_page);
+        config_write_file(config, "/switch/NX-Shell/last_book_pages.cfg");
+    }
+}
 
 BookReader::BookReader(const char *path) {
     if (ctx == NULL) {
@@ -18,8 +47,21 @@ BookReader::BookReader(const char *path) {
         fz_register_document_handlers(ctx);
     }
     
+    book_name = std::string(path).substr(std::string(path).find_last_of("/\\") + 1);
+    
+    std::string invalid_chars = " :/?#[]@!$&'()*+,;=.";
+    for (char& c: invalid_chars) {
+        book_name.erase(std::remove(book_name.begin(), book_name.end(), c), book_name.end());
+    }
+    
     doc = fz_open_document(ctx, path);
-    switch_current_page_layout(_currentPageLayout);
+    
+    int current_page = load_last_page(book_name.c_str());
+    switch_current_page_layout(_currentPageLayout, current_page);
+    
+    if (current_page > 0) {
+        show_status_bar();
+    }
 }
 
 BookReader::~BookReader() {
@@ -31,11 +73,13 @@ BookReader::~BookReader() {
 void BookReader::previous_page() {
     layout->previous_page();
     show_status_bar();
+    save_last_page(book_name.c_str(), layout->current_page());
 }
 
 void BookReader::next_page() {
     layout->next_page();
     show_status_bar();
+    save_last_page(book_name.c_str(), layout->current_page());
 }
 
 void BookReader::zoom_in() {
@@ -72,10 +116,10 @@ void BookReader::reset_page() {
 void BookReader::switch_page_layout() {
     switch (_currentPageLayout) {
         case BookPageLayoutPortrait:
-            switch_current_page_layout(BookPageLayoutLandscape);
+            switch_current_page_layout(BookPageLayoutLandscape, 0);
             break;
         case BookPageLayoutLandscape:
-            switch_current_page_layout(BookPageLayoutPortrait);
+            switch_current_page_layout(BookPageLayoutPortrait, 0);
             break;
     }
 }
@@ -109,9 +153,7 @@ void BookReader::show_status_bar() {
     status_bar_visible_counter = 50;
 }
 
-void BookReader::switch_current_page_layout(BookPageLayout bookPageLayout) {
-    int current_page = 0;
-    
+void BookReader::switch_current_page_layout(BookPageLayout bookPageLayout, int current_page) {
     if (layout) {
         current_page = layout->current_page();
         delete layout;

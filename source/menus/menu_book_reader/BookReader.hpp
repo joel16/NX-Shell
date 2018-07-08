@@ -2,6 +2,7 @@
 #define NX_SHELL_BOOK_READER_HPP
 
 #include <mupdf/pdf.h>
+#include <string>
 #include "PageLayout.hpp"
 
 struct SDL_Texture;
@@ -34,13 +35,15 @@ public:
     
 private:
     void show_status_bar();
-    void switch_current_page_layout(BookPageLayout bookPageLayout);
+    void switch_current_page_layout(BookPageLayout bookPageLayout, int current_page);
     
     fz_document *doc = NULL;
     int status_bar_visible_counter = 0;
     
     BookPageLayout _currentPageLayout = BookPageLayoutPortrait;
     PageLayout *layout = NULL;
+    
+    std::string book_name;
 };
 
 #endif
