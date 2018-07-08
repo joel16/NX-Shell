@@ -2,8 +2,15 @@
 #define NX_SHELL_BOOK_READER_HPP
 
 #include <mupdf/pdf.h>
+#include <string>
+#include "PageLayout.hpp"
 
 struct SDL_Texture;
+
+typedef enum {
+    BookPageLayoutPortrait,
+    BookPageLayoutLandscape
+} BookPageLayout;
 
 class BookReader {
 public:
@@ -19,26 +26,24 @@ public:
     void move_page_left();
     void move_page_right();
     void reset_page();
+    void switch_page_layout();
     void draw();
     
+    BookPageLayout currentPageLayout() {
+        return _currentPageLayout;
+    }
+    
 private:
-    void load_page(int num);
-    void render_page_to_texture();
-    void set_zoom(float value);
-    void move_page(float x, float y);
+    void show_status_bar();
+    void switch_current_page_layout(BookPageLayout bookPageLayout, int current_page);
     
     fz_document *doc = NULL;
-    pdf_document *pdf = NULL;
-    fz_page *page = NULL;
-    fz_rect page_bounds = fz_empty_rect, screen_bounds = fz_empty_rect;
-    fz_point page_center = fz_make_point(0, 0);
-    
-    SDL_Texture *page_texture = NULL;
-    
-    int current_page = -1, pages_count = 0;
-    float min_zoom = 1, max_zoom = 1, zoom = 1;
-    
     int status_bar_visible_counter = 0;
+    
+    BookPageLayout _currentPageLayout = BookPageLayoutPortrait;
+    PageLayout *layout = NULL;
+    
+    std::string book_name;
 };
 
 #endif

@@ -5,6 +5,9 @@
 #include "config.h"
 #include "fs.h"
 
+bool config_dark_theme;
+int config_sort_by;
+
 const char *configFile =
 	"theme = %d\n"
 	"sortBy = %d";

@@ -62,7 +62,7 @@ ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(PWD)/$(BUILD)
 
 LIBS	:= -lSDL2_mixer -lmodplug -lmpg123 -lFLAC -lvorbisidec -logg -lSDL2_ttf -lSDL2_gfx -lSDL2_image \
-           -lpng -ljpeg `sdl2-config --libs` -lnx -lmupdf_core -lmupdf_thirdparty
+           -lpng -ljpeg `sdl2-config --libs` -lnx -lmupdf_core -lmupdf_thirdparty -lconfig
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

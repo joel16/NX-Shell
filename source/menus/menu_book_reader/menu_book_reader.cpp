@@ -33,6 +33,9 @@ void Menu_OpenBook(char *path)
         if (kDown & KEY_LSTICK)
             reader->reset_page();
         
+        if (kDown & KEY_Y)
+            reader->switch_page_layout();
+        
         if (kHeld & KEY_DUP)
             reader->zoom_in();
         
@@ -53,10 +56,22 @@ void Menu_OpenBook(char *path)
             
         if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
         {
-            if (tapped_inside(touchInfo, 0, 0, 120, 720))
-                reader->previous_page();
-            else if (tapped_inside(touchInfo, 1160, 0, 1280, 720))
-                reader->next_page();
+            float tapRegion = 120;
+            
+            switch (reader->currentPageLayout()) {
+                case BookPageLayoutPortrait:
+                    if (tapped_inside(touchInfo, 0, 0, tapRegion, 720))
+                        reader->previous_page();
+                    else if (tapped_inside(touchInfo, 1280 - tapRegion, 0, 1280, 720))
+                        reader->next_page();
+                    break;
+                case BookPageLayoutLandscape:
+                    if (tapped_inside(touchInfo, 0, 0, 1280, tapRegion))
+                        reader->previous_page();
+                    else if (tapped_inside(touchInfo, 0, 720 - tapRegion, 1280, 720))
+                        reader->next_page();
+                    break;
+            }
         }
     }
 
