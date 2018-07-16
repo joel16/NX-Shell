@@ -506,7 +506,16 @@ void Menu_DisplayProperties(void)
 
 	if (file->isDir)
 	{
-		SDL_DrawText(RENDERER, Roboto, 390, 333, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Contains: ");
+		FsDir dir;
+		if (R_SUCCEEDED(fsFsOpenDirectory(&fs, path, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
+		{
+			u64 entryCount = 0;
+			
+			if (R_SUCCEEDED(fsDirGetEntryCount(&dir, &entryCount)))
+				SDL_DrawTextf(RENDERER, Roboto, 390, 333, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Contains: %d files", entryCount);
+			
+			fsDirClose(&dir);
+		}
 		//SDL_DrawText(RENDERER, Roboto, 390, 383, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
 		//SDL_DrawText(RENDERER, Roboto, 390, 433, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
 	}
