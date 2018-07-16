@@ -1,4 +1,3 @@
-#include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <switch.h>
@@ -202,59 +201,74 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim)
 // Recursively copy file from src to dst
 static Result FileOptions_CopyDir(char *src, char *dst)
 {
-	DIR *directory = opendir(src);
-
-	if (directory)
+	FsDir dir;
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
 	{
-		// Create Output Directory (is allowed to fail, we can merge folders after all)
 		FS_MakeDir(dst);
+
+		u64 entryCount = 0;
+		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
+			return ret;
 		
-		struct dirent *entries;
+		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
 
-		// Iterate Files
-		while ((entries = readdir(directory)) != NULL)
+		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
-			if (strlen(entries->d_name) > 0)
+			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
+
+			for (u32 i = 0; i < entryCount; i++)
 			{
-				// Calculate Buffer Size
-				int insize = strlen(src) + strlen(entries->d_name) + 2;
-				int outsize = strlen(dst) + strlen(entries->d_name) + 2;
+				if (strlen(entries[i].name) > 0)
+				{
+					// Calculate Buffer Size
+					int insize = strlen(src) + strlen(entries[i].name) + 2;
+					int outsize = strlen(dst) + strlen(entries[i].name) + 2;
 
-				// Allocate Buffer
-				char *inbuffer = (char *)malloc(insize);
-				char *outbuffer = (char *)malloc(outsize);
+					// Allocate Buffer
+					char *inbuffer = (char *)malloc(insize);
+					char *outbuffer = (char *)malloc(outsize);
 
-				// Puzzle Input Path
-				strcpy(inbuffer, src);
-				inbuffer[strlen(inbuffer) + 1] = 0;
-				inbuffer[strlen(inbuffer)] = '/';
-				strcpy(inbuffer + strlen(inbuffer), entries->d_name);
+					// Puzzle Input Path
+					strcpy(inbuffer, src);
+					inbuffer[strlen(inbuffer) + 1] = 0;
+					inbuffer[strlen(inbuffer)] = '/';
+					strcpy(inbuffer + strlen(inbuffer), entries[i].name);
 
-				// Puzzle Output Path
-				strcpy(outbuffer, dst);
-				outbuffer[strlen(outbuffer) + 1] = 0;
-				outbuffer[strlen(outbuffer)] = '/';
-				strcpy(outbuffer + strlen(outbuffer), entries->d_name);
+					// Puzzle Output Path
+					strcpy(outbuffer, dst);
+					outbuffer[strlen(outbuffer) + 1] = 0;
+					outbuffer[strlen(outbuffer)] = '/';
+					strcpy(outbuffer + strlen(outbuffer), entries[i].name);
 
-				// Another Folder
-				if (entries->d_type == DT_DIR)
-					FileOptions_CopyDir(inbuffer, outbuffer); // Copy Folder (via recursion)
+					// Another Folder
+					if (entries[i].type == ENTRYTYPE_DIR)
+						FileOptions_CopyDir(inbuffer, outbuffer); // Copy Folder (via recursion)
 
-				// Simple File
-				else
-					FileOptions_CopyFile(inbuffer, outbuffer, true); // Copy File
+					// Simple File
+					else
+						FileOptions_CopyFile(inbuffer, outbuffer, true); // Copy File
 
-				// Free Buffer
-				free(inbuffer);
-				free(outbuffer);
+					// Free Buffer
+					free(inbuffer);
+					free(outbuffer);
+				}
 			}
 		}
+		else
+		{
+			free(entries);
+			return ret;
+		}
 
-		closedir(directory);
-		return 0;
+		free(entries);
+		fsDirClose(&dir); // Close directory
 	}
+	else
+		return ret;
 
-	return -1;
+	return 0;
 }
 
 static void FileOptions_Copy(int flag)

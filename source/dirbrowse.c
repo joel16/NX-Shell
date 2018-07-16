@@ -1,5 +1,3 @@
-#include <dirent.h>
-
 #include "archive.h"
 #include "common.h"
 #include "config.h"
@@ -11,8 +9,6 @@
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
-
-#define TYPE_DIR(n) (n == DT_DIR ? 1 : 0)
 
 int initialPosition = 0;
 int position = 0; // menu position
@@ -100,7 +96,7 @@ Result Dirbrowse_PopulateFiles(bool clear)
 		{
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), cmpstringp);
 			
-			for (u32 i = 0; i < entryCount; i++) 
+			for (u32 i = 0; i < entryCount; i++)
 			{		
 				if (strncmp(entries[i].name, ".", 1) == 0) // Ignore "." in all Directories
 					continue;
