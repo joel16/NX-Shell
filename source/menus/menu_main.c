@@ -105,6 +105,17 @@ static void Menu_ControlHome(u64 input)
 		else if (input & KEY_DDOWN)
 			position++;
 
+		if (hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_RSTICK_UP)
+		{
+			wait(5);
+			position--;
+		}
+		else if (hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_RSTICK_DOWN)
+		{
+			wait(5);
+			position++;
+		}
+
 		Utils_SetMax(&position, 0, (fileCount - 1));
 		Utils_SetMin(&position, (fileCount - 1), 0);
 
