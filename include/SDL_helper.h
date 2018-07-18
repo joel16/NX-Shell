@@ -21,7 +21,6 @@ static inline SDL_Color SDL_MakeColour(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 #define TEXT_MIN_COLOUR_LIGHT SDL_MakeColour(32, 32, 32, 255)
 #define TEXT_MIN_COLOUR_DARK  SDL_MakeColour(185, 185, 185, 255)
 #define BAR_COLOUR            SDL_MakeColour(200, 200, 200, 255)
-#define PROGRESS_COLOUR       SDL_MakeColour(48, 174, 222, 255)
 
 void SDL_ClearScreen(SDL_Renderer *renderer, SDL_Color colour);
 void SDL_DrawRect(SDL_Renderer *renderer, int x, int y, int w, int h, SDL_Color colour);
