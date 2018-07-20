@@ -139,19 +139,19 @@ void OSK_Display(char *title, char *msg)
 				{
 					if (config_dark_theme)
 						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
-							TITLE_COLOUR : WHITE, osk_textdisp_shift[x + y * 10]);
+							TITLE_COLOUR_DARK : WHITE, osk_textdisp_shift[x + y * 10]);
 					else
 						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), (x == osk_pos_x && y == osk_pos_y)? 
-							PROGRESS_COLOUR : BLACK, osk_textdisp_shift[x + y * 10]);
+							TITLE_COLOUR : BLACK, osk_textdisp_shift[x + y * 10]);
 				}
 				else
 				{
 					if (config_dark_theme)
 						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)?
-							TITLE_COLOUR : WHITE, osk_textdisp[x + y * 10]);
+							TITLE_COLOUR_DARK : WHITE, osk_textdisp[x + y * 10]);
 					else
 						SDL_DrawText(RENDERER, Roboto_OSK, ((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y),  (x == osk_pos_x && y == osk_pos_y)? 
-							PROGRESS_COLOUR : BLACK, osk_textdisp[x + y * 10]);
+							TITLE_COLOUR : BLACK, osk_textdisp[x + y * 10]);
 				}
 			}
 		}

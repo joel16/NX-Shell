@@ -17,11 +17,12 @@ void Touch_Process(TouchInfo * touchInfo)
 {
     touchPosition currentTouch;
     u32 touches = hidTouchCount();
+    
     if (touches >= 1)
         hidTouchRead(&currentTouch, 0);
-
+        
     u64 current_time;
-	timeGetCurrentTime(TimeType_UserSystemClock, &current_time);
+    timeGetCurrentTime(TimeType_UserSystemClock, &current_time);
     
     // On touch start.
     if (touches == 1 && (touchInfo->state == TouchNone || touchInfo->state == TouchEnded))
