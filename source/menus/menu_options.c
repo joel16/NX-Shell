@@ -502,7 +502,6 @@ void Menu_DisplayProperties(void)
 
 	SDL_DrawTextf(RENDERER, Roboto, 390, 183, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
 	SDL_DrawTextf(RENDERER, Roboto, 390, 233, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Parent: %s", cwd);
-	SDL_DrawTextf(RENDERER, Roboto, 390, 283, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
 
 	if (file->isDir)
 	{
@@ -512,18 +511,19 @@ void Menu_DisplayProperties(void)
 			u64 entryCount = 0;
 			
 			if (R_SUCCEEDED(fsDirGetEntryCount(&dir, &entryCount)))
-				SDL_DrawTextf(RENDERER, Roboto, 390, 333, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Contains: %d files", entryCount);
+				SDL_DrawTextf(RENDERER, Roboto, 390, 283, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Contains: %d files", entryCount);
 			
 			fsDirClose(&dir);
 		}
 		//SDL_DrawText(RENDERER, Roboto, 390, 383, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
 		//SDL_DrawText(RENDERER, Roboto, 390, 433, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
 	}
-	/*else
+	else
 	{
-		SDL_DrawText(RENDERER, Roboto, 390, 333, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
-		SDL_DrawText(RENDERER, Roboto, 390, 383, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
-	}*/
+		SDL_DrawTextf(RENDERER, Roboto, 390, 283, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
+		//SDL_DrawText(RENDERER, Roboto, 390, 333, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
+		//SDL_DrawText(RENDERER, Roboto, 390, 383, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
+	}
 
 	TTF_SizeText(Roboto, "OK", &properties_ok_width, &properties_ok_height);
 	SDL_DrawRect(RENDERER, (890 - properties_ok_width) - 20, (595 - properties_ok_height) - 20, properties_ok_width + 40, properties_ok_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
@@ -532,13 +532,13 @@ void Menu_DisplayProperties(void)
 
 static void HandleCopy()
 {
-	if (copy_status == false && cut_status == false)
+	if ((!copy_status) && (!cut_status ))
 	{
 		copy_status = true;
 		FileOptions_Copy(COPY_KEEP_ON_FINISH);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
-	else if (copy_status == true)
+	else if (copy_status)
 	{
 		if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0))
 		{
@@ -575,13 +575,13 @@ static void HandleCopy()
 
 static void HandleCut()
 {
-	if (cut_status == false && copy_status == false)
+	if ((!cut_status ) && (!copy_status))
 	{
 		cut_status = true;
 		FileOptions_Copy(COPY_DELETE_ON_FINISH);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
-	else if (cut_status == true)
+	else if (cut_status)
 	{
 		char dest[512];
 

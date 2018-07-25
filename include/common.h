@@ -19,7 +19,7 @@ extern TTF_Font *Roboto_large, *Roboto, *Roboto_small, *Roboto_OSK;
 
 #define ROOT_PATH "/"
 #define START_PATH ROOT_PATH
-#define MAX_FILES 1024
+#define MAX_FILES 2048
 #define FILES_PER_PAGE 8
 
 extern int MENU_DEFAULT_STATE;
