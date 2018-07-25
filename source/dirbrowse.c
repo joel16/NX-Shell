@@ -15,11 +15,6 @@ int position = 0; // menu position
 int fileCount = 0; // file count
 File *files = NULL; // file list
 
-typedef struct
-{
-	bool clear;
-} threadData;
-
 void Dirbrowse_RecursiveFree(File *node)
 {
 	if (node == NULL) // End of list
@@ -70,16 +65,16 @@ static int cmpstringp(const void *p1, const void *p2)
 	return 0;
 }
 
-static void Dirbrowse_PopulateFilesThread(void *arg)
+Result Dirbrowse_PopulateFiles(bool clear)
 {
-	threadData *thread_arg = (threadData *)arg;
 	Dirbrowse_RecursiveFree(files);
 	files = NULL;
 	fileCount = 0;
 	
 	FsDir dir;
-
-	if (R_SUCCEEDED(fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
 	{
 		/* Add fake ".." entry except on root */
 		if (strcmp(cwd, ROOT_PATH))
@@ -92,12 +87,12 @@ static void Dirbrowse_PopulateFilesThread(void *arg)
 		}
 		
 		u64 entryCount = 0;
-		if (R_FAILED(fsDirGetEntryCount(&dir, &entryCount)))
-			return;
+		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
+			return ret;
 		
 		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
 		
-		if (R_SUCCEEDED(fsDirRead(&dir, 0, NULL, entryCount, entries)))
+		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
 		{
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), cmpstringp);
 			
@@ -135,17 +130,17 @@ static void Dirbrowse_PopulateFilesThread(void *arg)
 		else
 		{
 			free(entries);
-			return;
+			return ret;
 		}
 		
 		free(entries);
 		fsDirClose(&dir); // Close directory
 	}
 	else
-		return;
+		return ret;
 		
 	// Attempt to keep index
-	if (!(thread_arg->clear))
+	if (!clear)
 	{
 		if (position >= fileCount)
 			position = fileCount - 1; // Fix position
@@ -153,36 +148,6 @@ static void Dirbrowse_PopulateFilesThread(void *arg)
 	else
 		position = 0; // Reset position
 	
-	return;
-}
-
-Result Dirbrowse_PopulateFiles(bool clear)
-{
-	Result ret = 0;
-
-	static Thread thread;
-	threadData* td = malloc(sizeof(threadData));
-	td->clear = clear;
-
-	if (R_FAILED(ret = threadCreate(&thread, (ThreadFunc)Dirbrowse_PopulateFilesThread, td, 0x4000, 0x2B, -2)))
-	{
-		threadWaitForExit(&thread);
-		threadClose(&thread);
-		free(td);
-		return ret;
-	}
-	
-	if (R_FAILED(ret = threadStart(&thread)))
-	{
-		threadWaitForExit(&thread);
-		threadClose(&thread);
-		free(td);
-		return ret;
-	}
-	
-	threadWaitForExit(&thread);
-	threadClose(&thread);
-	free(td);
 	return 0;
 }
 

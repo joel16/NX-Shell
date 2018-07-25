@@ -5,7 +5,7 @@
 #include "config.h"
 #include "dirbrowse.h"
 #include "menu_main.h"
-#include "menu_fileoptions.h"
+#include "menu_options.h"
 #include "menu_settings.h"
 #include "SDL_helper.h"
 #include "status_bar.h"
@@ -214,7 +214,6 @@ void Menu_Main(void)
 	Touch_Init(&touchInfo);
 
 	Dirbrowse_PopulateFiles(false);
-
 	memset(multi_select, 0, sizeof(multi_select)); // Reset all multi selected items
 
 	while(appletMainLoop())

@@ -7,7 +7,7 @@
 #include "dirbrowse.h"
 #include "fs.h"
 #include "progress_bar.h"
-#include "menu_fileoptions.h"
+#include "menu_options.h"
 #include "osk.h"
 #include "SDL_helper.h"
 #include "textures.h"
@@ -35,8 +35,6 @@ static int delete_cancel_width = 0, delete_cancel_height = 0;
 static int properties_ok_width = 0, properties_ok_height = 0;
 
 static int options_cancel_width = 0, options_cancel_height = 0;
-
-static Thread thread;
 
 void FileOptions_ResetClipboard(void)
 {
@@ -411,16 +409,7 @@ void Menu_ControlDeleteDialog(u64 input)
 	if (input & KEY_A)
 	{
 		if (delete_dialog_selection == 0)
-		{
-			if (R_FAILED(threadCreate(&thread, (ThreadFunc)HandleDelete, NULL, 0x4000, 0x2B, -2)))
-				return;
-			
-			if (R_FAILED(threadStart(&thread)))
-				return;
-
-			threadWaitForExit(&thread);
-			threadClose(&thread);
-		}
+			HandleDelete();
 		else
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 
