@@ -1,5 +1,7 @@
-#include <switch.h>
+#include <dirent.h>
 #include <time.h>
+
+#include <switch.h>
 
 #include "common.h"
 #include "dirbrowse.h"
@@ -28,48 +30,27 @@ static char playlist[512][512], title[128];
 static int count = 0, selection = 0, state = 0;
 static Mix_Music *audio;
 
-static Result Menu_GetMusicList(void)
+static void Menu_GetMusicList(void)
 {
-	FsDir dir;
-	Result ret = 0;
-	
-	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
-	{
-		u64 entryCount = 0;
-		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
-			return ret;
-		
-		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
-		
-		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
-		{
-			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
+	DIR *dir;
+	struct dirent *entries;
+	dir = opendir(cwd);
 
-			for (u32 i = 0; i < entryCount; i++) 
+	if (dir != NULL)
+	{
+		while ((entries = readdir (dir)) != NULL) 
+		{
+			if ((strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "ogg", 3) == 0) 
+				|| (strncasecmp(FS_GetFileExt(entries->d_name), "wav", 3) == 0))
 			{
-				int length = strlen(entries[i].name);
-				if ((strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3) == 0) 
-					|| (strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "mod", 3) == 0)
-					|| (strncasecmp(FS_GetFileExt(entries[i].name), "flac", 4) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "midi", 4) == 0)
-					|| (strncasecmp(FS_GetFileExt(entries[i].name), "mid", 3) == 0))
-				{
-					strcpy(playlist[count], cwd);
-					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
-					count++;
-				}
+				strcpy(playlist[count], cwd);
+				strcpy(playlist[count] + strlen(playlist[count]), entries->d_name);
+				count++;
 			}
 		}
-		else
-		{
-			free(entries);
-			return ret;
-		}
-		
-		free(entries);
-		fsDirClose(&dir); // Close directory
+
+		closedir(dir);
 	}
-	else
-		return ret;
 }
 
 static int Music_GetCurrentIndex(char *path)

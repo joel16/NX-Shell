@@ -10,7 +10,7 @@ int config_sort_by;
 
 const char *configFile =
 	"theme = %d\n"
-	"sortBy = %d";
+	"sortBy = %d\n";
 
 int Config_Save(bool config_dark_theme, int config_sort_by)
 {
@@ -34,8 +34,7 @@ int Config_Load(void)
 		return Config_Save(config_dark_theme, config_sort_by);
 	}
 
-	u64 size = 0;
-	FS_GetFileSize("/switch/NX-Shell/config.cfg", &size);
+	u64 size = FS_GetFileSize("/switch/NX-Shell/config.cfg");
 	char *buf = (char *)malloc(size + 1);
 
 	FILE *file = fopen("/switch/NX-Shell/config.cfg", "r");

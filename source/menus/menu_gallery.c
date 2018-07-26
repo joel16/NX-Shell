@@ -1,3 +1,5 @@
+#include <dirent.h>
+
 #include <switch.h>
 
 #include "common.h"
@@ -12,46 +14,27 @@ static int count = 0, selection = 0;
 static SDL_Texture *image = NULL;
 static int width = 0, height = 0;
 
-static Result Gallery_GetImageList(void)
+static void Gallery_GetImageList(void)
 {
-	FsDir dir;
-	Result ret = 0;
-	
-	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
-	{
-		u64 entryCount = 0;
-		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
-			return ret;
-		
-		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
-		
-		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
-		{
-			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
+	DIR *dir;
+	struct dirent *entries;
+	dir = opendir(cwd);
 
-			for (u32 i = 0; i < entryCount; i++) 
+	if (dir != NULL)
+	{
+		while ((entries = readdir (dir)) != NULL) 
+		{
+			if ((strncasecmp(FS_GetFileExt(entries->d_name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "jpg", 3) == 0) 
+				|| (strncasecmp(FS_GetFileExt(entries->d_name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "gif", 3) == 0))
 			{
-				int length = strlen(entries[i].name);
-				if ((strncasecmp(FS_GetFileExt(entries[i].name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "jpg", 3) == 0) || 
-					(strncasecmp(FS_GetFileExt(entries[i].name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(entries[i].name), "gif", 3) == 0))
-				{
-					strcpy(album[count], cwd);
-					strcpy(album[count] + strlen(album[count]), entries[i].name);
-					count++;
-				}
+				strcpy(album[count], cwd);
+				strcpy(album[count] + strlen(album[count]), entries->d_name);
+				count++;
 			}
 		}
-		else
-		{
-			free(entries);
-			return ret;
-		}
-		
-		free(entries);
-		fsDirClose(&dir); // Close directory
+
+		closedir(dir);
 	}
-	else
-		return ret;
 }
 
 static int Gallery_GetCurrentIndex(char *path)

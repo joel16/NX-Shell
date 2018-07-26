@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <switch.h>
 
 #include "fs.h"
 
@@ -57,7 +58,7 @@ bool FS_DirExists(const char *path)
 {
 	struct stat info;
 
-	if (stat( path, &info ) != 0)
+	if (stat(path, &info) != 0)
 		return false;
 	else if (info.st_mode & S_IFDIR)
 		return true;
@@ -83,17 +84,10 @@ char *FS_GetFileModifiedTime(const char *filename)
 	return ctime(&attr.st_mtime);
 }
 
-Result FS_GetFileSize(const char *path, u64 *size)
+u64 FS_GetFileSize(const char *filename)
 {
-	FsFile file;
-	Result ret = 0;
-
-	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file)))
-		return ret;
-
-	if (R_FAILED(ret = fsFileGetSize(&file, size)))
-		return ret;
-
-	fsFileClose(&file);
-	return 0;
+	struct stat st;
+	stat(filename, &st);
+	
+	return st.st_size;
 }

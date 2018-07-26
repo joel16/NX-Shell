@@ -14,9 +14,36 @@ static bool displayAbout;
 static int confirm_width = 0, confirm_height = 0;
 static int dialog_width = 0, dialog_height = 0;
 
+static void Save_SortConfig(int selection)
+{
+	switch (selection)
+	{
+		case 0:
+			config_sort_by = 0;
+			break;
+		case 1:
+			config_sort_by = 1;
+			break;
+		case 2:
+			config_sort_by = 2;
+			break;
+		case 3:
+			config_sort_by = 3;
+			break;
+		case 4:
+			config_sort_by = 4;
+			break;
+		case 5:
+			config_sort_by = 5;
+			break;
+	}
+
+	Config_Save(config_dark_theme, config_sort_by);
+}
+
 static void Menu_DisplaySortSettings(void)
 {
-	int selection = 0, max_items = 3, height = 0;
+	int selection = 0, max_items = 5, height = 0;
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
 
@@ -27,6 +54,8 @@ static void Menu_DisplaySortSettings(void)
 	{
 		"By name (ascending)",
 		"By name (descending)",
+		"By date (newest first)",
+		"By date (oldest first)",
 		"By size (largest first)",
 		"By size (smallest first)"
 	};
@@ -76,6 +105,12 @@ static void Menu_DisplaySortSettings(void)
 		
 		config_sort_by == 3? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371) : 
 			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371);
+
+		config_sort_by == 4? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 444) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 444);
+		
+		config_sort_by == 5? SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 517) : 
+			SDL_DrawImage(RENDERER, config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 517);
 		
 		SDL_RenderPresent(RENDERER);
 
@@ -95,25 +130,7 @@ static void Menu_DisplaySortSettings(void)
 		Utils_SetMin(&selection, max_items, 0);
 
 		if (kDown & KEY_A)
-		{
-			switch (selection)
-			{
-				case 0:
-					config_sort_by = 0;
-					break;
-				case 1:
-					config_sort_by = 1;
-					break;
-				case 2:
-					config_sort_by = 2;
-					break;
-				case 3:
-					config_sort_by = 3;
-					break;
-			}
-
-			Config_Save(config_dark_theme, config_sort_by);
-		}
+			Save_SortConfig(selection);
 
 		if (touchInfo.state == TouchStart)
 		{
@@ -129,24 +146,7 @@ static void Menu_DisplaySortSettings(void)
 			else if (touchInfo.firstTouch.py >= 140)
 			{
 				int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
-
-				switch (tapped_selection)
-				{
-					case 0:
-						config_sort_by = 0;
-						break;
-					case 1:
-						config_sort_by = 1;
-						break;
-					case 2:
-						config_sort_by = 2;
-						break;
-					case 3:
-						config_sort_by = 3;
-						break;
-				}
-
-				Config_Save(config_dark_theme, config_sort_by);
+				Save_SortConfig(tapped_selection);
 			}
 		}
 	}

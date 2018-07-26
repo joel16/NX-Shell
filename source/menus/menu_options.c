@@ -1,5 +1,7 @@
+#include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
+
 #include <switch.h>
 
 #include "common.h"
@@ -23,7 +25,7 @@ static int copymode = NOTHING_TO_COPY;
 /*
 *	Copy Move Origin
 */
-static char copysource[1024];
+static char copysource[512];
 
 static int delete_dialog_selection = 0, row = 0, column = 0;
 static bool copy_status = false, cut_status = false;
@@ -58,7 +60,7 @@ static Result FileOptions_CreateFolder(void)
 	osk_buffer[0] = '\0';
 
 	Result ret = 0;
-	if (R_FAILED(ret = fsFsCreateDirectory(&fs, path)))
+	if (R_FAILED(ret = FS_RecursiveMakeDir(path)))
 		return ret;
 	
 	Dirbrowse_PopulateFiles(true);
@@ -91,20 +93,108 @@ static Result FileOptions_Rename(void)
 	strcat(newPath, osk_buffer);
 	osk_buffer[0] = '\0';
 
-	if (file->isDir)
-	{
-		if (R_FAILED(ret = fsFsRenameDirectory(&fs, oldPath, newPath)))
-			return ret;
-	}
-	else
-	{
-		if (R_FAILED(ret = fsFsRenameFile(&fs, oldPath, newPath)))
-			return ret;
-	}
+	if (R_FAILED(ret = rename(oldPath, newPath)))
+		return ret;
 	
 	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	return 0;
+}
+
+static int FileOptions_RmdirRecursive(char *path)
+{
+	File *filelist = NULL;
+	DIR *directory = opendir(path);
+
+	if (directory)
+	{
+		struct dirent *entries;
+
+		while ((entries = readdir(directory)) != NULL)
+		{
+			if (strlen(entries->d_name) > 0)
+			{
+				if (strcmp(entries->d_name, ".") == 0 || strcmp(entries->d_name, "..") == 0)
+					continue;
+
+				// Allocate Memory
+				File *item = (File *)malloc(sizeof(File));
+				memset(item, 0, sizeof(File));
+
+				// Copy File Name
+				strcpy(item->name, entries->d_name);
+
+				// Set Folder Flag
+				item->isDir = entries->d_type == DT_DIR;
+
+				// New List
+				if (filelist == NULL) 
+					filelist = item;
+
+				// Existing List
+				else
+				{
+					File *list = filelist;
+
+					while(list->next != NULL) 
+						list = list->next;
+
+					list->next = item;
+				}
+			}
+		}
+	}
+
+	closedir(directory);
+
+	File *node = filelist;
+
+	// Iterate Files
+	for(; node != NULL; node = node->next)
+	{
+		// Directory
+		if (node->isDir)
+		{
+			// Required Buffer Size
+			int size = strlen(path) + strlen(node->name) + 2;
+
+			// Allocate Buffer
+			char * buffer = (char *)malloc(size);
+
+			// Combine Path
+			strcpy(buffer, path);
+			strcpy(buffer + strlen(buffer), node->name);
+			buffer[strlen(buffer) + 1] = 0;
+			buffer[strlen(buffer)] = '/';
+
+			// Recursion Delete
+			FileOptions_RmdirRecursive(buffer);
+
+			free(buffer);
+		}
+
+		// File
+		else
+		{
+			// Required Buffer Size
+			int size = strlen(path) + strlen(node->name) + 1;
+
+			// Allocate Buffer
+			char *buffer = (char *)malloc(size);
+
+			// Combine Path
+			strcpy(buffer, path);
+			strcpy(buffer + strlen(buffer), node->name);
+
+			// Delete File
+			remove(buffer);
+
+			free(buffer);
+		}
+	}
+
+	Dirbrowse_RecursiveFree(filelist);
+	return rmdir(path);
 }
 
 static int FileOptions_DeleteFile(void)
@@ -119,7 +209,7 @@ static int FileOptions_DeleteFile(void)
 	if (strcmp(file->name, "..") == 0) 
 		return -2;
 
-	char path[1024];
+	char path[512];
 
 	// Puzzle Path
 	strcpy(path, cwd);
@@ -133,12 +223,12 @@ static int FileOptions_DeleteFile(void)
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		return fsFsDeleteDirectoryRecursively(&fs, path);
+		return FileOptions_RmdirRecursive(path);
 	}
 
 	// Delete File
 	else 
-		return fsFsDeleteFile(&fs, path);
+		return remove(path);
 }
 
 // Copy file from src to dst
@@ -153,14 +243,13 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim)
 	int result = 0; // Result
 
 	int in = open(src, O_RDONLY, 0777); // Open file for reading
-	u64 size = 0;
-	FS_GetFileSize(src, &size);
+	u64 size = FS_GetFileSize(src);
 
 	// Opened file for reading
 	if (in >= 0)
 	{
 		if (FS_FileExists(dst))
-			fsFsDeleteFile(&fs, dst); // Delete output file (if existing)
+			remove(dst); // Delete output file (if existing)
 
 		int out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0777); // Open output file for writing
 
@@ -201,74 +290,59 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim)
 // Recursively copy file from src to dst
 static Result FileOptions_CopyDir(char *src, char *dst)
 {
-	FsDir dir;
-	Result ret = 0;
-	
-	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
+	DIR *directory = opendir(src);
+
+	if (directory)
 	{
+		// Create Output Directory (is allowed to fail, we can merge folders after all)
 		FS_MakeDir(dst);
-
-		u64 entryCount = 0;
-		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
-			return ret;
 		
-		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		struct dirent *entries;
 
-		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries)))
+		// Iterate Files
+		while ((entries = readdir(directory)) != NULL)
 		{
-			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
-
-			for (u32 i = 0; i < entryCount; i++)
+			if (strlen(entries->d_name) > 0)
 			{
-				if (strlen(entries[i].name) > 0)
-				{
-					// Calculate Buffer Size
-					int insize = strlen(src) + strlen(entries[i].name) + 2;
-					int outsize = strlen(dst) + strlen(entries[i].name) + 2;
+				// Calculate Buffer Size
+				int insize = strlen(src) + strlen(entries->d_name) + 2;
+				int outsize = strlen(dst) + strlen(entries->d_name) + 2;
 
-					// Allocate Buffer
-					char *inbuffer = (char *)malloc(insize);
-					char *outbuffer = (char *)malloc(outsize);
+				// Allocate Buffer
+				char *inbuffer = (char *)malloc(insize);
+				char *outbuffer = (char *)malloc(outsize);
 
-					// Puzzle Input Path
-					strcpy(inbuffer, src);
-					inbuffer[strlen(inbuffer) + 1] = 0;
-					inbuffer[strlen(inbuffer)] = '/';
-					strcpy(inbuffer + strlen(inbuffer), entries[i].name);
+				// Puzzle Input Path
+				strcpy(inbuffer, src);
+				inbuffer[strlen(inbuffer) + 1] = 0;
+				inbuffer[strlen(inbuffer)] = '/';
+				strcpy(inbuffer + strlen(inbuffer), entries->d_name);
 
-					// Puzzle Output Path
-					strcpy(outbuffer, dst);
-					outbuffer[strlen(outbuffer) + 1] = 0;
-					outbuffer[strlen(outbuffer)] = '/';
-					strcpy(outbuffer + strlen(outbuffer), entries[i].name);
+				// Puzzle Output Path
+				strcpy(outbuffer, dst);
+				outbuffer[strlen(outbuffer) + 1] = 0;
+				outbuffer[strlen(outbuffer)] = '/';
+				strcpy(outbuffer + strlen(outbuffer), entries->d_name);
 
-					// Another Folder
-					if (entries[i].type == ENTRYTYPE_DIR)
-						FileOptions_CopyDir(inbuffer, outbuffer); // Copy Folder (via recursion)
+				// Another Folder
+				if (entries->d_type == DT_DIR)
+					FileOptions_CopyDir(inbuffer, outbuffer); // Copy Folder (via recursion)
 
-					// Simple File
-					else
-						FileOptions_CopyFile(inbuffer, outbuffer, true); // Copy File
+				// Simple File
+				else
+					FileOptions_CopyFile(inbuffer, outbuffer, true); // Copy File
 
-					// Free Buffer
-					free(inbuffer);
-					free(outbuffer);
-				}
+				// Free Buffer
+				free(inbuffer);
+				free(outbuffer);
 			}
 		}
-		else
-		{
-			free(entries);
-			return ret;
-		}
 
-		free(entries);
-		fsDirClose(&dir); // Close directory
+		closedir(directory);
+		return 0;
 	}
-	else
-		return ret;
 
-	return 0;
+	return -1;
 }
 
 static void FileOptions_Copy(int flag)
@@ -339,7 +413,7 @@ static Result FileOptions_Paste(void)
 			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
 				strcat(copysource, "/");
 
-			fsFsDeleteDirectoryRecursively(&fs, copysource); // Delete dir
+			FileOptions_RmdirRecursive(copysource); // Delete dir
 		}
 	}
 
@@ -349,7 +423,7 @@ static Result FileOptions_Paste(void)
 		ret = FileOptions_CopyFile(copysource, copytarget, true); // Copy file
 		
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
-			fsFsDeleteFile(&fs, copysource); // Delete file
+			remove(copysource); // Delete file
 	}
 
 	// Paste success
@@ -374,9 +448,14 @@ static void HandleDelete(void)
 				if (strncmp(multi_select_paths[i], "..", 2) != 0)
 				{
 					if (FS_DirExists(multi_select_paths[i]))
-						fsFsDeleteDirectoryRecursively(&fs, multi_select_paths[i]);
+					{
+						// Add Trailing Slash
+						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
+						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
+						FileOptions_RmdirRecursive(multi_select_paths[i]);
+					}
 					else if (FS_FileExists(multi_select_paths[i]))
-						fsFsDeleteFile(&fs, multi_select_paths[i]);
+						remove(multi_select_paths[i]);
 				}
 			}
 		}
@@ -488,7 +567,7 @@ void Menu_DisplayProperties(void)
 	// Find File
 	File *file = Dirbrowse_GetFileIndex(position);
 
-	char path[1024];
+	char path[512];
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
 
@@ -496,29 +575,13 @@ void Menu_DisplayProperties(void)
 	SDL_DrawText(RENDERER, Roboto, 370, 133, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
 	char utils_size[16];
-	u64 size = 0;
-	FS_GetFileSize(path, &size);
+	u64 size = FS_GetFileSize(path);
 	Utils_GetSizeString(utils_size, size);
 
 	SDL_DrawTextf(RENDERER, Roboto, 390, 183, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
 	SDL_DrawTextf(RENDERER, Roboto, 390, 233, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Parent: %s", cwd);
 
-	if (file->isDir)
-	{
-		FsDir dir;
-		if (R_SUCCEEDED(fsFsOpenDirectory(&fs, path, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir)))
-		{
-			u64 entryCount = 0;
-			
-			if (R_SUCCEEDED(fsDirGetEntryCount(&dir, &entryCount)))
-				SDL_DrawTextf(RENDERER, Roboto, 390, 283, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Contains: %d files", entryCount);
-			
-			fsDirClose(&dir);
-		}
-		//SDL_DrawText(RENDERER, Roboto, 390, 383, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
-		//SDL_DrawText(RENDERER, Roboto, 390, 433, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
-	}
-	else
+	if (!file->isDir)
 	{
 		SDL_DrawTextf(RENDERER, Roboto, 390, 283, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
 		//SDL_DrawText(RENDERER, Roboto, 390, 333, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
@@ -594,9 +657,9 @@ static void HandleCut()
 					snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 					
 					if (FS_DirExists(multi_select_paths[i]))
-						fsFsRenameDirectory(&fs, multi_select_paths[i], dest);
+						rename(multi_select_paths[i], dest);
 					else if (FS_FileExists(multi_select_paths[i]))
-						fsFsRenameFile(&fs, multi_select_paths[i], dest);
+						rename(multi_select_paths[i], dest);
 				}
 			}
 
@@ -607,9 +670,9 @@ static void HandleCut()
 			snprintf(dest, 512, "%s%s", cwd, Utils_Basename(copysource));
 
 			if (FS_DirExists(copysource))
-				fsFsRenameDirectory(&fs, copysource, dest);
+				rename(copysource, dest);
 			else if (FS_FileExists(copysource))
-				fsFsRenameFile(&fs, copysource, dest);
+				rename(copysource, dest);
 		}
 
 		cut_status = false;

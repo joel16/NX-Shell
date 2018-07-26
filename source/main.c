@@ -45,8 +45,6 @@ static void Init_Services(void)
 	SDL_Init(SDL_INIT_EVERYTHING);
 	timeInitialize();
 
-	fsMountSdcard(&fs);
-
 	#ifdef DEBUG
 	socketInitializeDefault();
 	nxlinkStdio();
@@ -105,12 +103,13 @@ static void Init_Services(void)
 
 		free(buf);
 	}
+
+	Config_Load();
 }
 
 int main(int argc, char **argv)
 {
 	Init_Services();
-	Config_Load();
 
 	if (setjmp(exitJmp)) 
 	{
