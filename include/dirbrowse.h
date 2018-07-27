@@ -31,6 +31,6 @@ void Dirbrowse_PopulateFiles(bool clear);
 void Dirbrowse_DisplayFiles(void);
 File *Dirbrowse_GetFileIndex(int index);
 void Dirbrowse_OpenFile(void);
-int Dirbrowse_Navigate(int dir);
+int Dirbrowse_Navigate(bool parent);
 
 #endif

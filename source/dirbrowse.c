@@ -193,12 +193,16 @@ void Dirbrowse_PopulateFiles(bool clear)
 				// Copy File Name
 				strcpy(item->name, entries[i]->d_name);
 
-				strcpy(path, cwd);
-				strcpy(path + strlen(path), item->name);
-				item->size = FS_GetFileSize(path); // Copy file size
-
 				// Set Folder Flag
 				item->isDir = entries[i]->d_type == DT_DIR;
+
+				// Copy file size
+				if (!item->isDir)
+				{
+					strcpy(path, cwd);
+					strcpy(path + strlen(path), item->name);
+					item->size = FS_GetFileSize(path);
+				}
 
 				// New List
 				if (files == NULL) 
@@ -362,7 +366,7 @@ void Dirbrowse_OpenFile(void)
 	if (file->isDir)
 	{
 		// Attempt to navigate to target
-		if (R_SUCCEEDED(Dirbrowse_Navigate(0)))
+		if (R_SUCCEEDED(Dirbrowse_Navigate(false)))
 		{
 			Dirbrowse_SaveLastDirectory();
 			Dirbrowse_PopulateFiles(true);
@@ -390,15 +394,15 @@ void Dirbrowse_OpenFile(void)
 }
 
 // Navigate to Folder
-int Dirbrowse_Navigate(int dir)
+int Dirbrowse_Navigate(bool parent)
 {
 	File *file = Dirbrowse_GetFileIndex(position); // Get index
 	
-	if ((file == NULL) || (!file->isDir)) // Not a folder
+	if (file == NULL)
 		return -1;
 
 	// Special case ".."
-	if ((dir == -1) || (strncmp(file->name, "..", 2) == 0))
+	if ((parent) || (strncmp(file->name, "..", 2) == 0))
 	{
 		char *slash = NULL;
 
@@ -419,10 +423,13 @@ int Dirbrowse_Navigate(int dir)
 	// Normal folder
 	else
 	{
-		// Append folder to working directory
-		strcpy(cwd + strlen(cwd), file->name);
-		cwd[strlen(cwd) + 1] = 0;
-		cwd[strlen(cwd)] = '/';
+		if (file->isDir)
+		{
+			// Append folder to working directory
+			strcpy(cwd + strlen(cwd), file->name);
+			cwd[strlen(cwd) + 1] = 0;
+			cwd[strlen(cwd)] = '/';
+		}
 	}
 
 	Dirbrowse_SaveLastDirectory();
