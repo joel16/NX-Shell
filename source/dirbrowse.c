@@ -122,27 +122,13 @@ static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2)
 			break;
 		
 		case 2:
-			if (isDir[0] == isDir[1]) // Date newest
-				return sbuf1.st_mtime < sbuf2.st_mtime;
-			else
-				return isDir[1] - isDir[0];
-			break;
-		
-		case 3:
-			if (isDir[0] == isDir[1]) // Date oldest
-				return sbuf2.st_mtime < sbuf1.st_mtime;
-			else
-				return isDir[1] - isDir[0];
-			break;
-		
-		case 4:
 			if (isDir[0] == isDir[1]) // Size newest
    	    		return sizeA > sizeB ? -1 : sizeA < sizeB ? 1 : 0;
    	    	else
 				return isDir[1] - isDir[0];
 			break;
 		
-		case 5:
+		case 3:
 			if (isDir[0] == isDir[1]) // Size oldest
    	    		return sizeB > sizeA ? -1 : sizeB < sizeA ? 1 : 0;
    	    	else

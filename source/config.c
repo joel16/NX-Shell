@@ -38,7 +38,7 @@ int Config_Load(void)
 	char *buf = (char *)malloc(size + 1);
 
 	FILE *file = fopen("/switch/NX-Shell/config.cfg", "r");
-	fgets(buf, size + 1, file);
+	fread(buf, size, 1, file);
 	fclose(file);
 
 	buf[size] = '\0';
