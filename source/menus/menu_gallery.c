@@ -57,8 +57,6 @@ static void Gallery_HandleNext(bool forward)
 	Utils_SetMin(&selection, (count - 1), 0);
 
 	SDL_DestroyTexture(image);
-
-	Gallery_GetImageList();
 	selection = Gallery_GetCurrentIndex(album[selection]);
 
 	SDL_LoadImage(RENDERER, &image, album[selection]);

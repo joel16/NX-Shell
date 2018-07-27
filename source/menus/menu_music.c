@@ -69,8 +69,6 @@ static void Music_Play(char *path)
 	if (audio == NULL)
 		return;
 
-	Menu_GetMusicList();
-
 	switch(Mix_GetMusicType(audio))
 	{
 		case MUS_CMD:
@@ -150,6 +148,7 @@ static void Music_HandlePause(bool *status)
 void Menu_PlayMusic(char *path)
 {
 	Result ret = 0;
+	Menu_GetMusicList();
 	Music_Play(path);
 
 	int title_height = 0;
