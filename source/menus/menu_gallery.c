@@ -13,6 +13,7 @@ static char album[512][512];
 static int count = 0, selection = 0;
 static SDL_Texture *image = NULL;
 static int width = 0, height = 0;
+static float scale_factor = 0.0f;
 
 static void Gallery_GetImageList(void)
 {
@@ -65,12 +66,10 @@ static void Gallery_HandleNext(bool forward)
 
 void Gallery_DisplayImage(char *path)
 {
-	SDL_LoadImage(RENDERER, &image, path);
-
-	SDL_QueryTexture(image, NULL, NULL, &width, &height);
-
 	Gallery_GetImageList();
 	selection = Gallery_GetCurrentIndex(path);
+	SDL_LoadImage(RENDERER, &image, path);
+	SDL_QueryTexture(image, NULL, NULL, &width, &height);
 	
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
@@ -79,7 +78,17 @@ void Gallery_DisplayImage(char *path)
 	{
 		SDL_ClearScreen(RENDERER, SDL_MakeColour(33, 39, 43, 255));
 		SDL_RenderClear(RENDERER);
-		SDL_DrawImageScale(RENDERER, image, (1280 - width) / 2, (720 - height) / 2, width, height);
+
+		if (height <= 720)
+			SDL_DrawImageScale(RENDERER, image, (1280 - width) / 2, (720 - height) / 2, width, height);
+		else if (height > 720)
+		{
+			scale_factor = (720.0f / (float)height);
+			width = width * scale_factor;
+			height = height * scale_factor;
+			SDL_DrawImageScale(RENDERER, image, (float)((1280.0f - width) / 2.0f), (float)((720.0f - height) / 2.0f), 
+				(float)width, (float)height);
+		}
 
 		hidScanInput();
 		Touch_Process(&touchInfo);
