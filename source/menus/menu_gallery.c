@@ -9,7 +9,7 @@
 #include "touch_helper.h"
 #include "utils.h"
 
-static char album[512][512];
+static char album[1024][512];
 static int count = 0, selection = 0;
 static SDL_Texture *image = NULL;
 static int width = 0, height = 0;

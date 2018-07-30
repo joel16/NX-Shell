@@ -26,7 +26,7 @@ typedef enum
 	MUSIC_STATE_SHUFFLE // 2
 } Music_State;
 
-static char playlist[512][512], title[128];
+static char playlist[1024][512], title[128];
 static int count = 0, selection = 0, state = 0;
 static Mix_Music *audio;
 

@@ -15,7 +15,7 @@
 
 #define MENUBAR_X_BOUNDARY  0
 static float menubar_x = -400.0;
-static char multi_select_dir_old[256];
+static char multi_select_dir_old[512];
 
 static void Menu_ControlMenuBar(u64 input)
 {
@@ -58,7 +58,7 @@ static void Menu_HandleMultiSelect(void)
 	if (strcmp(multi_select_dir_old, multi_select_dir) != 0)
 		FileOptions_ResetClipboard();
 
-	char path[256];
+	char path[512];
 	File *file = Dirbrowse_GetFileIndex(position);
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
@@ -122,7 +122,7 @@ static void Menu_ControlHome(u64 input)
 		if (input & KEY_LEFT)
 			position = 0;
 		else if (input & KEY_RIGHT)
-			position = fileCount - 1;
+			position = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
 
 		// Open options
 		if (input & KEY_X)

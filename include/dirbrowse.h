@@ -23,8 +23,8 @@ extern int fileCount;
 int multi_select_index;           // Multi-select index.
 bool multi_select[256];           // Array of indices selected.
 int multi_select_indices[256];    // Array to hold the indices.
-char multi_select_dir[256];       // Holds the current dir where multi-select happens.
-char multi_select_paths[51][256]; // Holds the file paths of those in the clipboard.
+char multi_select_dir[512];       // Holds the current dir where multi-select happens.
+char multi_select_paths[256][512]; // Holds the file paths of those in the clipboard.
 
 void Dirbrowse_RecursiveFree(File *node);
 void Dirbrowse_PopulateFiles(bool clear);

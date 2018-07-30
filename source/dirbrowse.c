@@ -78,7 +78,7 @@ static int Dirbrowse_ScanDir(const char *dir, struct dirent ***namelist, int (*s
 static int cmpstringp(const struct dirent **dent1, const struct dirent **dent2) 
 {
 	int ret = 0;
-	char isDir[2], path1[256], path2[256];
+	char isDir[2], path1[512], path2[512];
 	struct stat sbuf1, sbuf2;
 	
 	// push '..' to beginning
@@ -269,7 +269,7 @@ void Dirbrowse_DisplayFiles(void)
 			else
 				SDL_DrawImage(RENDERER, config_dark_theme? icon_uncheck_dark : icon_uncheck, 20, 156 + (73 * printed));
 
-			char path[500];
+			char path[512];
 			strcpy(path, cwd);
 			strcpy(path + strlen(path), file->name);
 
@@ -327,7 +327,7 @@ void Dirbrowse_DisplayFiles(void)
 
 static void Dirbrowse_SaveLastDirectory(void)
 {
-	char *buf = (char *)malloc(256);
+	char *buf = (char *)malloc(512);
 	strcpy(buf, cwd);
 
 	FILE *write = fopen("/switch/NX-Shell/lastdir.txt", "w");
