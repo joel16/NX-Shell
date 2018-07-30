@@ -11,7 +11,7 @@ static char *Clock_GetCurrentTime(void)
 
     time_t unixTime = time(NULL);
 	struct tm* timeStruct = gmtime((const time_t *)&unixTime);
-	int hours = ((timeStruct->tm_hour) - 5);
+	int hours = (timeStruct->tm_hour);
 	int minutes = timeStruct->tm_min;
 	
 	bool amOrPm = false;
