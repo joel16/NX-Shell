@@ -1,0 +1,17 @@
+language: c
+
+sudo: true
+
+services: docker
+install:
+- docker pull devkitpro/devkita64
+script:
+- docker run -e ENABLE_COMPATIBILITY_REPORTING -v $TRAVIS_BUILD_DIR:/NX-Shell
+  devkitpro/devkita64 /bin/bash -ex /NX-Shell/.travis/build.sh
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+  on:
+    branch: master
