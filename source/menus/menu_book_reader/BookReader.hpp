@@ -7,43 +7,46 @@
 
 struct SDL_Texture;
 
-typedef enum {
+typedef enum
+{
     BookPageLayoutPortrait,
     BookPageLayoutLandscape
 } BookPageLayout;
 
-class BookReader {
-public:
-    BookReader(const char *path);
-    ~BookReader();
+class BookReader
+{
+    public:
+        BookReader(const char *path);
+        ~BookReader();
     
-    void previous_page();
-    void next_page();
-    void zoom_in();
-    void zoom_out();
-    void move_page_up();
-    void move_page_down();
-    void move_page_left();
-    void move_page_right();
-    void reset_page();
-    void switch_page_layout();
-    void draw();
+        void previous_page();
+        void next_page();
+        void zoom_in();
+        void zoom_out();
+        void move_page_up();
+        void move_page_down();
+        void move_page_left();
+        void move_page_right();
+        void reset_page();
+        void switch_page_layout();
+        void draw();
     
-    BookPageLayout currentPageLayout() {
-        return _currentPageLayout;
-    }
+        BookPageLayout currentPageLayout()
+        {
+            return _currentPageLayout;
+        }
     
-private:
-    void show_status_bar();
-    void switch_current_page_layout(BookPageLayout bookPageLayout, int current_page);
+    private:
+        void show_status_bar();
+        void switch_current_page_layout(BookPageLayout bookPageLayout, int current_page);
     
-    fz_document *doc = NULL;
-    int status_bar_visible_counter = 0;
+        fz_document *doc = NULL;
+        int status_bar_visible_counter = 0;
     
-    BookPageLayout _currentPageLayout = BookPageLayoutPortrait;
-    PageLayout *layout = NULL;
+        BookPageLayout _currentPageLayout = BookPageLayoutPortrait;
+        PageLayout *layout = NULL;
     
-    std::string book_name;
+        std::string book_name;
 };
 
 #endif

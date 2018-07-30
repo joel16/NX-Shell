@@ -1,4 +1,5 @@
-extern "C" {
+extern "C"
+{
     #include "menu_book_reader.h"
     #include "touch_helper.h"
 }
@@ -36,10 +37,10 @@ void Menu_OpenBook(char *path)
         if (kDown & KEY_Y)
             reader->switch_page_layout();
         
-        if (kHeld & KEY_DUP)
+        if ((kHeld & KEY_DUP) || (kHeld & KEY_RSTICK_UP))
             reader->zoom_in();
         
-        if (kHeld & KEY_DDOWN)
+        if ((kHeld & KEY_DDOWN) || (kHeld & KEY_RSTICK_DOWN))
             reader->zoom_out();
         
         if (kHeld & KEY_LSTICK_UP)

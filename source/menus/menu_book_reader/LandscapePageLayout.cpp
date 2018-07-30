@@ -2,7 +2,8 @@
 #include "common.h"
 #include <algorithm>
 
-LandscapePageLayout::LandscapePageLayout(fz_document *doc, int current_page):PageLayout(doc, current_page) {
+LandscapePageLayout::LandscapePageLayout(fz_document *doc, int current_page):PageLayout(doc, current_page)
+{
     int w = viewport.w;
     viewport.w = viewport.h;
     viewport.h = w;
@@ -11,12 +12,14 @@ LandscapePageLayout::LandscapePageLayout(fz_document *doc, int current_page):Pag
     reset();
 }
 
-void LandscapePageLayout::reset() {
+void LandscapePageLayout::reset()
+{
     page_center = fz_make_point(viewport.h / 2, viewport.w / 2);
     set_zoom(min_zoom);
 };
 
-void LandscapePageLayout::draw_page() {
+void LandscapePageLayout::draw_page()
+{
     float w = page_bounds.x1 * zoom, h = page_bounds.y1 * zoom;
     
     SDL_Rect rect;
@@ -28,7 +31,8 @@ void LandscapePageLayout::draw_page() {
     SDL_RenderCopyEx(RENDERER, page_texture, NULL, &rect, 90, NULL, SDL_FLIP_NONE);
 }
 
-void LandscapePageLayout::move_page(float x, float y) {
+void LandscapePageLayout::move_page(float x, float y)
+{
     float w = page_bounds.x1 * zoom, h = page_bounds.y1 * zoom;
     
     page_center.x = fmin(fmax(page_center.x + y, h / 2), viewport.h - h / 2);
