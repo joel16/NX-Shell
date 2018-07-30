@@ -12,14 +12,11 @@
 #define NOTHING_TO_COPY      -1
 
 void FileOptions_ResetClipboard(void);
-void Menu_ControlDeleteDialog(u64 input);
-void Menu_TouchDeleteDialog(TouchInfo touchInfo);
+void Menu_ControlDeleteDialog(u64 input, TouchInfo touchInfo);
 void Menu_DisplayDeleteDialog(void);
-void Menu_ControlProperties(u64 input);
-void Menu_TouchProperties(TouchInfo touchInfo);
+void Menu_ControlProperties(u64 input, TouchInfo touchInfo);
 void Menu_DisplayProperties(void);
-void Menu_ControlOptions(u64 input);
-void Menu_TouchOptions(TouchInfo touchInfo);
+void Menu_ControlOptions(u64 input, TouchInfo touchInfo);
 void Menu_DisplayOptions(void);
 
 #endif

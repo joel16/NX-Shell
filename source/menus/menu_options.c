@@ -159,7 +159,7 @@ static int FileOptions_RmdirRecursive(char *path)
 			int size = strlen(path) + strlen(node->name) + 2;
 
 			// Allocate Buffer
-			char * buffer = (char *)malloc(size);
+			char *buffer = (char *)malloc(size);
 
 			// Combine Path
 			strcpy(buffer, path);
@@ -469,11 +469,11 @@ static void HandleDelete(void)
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
 
-void Menu_ControlDeleteDialog(u64 input)
+void Menu_ControlDeleteDialog(u64 input, TouchInfo touchInfo)
 {
-	if (input & KEY_RIGHT)
+	if ((input & KEY_RIGHT) || (input & KEY_LSTICK_RIGHT) || (input & KEY_RSTICK_RIGHT))
 		delete_dialog_selection++;
-	else if (input & KEY_LEFT)
+	else if ((input & KEY_LEFT) || (input & KEY_LSTICK_LEFT) || (input & KEY_RSTICK_LEFT))
 		delete_dialog_selection--;
 
 	Utils_SetMax(&delete_dialog_selection, 0, 1);
@@ -494,10 +494,7 @@ void Menu_ControlDeleteDialog(u64 input)
 
 		delete_dialog_selection = 0;
 	}
-}
 
-void Menu_TouchDeleteDialog(TouchInfo touchInfo)
-{
 	if (touchInfo.state == TouchStart)
 	{
 		// Confirm Button
@@ -544,14 +541,11 @@ void Menu_DisplayDeleteDialog(void)
 	SDL_DrawText(RENDERER, Roboto, 910 - (delete_cancel_width), ((720 - (delete_height)) / 2) + 245, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
 }
 
-void Menu_ControlProperties(u64 input)
+void Menu_ControlProperties(u64 input, TouchInfo touchInfo)
 {
 	if ((input & KEY_A) || (input & KEY_B))
 		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-}
-
-void Menu_TouchProperties(TouchInfo touchInfo)
-{
+	
 	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) 
 	{
 		if (tapped_outside(touchInfo, 350, 85, 930, 635))
@@ -682,16 +676,16 @@ static void HandleCut()
 	}
 }
 
-void Menu_ControlOptions(u64 input)
+void Menu_ControlOptions(u64 input, TouchInfo touchInfo)
 {
-	if (input & KEY_RIGHT)
+	if ((input & KEY_RIGHT) || (input & KEY_LSTICK_RIGHT) || (input & KEY_RSTICK_RIGHT))
 		row++;
-	else if (input & KEY_LEFT)
+	else if ((input & KEY_LEFT) || (input & KEY_LSTICK_LEFT) || (input & KEY_RSTICK_LEFT))
 		row--;
 
-	if (input & KEY_DDOWN)
+	if ((input & KEY_DDOWN) || (input & KEY_LSTICK_DOWN) || (input & KEY_RSTICK_DOWN))
 		column++;
-	else if (input & KEY_DUP)
+	else if ((input & KEY_DUP) || (input & KEY_LSTICK_UP) || (input & KEY_RSTICK_UP))
 		column--;
 
 	Utils_SetMax(&row, 0, 1);
@@ -713,7 +707,7 @@ void Menu_ControlOptions(u64 input)
 		else if (row == 0 && column == 2)
 			HandleCut();
 		else if (row == 1 && column == 2)
-			MENU_DEFAULT_STATE = MENU_STATE_DIALOG;
+			MENU_DEFAULT_STATE = MENU_STATE_DELETE_DIALOG;
 	}
 
 	if (input & KEY_B)
@@ -727,10 +721,7 @@ void Menu_ControlOptions(u64 input)
 
 	if (input & KEY_X)
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
-}
-
-void Menu_TouchOptions(TouchInfo touchInfo)
-{
+	
 	if (touchInfo.state == TouchStart)
 	{
 		// Column 0
@@ -803,7 +794,7 @@ void Menu_TouchOptions(TouchInfo touchInfo)
 				HandleCut();
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-				MENU_DEFAULT_STATE = MENU_STATE_DIALOG;
+				MENU_DEFAULT_STATE = MENU_STATE_DELETE_DIALOG;
 		}
 		// Cancel Button
 		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height))
