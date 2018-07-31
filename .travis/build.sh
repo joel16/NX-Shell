@@ -9,5 +9,5 @@ git submodule update --init --recursive
 cd mupdf/ && make generate
 cd ../ && make
 
-rm -rf build include mupdf romfs source
-rm icon.jpg LICENSE Makefile Makefile.mupdf NX-Shell.elf NX-Shell.nacp NX-Shell.nso NX-Shell.pfs0 README.md
+rm -rf .travis build include mupdf romfs source
+rm .gitattributes .gitignore .gitmodules icon.jpg LICENSE Makefile Makefile.mupdf NX-Shell.elf NX-Shell.nacp NX-Shell.nso NX-Shell.pfs0 README.md .travis.yml
