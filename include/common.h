@@ -25,20 +25,24 @@ extern TTF_Font *Roboto_large, *Roboto, *Roboto_small, *Roboto_OSK;
 extern int MENU_DEFAULT_STATE;
 extern int BROWSE_STATE;
 
-#define MENU_STATE_HOME          0
-#define MENU_STATE_OPTIONS       1
-#define MENU_STATE_MENUBAR       2
-#define MENU_STATE_SETTINGS      3
-#define MENU_STATE_FTP           4
-#define MENU_STATE_SORT          5
-#define MENU_STATE_THEMES        6
-#define MENU_STATE_DELETE_DIALOG 7
-#define MENU_STATE_PROPERTIES    8
+enum MENU_STATES
+{
+    MENU_STATE_HOME = 0,
+    MENU_STATE_OPTIONS = 1,
+    MENU_STATE_MENUBAR = 2,
+    MENU_STATE_SETTINGS = 3,
+    MENU_STATE_FTP = 4,
+    MENU_STATE_SORT = 5,
+    MENU_STATE_DELETE_DIALOG = 6,
+    MENU_STATE_PROPERTIES = 7
+};
 
-#define STATE_SD   0
-#define STATE_NAND 1
+enum BROWSE_STATES
+{
+    STATE_SD = 0,
+    STATE_NAND = 1
+};
 
 extern char cwd[512];
-extern char fileName[255];
 
 #endif

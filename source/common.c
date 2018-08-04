@@ -11,4 +11,3 @@ int MENU_DEFAULT_STATE;
 int BROWSE_STATE;
 
 char cwd[512];
-char fileName[255];
