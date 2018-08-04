@@ -40,6 +40,7 @@ ROMFS       := romfs
 VERSION_MAJOR := 1
 VERSION_MINOR := 0
 VERSION_MICRO := 3
+GITVERSION    := $(shell git log -1 --pretty='%h')
 
 APP_TITLE   := NX-Shell
 APP_AUTHOR  := Joel16
@@ -52,6 +53,8 @@ ARCH	:=	-march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE
 
 CFLAGS	:=	-g -Werror -O2 -ffunction-sections `sdl2-config --cflags` `freetype-config --cflags` \
 			-DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO) \
+			-DAPP_TITLE="\"$(APP_TITLE)\"" \
+			-DGITVERSION="\"${GITVERSION}\"" \
 			$(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
@@ -61,8 +64,8 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(PWD)/$(BUILD)
 
-LIBS	:= -lSDL2_mixer -lmodplug -lmpg123 -lFLAC -lvorbisidec -logg -lSDL2_ttf -lSDL2_gfx -lSDL2_image \
-           -lpng -ljpeg `sdl2-config --libs` -lnx -lmupdf_core -lmupdf_thirdparty -lconfig
+LIBS	:=	-lcurl -lSDL2_mixer -lmodplug -lmpg123 -lFLAC -lvorbisidec -logg -lSDL2_ttf -lSDL2_gfx -lSDL2_image \
+			-lpng -ljpeg `sdl2-config --libs` -lnx -lmupdf_core -lmupdf_thirdparty -lconfig
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -140,7 +143,9 @@ endif
 .PHONY: $(BUILD) clean all
 
 #---------------------------------------------------------------------------------
-all: generate_fonts build_mupdf $(BUILD)
+all: generate_fonts build_mupdf $(BUILD) 
+	 @echo "${VERSION_MAJOR}${VERSION_MINOR}${VERSION_MICRO}" > UPDATE_MILESTONE.txt # For nightly builds
+	 @echo "${GITVERSION}" > UPDATE_NIGHTLY.txt # For maintainer builds
 
 generate_fonts:
 	@cd mupdf && make generate
