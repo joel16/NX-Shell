@@ -17,6 +17,14 @@
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
 
+void AnimateMenuBar(float delta_time)
+{  
+    menubar_x += 400.0f * (delta_time * 0.001);
+	
+	if (menubar_x > 0)
+		menubar_x = MENUBAR_X_BOUNDARY;
+}
+
 static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo)
 {
 	if (input & KEY_A)
@@ -102,12 +110,12 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo)
 		else if (input & KEY_DDOWN)
 			position++;
 
-		if (hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_RSTICK_UP)
+		if ((hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_RSTICK_UP) || (hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_LSTICK_UP))
 		{
 			wait(5);
 			position--;
 		}
-		else if (hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_RSTICK_DOWN)
+		else if ((hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_RSTICK_DOWN) || (hidKeysHeld(CONTROLLER_P1_AUTO) & KEY_LSTICK_DOWN))
 		{
 			wait(5);
 			position++;
@@ -210,8 +218,14 @@ void Menu_Main(void)
 	Dirbrowse_PopulateFiles(false);
 	memset(multi_select, 0, sizeof(multi_select)); // Reset all multi selected items
 
+	u64 current_time = 0, last_time = 0;
+
 	while(appletMainLoop())
 	{
+		last_time = current_time;
+    	current_time = SDL_GetPerformanceCounter();
+		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
+
 		SDL_ClearScreen(RENDERER, config_dark_theme? BLACK_BG : WHITE);
 		SDL_RenderClear(RENDERER);
 		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, config_dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
@@ -244,12 +258,7 @@ void Menu_Main(void)
 		else if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR) 
 		{
 			Menu_DisplayMenuBar();
-
-			menubar_x += 35.0;
-
-			if (menubar_x > -1)
-				menubar_x = MENUBAR_X_BOUNDARY;
-
+			AnimateMenuBar(delta_time);
 			Menu_ControlMenuBar(kDown, touchInfo);
 		}
 		else if (MENU_DEFAULT_STATE == MENU_STATE_SETTINGS)

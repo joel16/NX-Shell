@@ -107,9 +107,9 @@ static void Menu_DisplaySortSettings(void)
 		if (kDown & KEY_B)
 			break;
 
-		if (kDown & KEY_DDOWN)
+		if ((kDown & KEY_DDOWN) || (kDown & KEY_LSTICK_DOWN) || (kDown & KEY_RSTICK_DOWN))
 			selection++;
-		else if (kDown & KEY_DUP)
+		else if ((kDown & KEY_DUP) || (kDown & KEY_LSTICK_UP) || (kDown & KEY_RSTICK_UP))
 			selection--;
 
 		Utils_SetMax(&selection, 0, max_items);
@@ -259,9 +259,9 @@ void Menu_DisplaySettings(void)
 			if (kDown & KEY_B)
 				break;
 			
-			if (kDown & KEY_DDOWN)
+			if ((kDown & KEY_DDOWN) || (kDown & KEY_LSTICK_DOWN) || (kDown & KEY_RSTICK_DOWN))
 				selection++;
-			else if (kDown & KEY_DUP)
+			else if ((kDown & KEY_DUP) || (kDown & KEY_LSTICK_UP) || (kDown & KEY_RSTICK_UP))
 				selection--;
 
 			Utils_SetMax(&selection, 0, max_items);
