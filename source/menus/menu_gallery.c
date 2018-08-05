@@ -64,6 +64,13 @@ static void Gallery_HandleNext(bool forward)
 	SDL_QueryTexture(image, NULL, NULL, &width, &height);
 }
 
+static void Gallery_DrawImage(int x, int y, int w, int h, float zoom_factor)
+{
+	SDL_Rect position;
+	position.x = x; position.y = y; position.w = w * zoom_factor; position.h = h * zoom_factor;
+	SDL_RenderCopy(RENDERER, image, NULL, &position);
+}
+
 void Gallery_DisplayImage(char *path)
 {
 	Gallery_GetImageList();
@@ -74,35 +81,59 @@ void Gallery_DisplayImage(char *path)
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
 
+	u64 current_time = 0, last_time = 0;
+	float zoom_factor = 1.0f;
+
 	while(appletMainLoop())
 	{
 		SDL_ClearScreen(RENDERER, SDL_MakeColour(33, 39, 43, 255));
 		SDL_RenderClear(RENDERER);
 
+		last_time = current_time;
+    	current_time = SDL_GetPerformanceCounter();
+		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
+
 		if (height <= 720)
-			SDL_DrawImageScale(RENDERER, image, (1280 - width) / 2, (720 - height) / 2, width, height);
+			Gallery_DrawImage((1280 - (width * zoom_factor)) / 2, (720 - (height * zoom_factor)) / 2, 
+			width, height, zoom_factor);
 		else if (height > 720)
 		{
 			scale_factor = (720.0f / (float)height);
 			width = width * scale_factor;
 			height = height * scale_factor;
-			SDL_DrawImageScale(RENDERER, image, (float)((1280.0f - width) / 2.0f), (float)((720.0f - height) / 2.0f), 
-				(float)width, (float)height);
+			Gallery_DrawImage((float)((1280.0f - (width * zoom_factor)) / 2.0f), 
+			(float)((720.0f - (height * zoom_factor)) / 2.0f), (float)width, (float)height, zoom_factor);
 		}
 
 		hidScanInput();
 		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+		u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
 
-		if ((kDown & KEY_LEFT) || (kDown & KEY_L))
+		if ((kDown & KEY_DLEFT) || (kDown & KEY_L))
 		{
 			wait(1);
 			Gallery_HandleNext(false);
 		}
-		else if ((kDown & KEY_RIGHT) || (kDown & KEY_R))
+		else if ((kDown & KEY_DRIGHT) || (kDown & KEY_R))
 		{
 			wait(1);
 			Gallery_HandleNext(true);
+		}
+
+		if ((kHeld & KEY_DUP) || (kHeld & KEY_LSTICK_UP))
+		{
+			zoom_factor += 0.5f * (delta_time * 0.001);
+
+			if (zoom_factor > 2.0f)
+				zoom_factor = 2.0f;
+		}
+		else if ((kHeld & KEY_DDOWN) || (kHeld & KEY_LSTICK_DOWN))
+		{
+			zoom_factor -= 0.5f * (delta_time * 0.001);
+
+			if (zoom_factor < 0.5f)
+				zoom_factor = 0.5f;
 		}
 		
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
