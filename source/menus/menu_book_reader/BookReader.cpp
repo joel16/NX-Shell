@@ -143,7 +143,11 @@ void BookReader::switch_page_layout()
 
 void BookReader::draw()
 {
-    SDL_ClearScreen(RENDERER, SDL_MakeColour(33, 39, 43, 255));
+    if (config_dark_theme == true)
+        SDL_ClearScreen(RENDERER, SDL_MakeColour(33, 39, 43, 255));
+    else 
+        SDL_ClearScreen(RENDERER, SDL_MakeColour(255, 255, 255, 255));
+
     SDL_RenderClear(RENDERER);
     
     layout->draw_page();
