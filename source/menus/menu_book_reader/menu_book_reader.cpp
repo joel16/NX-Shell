@@ -43,6 +43,7 @@ void Menu_OpenBook(char *path)
                 reader->zoom_in();
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
                 reader->previous_page();
+            reader->reset_page();
         }
         else if ((kDown & KEY_DDOWN) || (kHeld & KEY_RSTICK_DOWN))
         {
@@ -50,6 +51,7 @@ void Menu_OpenBook(char *path)
                 reader->zoom_out();
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
                 reader->next_page();
+            reader->reset_page();
         }
 
         if (kHeld & KEY_LSTICK_UP)
@@ -107,6 +109,7 @@ void Menu_OpenBook(char *path)
                         reader->previous_page();
                     else if (tapped_inside(touchInfo, 0, 720 - tapRegion, 1280, 720))
                         reader->next_page();
+                    reader->reset_page();
                     break;
             }
         }
