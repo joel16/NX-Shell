@@ -78,20 +78,14 @@ BookReader::~BookReader()
 
 void BookReader::previous_page(int n)
 {
-	for (int i = 0; i < n; i++)
-	{
-		layout->previous_page();
-	}
+    layout->previous_page(n);
     show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }
 
 void BookReader::next_page(int n)
 {
-	for (int i = 0; i < n; i++)
-	{
-		layout->next_page();
-    }
+    layout->next_page(n);
     show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }

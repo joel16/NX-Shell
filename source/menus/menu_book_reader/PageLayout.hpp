@@ -25,8 +25,8 @@ class PageLayout
             return _current_page;
         }
     
-        virtual void previous_page();
-        virtual void next_page();
+        virtual void previous_page(int n);
+        virtual void next_page(int n);
         virtual void zoom_in();
         virtual void zoom_out();
         virtual void move_up();
