@@ -216,13 +216,17 @@ void Menu_PlayMusic(char *path)
 
 			if (state == MUSIC_STATE_NONE)
 			{
-				Mix_HaltMusic();
+				if (count != 0)
+					Music_HandleNext(true, MUSIC_STATE_NONE);
 				break;
 			}
 			else if (state == MUSIC_STATE_REPEAT)
 				Music_HandleNext(false, MUSIC_STATE_REPEAT);
 			else if (state == MUSIC_STATE_SHUFFLE)
-				Music_HandleNext(false, MUSIC_STATE_SHUFFLE);
+			{
+				if (count != 0)
+					Music_HandleNext(false, MUSIC_STATE_SHUFFLE);
+			}
 		}
 
 		if (kDown & KEY_B)
@@ -253,12 +257,16 @@ void Menu_PlayMusic(char *path)
 		if ((kDown & KEY_LEFT) || (kDown & KEY_L))
 		{
 			wait(1);
-			Music_HandleNext(false, MUSIC_STATE_NONE);
+
+			if (count != 0)
+				Music_HandleNext(false, MUSIC_STATE_NONE);
 		}
 		else if ((kDown & KEY_RIGHT) || (kDown & KEY_R))
 		{
 			wait(1);
-			Music_HandleNext(true, MUSIC_STATE_NONE);
+
+			if (count != 0)
+				Music_HandleNext(true, MUSIC_STATE_NONE);
 		}
 
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
@@ -275,12 +283,16 @@ void Menu_PlayMusic(char *path)
 			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) - (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
 			{
 				wait(1);
-				Music_HandleNext(false, MUSIC_STATE_NONE);
+
+				if (count != 0)
+					Music_HandleNext(false, MUSIC_STATE_NONE);
 			}
 			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
 			{
 				wait(1);
-				Music_HandleNext(true, MUSIC_STATE_NONE);
+
+				if (count != 0)
+					Music_HandleNext(true, MUSIC_STATE_NONE);
 			}
 			else if (tapped_inside(touchInfo, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, ((590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2)) + (btn_width - 10), (141 + ((559 - (btn_height - 10)) / 2) + 90) + (btn_height - 10)))
 			{
