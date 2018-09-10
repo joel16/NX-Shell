@@ -10,14 +10,14 @@ PageLayout::PageLayout(fz_document *doc, int current_page):doc(doc),pdf(pdf_spec
     render_page_to_texture(_current_page, false);
 }
 
-void PageLayout::previous_page()
+void PageLayout::previous_page(int n)
 {
-    render_page_to_texture(_current_page - 1, false);
+    render_page_to_texture(_current_page - n, false);
 }
 
-void PageLayout::next_page()
+void PageLayout::next_page(int n)
 {
-    render_page_to_texture(_current_page + 1, false);
+    render_page_to_texture(_current_page + n, false);
 }
 
 void PageLayout::zoom_in()

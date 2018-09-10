@@ -19,8 +19,8 @@ class BookReader
         BookReader(const char *path);
         ~BookReader();
     
-        void previous_page();
-        void next_page();
+        void previous_page(int n);
+        void next_page(int n);
         void zoom_in();
         void zoom_out();
         void move_page_up();

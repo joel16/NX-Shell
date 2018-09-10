@@ -76,16 +76,16 @@ BookReader::~BookReader()
     delete layout;
 }
 
-void BookReader::previous_page()
+void BookReader::previous_page(int n)
 {
-    layout->previous_page();
+    layout->previous_page(n);
     show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }
 
-void BookReader::next_page()
+void BookReader::next_page(int n)
 {
-    layout->next_page();
+    layout->next_page(n);
     show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }

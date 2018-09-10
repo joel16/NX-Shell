@@ -25,16 +25,25 @@ void Menu_OpenBook(char *path)
         if (kDown & KEY_DLEFT)
         {
             if (reader->currentPageLayout() == BookPageLayoutPortrait || (!hidGetHandheldMode()))
-                reader->previous_page();
+                reader->previous_page(1);
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
                 reader->zoom_out();
         }
         else if (kDown & KEY_DRIGHT)
         {
             if (reader->currentPageLayout() == BookPageLayoutPortrait || (!hidGetHandheldMode()))
-                reader->next_page();
+                reader->next_page(1);
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
                 reader->zoom_in();
+        }
+
+        if (kDown & KEY_R)
+        {
+            reader->next_page(10);
+        }
+        else if (kDown & KEY_L)
+        {
+            reader->previous_page(10);
         }
 
         if ((kDown & KEY_DUP) || (kHeld & KEY_RSTICK_UP))
@@ -42,16 +51,16 @@ void Menu_OpenBook(char *path)
             if (reader->currentPageLayout() == BookPageLayoutPortrait || (!hidGetHandheldMode()))
                 reader->zoom_in();
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
-                reader->previous_page();
-            reader->reset_page();
+                reader->previous_page(1);
+            //reader->reset_page();
         }
         else if ((kDown & KEY_DDOWN) || (kHeld & KEY_RSTICK_DOWN))
         {
             if (reader->currentPageLayout() == BookPageLayoutPortrait || (!hidGetHandheldMode()))
                 reader->zoom_out();
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
-                reader->next_page();
-            reader->reset_page();
+                reader->next_page(1);
+            //reader->reset_page();
         }
 
         if (kHeld & KEY_LSTICK_UP)
@@ -100,15 +109,15 @@ void Menu_OpenBook(char *path)
             {
                 case BookPageLayoutPortrait:
                     if (tapped_inside(touchInfo, 0, 0, tapRegion, 720))
-                        reader->previous_page();
+                        reader->previous_page(1);
                     else if (tapped_inside(touchInfo, 1280 - tapRegion, 0, 1280, 720))
-                        reader->next_page();
+                        reader->next_page(1);
                     break;
                 case BookPageLayoutLandscape:
                     if (tapped_inside(touchInfo, 0, 0, 1280, tapRegion))
-                        reader->previous_page();
+                        reader->previous_page(1);
                     else if (tapped_inside(touchInfo, 0, 720 - tapRegion, 1280, 720))
-                        reader->next_page();
+                        reader->next_page(1);
                     reader->reset_page();
                     break;
             }
