@@ -34,6 +34,7 @@ static void Term_Services(void)
 	socketExit();
 	#endif
 
+	psmExit();
 	timeExit();
 	SDL_Quit();
 	romfsExit();
@@ -44,6 +45,7 @@ static void Init_Services(void)
 	romfsInit();
 	SDL_Init(SDL_INIT_EVERYTHING);
 	timeInitialize();
+	psmInitialize();
 
 	#ifdef DEBUG
 	socketInitializeDefault();
