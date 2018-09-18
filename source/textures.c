@@ -70,10 +70,12 @@ void Textures_Load(void)
 	SDL_LoadImage(RENDERER, &battery_full_charging, "romfs:/res/drawable/battery_full_charging.png");
 	SDL_LoadImage(RENDERER, &battery_low, "romfs:/res/drawable/battery_low.png");
 	SDL_LoadImage(RENDERER, &battery_unknown, "romfs:/res/drawable/battery_unknown.png");
+	SDL_LoadImage(RENDERER, &icon_lock, "romfs:/res/drawable/ic_material_dialog_fs_locked.png");
 }
 
 void Textures_Free(void)
 {
+	SDL_DestroyTexture(icon_lock);
 	SDL_DestroyTexture(battery_unknown);
 	SDL_DestroyTexture(battery_low);
 	SDL_DestroyTexture(battery_full_charging);

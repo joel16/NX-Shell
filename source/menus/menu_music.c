@@ -162,6 +162,8 @@ void Menu_PlayMusic(char *path)
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
 
+	bool locked = false;
+
 	while(appletMainLoop())
 	{
 		SDL_ClearScreen(RENDERER, MUSIC_STATUS_BG_COLOUR);
@@ -170,6 +172,9 @@ void Menu_PlayMusic(char *path)
 		SDL_DrawImage(RENDERER, default_artwork_blur, 0, 0);
 		SDL_DrawRect(RENDERER, 0, 0, 1280, 40, MUSIC_GENRE_COLOUR); // Status bar
 		SDL_DrawRect(RENDERER, 0, 140, 1280, 1, MUSIC_SEPARATOR_COLOUR); // Separator
+
+		if (locked)
+			SDL_DrawImage(RENDERER, icon_lock, 5, 3);
 
 		SDL_DrawImage(RENDERER, icon_back, 40, 66);
 
@@ -229,6 +234,9 @@ void Menu_PlayMusic(char *path)
 			}
 		}
 
+		if (kDown & KEY_PLUS)
+			locked = !locked;
+
 		if (kDown & KEY_B)
 		{
 			wait(1);
@@ -254,19 +262,22 @@ void Menu_PlayMusic(char *path)
 				state = MUSIC_STATE_SHUFFLE;
 		}
 
-		if ((kDown & KEY_LEFT) || (kDown & KEY_L))
+		if (!locked)
 		{
-			wait(1);
+			if ((kDown & KEY_LEFT) || (kDown & KEY_L))
+			{
+				wait(1);
 
-			if (count != 0)
-				Music_HandleNext(false, MUSIC_STATE_NONE);
-		}
-		else if ((kDown & KEY_RIGHT) || (kDown & KEY_R))
-		{
-			wait(1);
+				if (count != 0)
+					Music_HandleNext(false, MUSIC_STATE_NONE);
+			}
+			else if ((kDown & KEY_RIGHT) || (kDown & KEY_R))
+			{
+				wait(1);
 
-			if (count != 0)
-				Music_HandleNext(true, MUSIC_STATE_NONE);
+				if (count != 0)
+					Music_HandleNext(true, MUSIC_STATE_NONE);
+			}
 		}
 
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone)
@@ -280,20 +291,6 @@ void Menu_PlayMusic(char *path)
 
 			if (tapped_inside(touchInfo, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
 				Music_HandlePause(&isPlaying);
-			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) - (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
-			{
-				wait(1);
-
-				if (count != 0)
-					Music_HandleNext(false, MUSIC_STATE_NONE);
-			}
-			else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
-			{
-				wait(1);
-
-				if (count != 0)
-					Music_HandleNext(true, MUSIC_STATE_NONE);
-			}
 			else if (tapped_inside(touchInfo, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, ((590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2)) + (btn_width - 10), (141 + ((559 - (btn_height - 10)) / 2) + 90) + (btn_height - 10)))
 			{
 				if (state == MUSIC_STATE_SHUFFLE)
@@ -307,6 +304,24 @@ void Menu_PlayMusic(char *path)
 					state = MUSIC_STATE_NONE;
 				else
 					state = MUSIC_STATE_REPEAT;
+			}
+			
+			if (!locked)
+			{
+				if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) - (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) - (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
+				{
+					wait(1);
+
+					if (count != 0)
+						Music_HandleNext(false, MUSIC_STATE_NONE);
+				}
+				else if (tapped_inside(touchInfo, (570 + ((710 - btn_width) / 2)) + (btn_width * 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + (btn_width * 2) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
+				{
+					wait(1);
+
+					if (count != 0)
+						Music_HandleNext(true, MUSIC_STATE_NONE);
+				}
 			}
 		}
 	}
