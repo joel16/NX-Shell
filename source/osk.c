@@ -94,7 +94,8 @@ void OSK_Display(char *title, char *msg)
 	int cursor_width = 0;
 	TTF_SizeText(Roboto_large, "|", &cursor_width, NULL);
 
-	int buf_width = 0, buf_height = 0;
+	char buf2[256];
+	int buf_width = 0, buf_height = 0, buf_width_curr;
 
 	OSK_ResetIndex();
 
@@ -125,10 +126,12 @@ void OSK_Display(char *title, char *msg)
 		if (strlen(osk_buffer) != 0)
 		{
 			TTF_SizeText(Roboto_large, osk_buffer, &buf_width, &buf_height);
-			SDL_DrawText(RENDERER, Roboto_large, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, osk_buffer);
+			snprintf(buf2, osk_index + 1, osk_buffer);
+			TTF_SizeText(Roboto_large, buf2, &buf_width_curr, NULL);
+			SDL_DrawTextf(RENDERER, Roboto_large, (1280 - buf_width) / 2, 210, config_dark_theme? WHITE : BLACK, "%s", osk_buffer);
 		}
 
-		OSK_BlinkText(transp, (((1280 - buf_width) / 2) + (buf_width + cursor_width)) - 8, 210);
+		OSK_BlinkText(transp, (((1280 - buf_width) / 2) + (buf_width_curr + cursor_width)) - 11, 210);
 		transp -= 14;
 
 		for (int x = 0; x <= MAX_X; x++)
@@ -184,7 +187,7 @@ void OSK_Display(char *title, char *msg)
 		Utils_SetMin(&osk_pos_y, MAX_Y, 0);
 		Utils_SetMax(&osk_pos_y, 0, MAX_Y);
 
-		/*if (kDown & KEY_L)
+		if (kDown & KEY_L)
 		{
 			if (strlen(osk_buffer) != 0)
 			{
@@ -203,7 +206,7 @@ void OSK_Display(char *title, char *msg)
 				else
 					osk_index = strlen(osk_buffer);
 			}
-		}*/
+		}
 
 		if (kDown & KEY_ZL)
 		{

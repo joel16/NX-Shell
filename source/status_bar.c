@@ -41,8 +41,7 @@ static void StatusBar_GetBatteryStatus(int x, int y)
 
 	if (R_FAILED(psmGetChargerType(&state)))
 		state = 0;
-
-
+	
 	if (R_SUCCEEDED(psmGetBatteryChargePercentage(&percent)))
 	{
 		if (percent < 20)
