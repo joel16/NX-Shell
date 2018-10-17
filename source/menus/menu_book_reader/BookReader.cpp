@@ -12,16 +12,16 @@ extern "C" {
 }
 
 fz_context *ctx = NULL;
-config_t *config = NULL;
+config_t *reader_config = NULL;
 
 static int load_last_page(const char *book_name) {
-    if (!config) {
-        config = (config_t *)malloc(sizeof(config_t));
-        config_init(config);
-        config_read_file(config, "/switch/NX-Shell/last_book_pages.cfg");
+    if (!reader_config) {
+        reader_config = (config_t *)malloc(sizeof(config_t));
+        config_init(reader_config);
+        config_read_file(reader_config, "/switch/NX-Shell/last_book_pages.cfg");
     }
     
-    config_setting_t *setting = config_setting_get_member(config_root_setting(config), book_name);
+    config_setting_t *setting = config_setting_get_member(config_root_setting(reader_config), book_name);
     
     if (setting)
         return config_setting_get_int(setting);
@@ -30,14 +30,14 @@ static int load_last_page(const char *book_name) {
 }
 
 static void save_last_page(const char *book_name, int current_page) {
-    config_setting_t *setting = config_setting_get_member(config_root_setting(config), book_name);
+    config_setting_t *setting = config_setting_get_member(config_root_setting(reader_config), book_name);
     
     if (!setting)
-        setting = config_setting_add(config_root_setting(config), book_name, CONFIG_TYPE_INT);
+        setting = config_setting_add(config_root_setting(reader_config), book_name, CONFIG_TYPE_INT);
     
     if (setting) {
         config_setting_set_int(setting, current_page);
-        config_write_file(config, "/switch/NX-Shell/last_book_pages.cfg");
+        config_write_file(reader_config, "/switch/NX-Shell/last_book_pages.cfg");
     }
 }
 
@@ -123,13 +123,8 @@ void BookReader::switch_page_layout() {
 }
 
 void BookReader::draw() {
-    if (config_dark_theme == true)
-        SDL_ClearScreen(FC_MakeColor(33, 39, 43, 255));
-    else 
-        SDL_ClearScreen(FC_MakeColor(255, 255, 255, 255));
-
-    SDL_RenderClear(SDL_GetMainRenderer());
-    
+    SDL_ClearScreen(config.dark_theme? FC_MakeColor(33, 39, 43, 255) : FC_MakeColor(255, 255, 255, 255));
+    SDL_RenderClear(SDL_GetMainRenderer());    
     layout->draw_page();
     
 #ifdef __SWITCH__
@@ -139,7 +134,7 @@ void BookReader::draw() {
         u32 title_width = 0, title_height = 0;
         SDL_GetTextDimensions(25, title, &title_width, &title_height);
         
-        SDL_Color color = config_dark_theme ? STATUS_BAR_DARK : STATUS_BAR_LIGHT;
+        SDL_Color color = config.dark_theme ? STATUS_BAR_DARK : STATUS_BAR_LIGHT;
         
         SDL_DrawRect(0, 0, 1280, 40, FC_MakeColor(color.r, color.g, color.b , 128));
         SDL_DrawText((1280 - title_width) / 2, (44 - title_height) / 2, 25, WHITE, title);

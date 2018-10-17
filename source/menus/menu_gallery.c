@@ -15,23 +15,41 @@ static SDL_Texture *image = NULL;
 static int width = 0, height = 0;
 static float scale_factor = 0.0f;
 
-static void Gallery_GetImageList(void) {
-	DIR *dir;
-	struct dirent *entries;
-	dir = opendir(cwd);
+static Result Gallery_GetImageList(void) {
+	FsDir dir;
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+		u64 entryCount = 0;
+		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
+			return ret;
+		
+		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		
+		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries))) {
+			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
 
-	if (dir != NULL) {
-		while ((entries = readdir (dir)) != NULL) {
-			if ((strncasecmp(FS_GetFileExt(entries->d_name), "png", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "jpg", 3) == 0) 
-				|| (strncasecmp(FS_GetFileExt(entries->d_name), "bmp", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "gif", 3) == 0)) {
-				strcpy(album[count], cwd);
-				strcpy(album[count] + strlen(album[count]), entries->d_name);
-				count++;
+			for (u32 i = 0; i < entryCount; i++) {
+				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "png", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "jpg", 3)) || 
+					(!strncasecmp(FS_GetFileExt(entries[i].name), "bmp", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "gif", 3))) {
+					strcpy(album[count], cwd);
+					strcpy(album[count] + strlen(album[count]), entries[i].name);
+					count++;
+				}
 			}
 		}
+		else {
+			free(entries);
+			return ret;
+		}
 
-		closedir(dir);
+		free(entries);
+		fsDirClose(&dir); // Close directory
 	}
+	else
+		return ret;
+
+	return 0;
 }
 
 static int Gallery_GetCurrentIndex(char *path) {

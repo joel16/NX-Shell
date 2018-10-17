@@ -45,7 +45,7 @@ void FileOptions_ResetClipboard(void) {
 static Result FileOptions_CreateFolder(void) {
 	OSK_Display("Create Folder", "");
 
-	if (strncmp(osk_buffer, "", 1) == 0)
+	if (!strncmp(osk_buffer, "", 1))
 		return -1;
 
 	char path[500];
@@ -54,7 +54,7 @@ static Result FileOptions_CreateFolder(void) {
 	osk_buffer[0] = '\0';
 
 	Result ret = 0;
-	if (R_FAILED(ret = FS_RecursiveMakeDir(path)))
+	if (R_FAILED(ret = fsFsCreateDirectory(&fs, path)))
 		return ret;
 	
 	Dirbrowse_PopulateFiles(true);
@@ -69,7 +69,7 @@ static Result FileOptions_Rename(void) {
 	if (file == NULL)
 		return -1;
 
-	if (strncmp(file->name, "..", 2) == 0)
+	if (!strncmp(file->name, "..", 2))
 		return -2;
 
 	char oldPath[500], newPath[500];
@@ -80,106 +80,24 @@ static Result FileOptions_Rename(void) {
 
 	OSK_Display("Rename", file->name);
 
-	if (strncmp(osk_buffer, "", 1) == 0)
+	if (!strncmp(osk_buffer, "", 1))
 		return -1;
 	
 	strcat(newPath, osk_buffer);
 	osk_buffer[0] = '\0';
 
-	if (R_FAILED(ret = rename(oldPath, newPath)))
-		return ret;
+	if (file->isDir) {
+		if (R_FAILED(ret = fsFsRenameDirectory(&fs, oldPath, newPath)))
+			return ret;
+	}
+	else {
+		if (R_FAILED(ret = fsFsRenameFile(&fs, oldPath, newPath)))
+			return ret;
+	}
 	
 	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	return 0;
-}
-
-static int FileOptions_RmdirRecursive(char *path) {
-	File *filelist = NULL;
-	DIR *directory = opendir(path);
-
-	if (directory) {
-		struct dirent *entries;
-
-		while ((entries = readdir(directory)) != NULL) {
-			if (strlen(entries->d_name) > 0) {
-				if (strcmp(entries->d_name, ".") == 0 || strcmp(entries->d_name, "..") == 0)
-					continue;
-
-				// Allocate Memory
-				File *item = (File *)malloc(sizeof(File));
-				memset(item, 0, sizeof(File));
-
-				// Copy File Name
-				strcpy(item->name, entries->d_name);
-
-				// Set Folder Flag
-				item->isDir = entries->d_type == DT_DIR;
-
-				// New List
-				if (filelist == NULL) 
-					filelist = item;
-
-				// Existing List
-				else {
-					File *list = filelist;
-
-					while(list->next != NULL) 
-						list = list->next;
-
-					list->next = item;
-				}
-			}
-		}
-	}
-
-	closedir(directory);
-
-	File *node = filelist;
-
-	// Iterate Files
-	for(; node != NULL; node = node->next) {
-		// Directory
-		if (node->isDir) {
-			// Required Buffer Size
-			int size = strlen(path) + strlen(node->name) + 2;
-
-			// Allocate Buffer
-			char *buffer = (char *)malloc(size);
-
-			// Combine Path
-			strcpy(buffer, path);
-			strcpy(buffer + strlen(buffer), node->name);
-			buffer[strlen(buffer) + 1] = 0;
-			buffer[strlen(buffer)] = '/';
-
-			// Recursion Delete
-			FileOptions_RmdirRecursive(buffer);
-
-			free(buffer);
-		}
-
-		// File
-		else {
-			// Required Buffer Size
-			int size = strlen(path) + strlen(node->name) + 1;
-
-			// Allocate Buffer
-			char *buffer = (char *)malloc(size);
-
-			// Combine Path
-			strcpy(buffer, path);
-			strcpy(buffer + strlen(buffer), node->name);
-
-			// Delete File
-			remove(buffer);
-
-			free(buffer);
-		}
-	}
-
-	Dirbrowse_RecursiveFree(filelist);
-	return rmdir(path);
 }
 
 static int FileOptions_DeleteFile(void) {
@@ -190,7 +108,7 @@ static int FileOptions_DeleteFile(void) {
 	if (file == NULL) 
 		return -1;
 
-	if (strcmp(file->name, "..") == 0) 
+	if (!strcmp(file->name, "..")) 
 		return -2;
 
 	char path[512];
@@ -199,19 +117,18 @@ static int FileOptions_DeleteFile(void) {
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
 
-	// Delete Folder
 	if (file->isDir) {
 		// Add Trailing Slash
 		path[strlen(path) + 1] = 0;
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		return FileOptions_RmdirRecursive(path);
+		return fsFsDeleteDirectoryRecursively(&fs, path);
 	}
 
 	// Delete File
 	else 
-		return remove(path);
+		return fsFsDeleteFile(&fs, path);
 }
 
 // Copy file from src to dst
@@ -225,7 +142,8 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim) {
 	int result = 0; // Result
 
 	int in = open(src, O_RDONLY, 0777); // Open file for reading
-	u64 size = FS_GetFileSize(src);
+	u64 size = 0;
+	FS_GetFileSize(src, &size);
 
 	// Opened file for reading
 	if (in >= 0) {
@@ -373,7 +291,7 @@ static Result FileOptions_Paste(void) {
 	if ((copymode & COPY_FOLDER_RECURSIVE) == COPY_FOLDER_RECURSIVE) {
 		// Check files in current folder
 		File *node = files; for(; node != NULL; node = node->next) {
-			if ((strcmp(filename, node->name) == 0) && (!node->isDir)) // Found a file matching the name (folder = ok, file = not)
+			if ((!strcmp(filename, node->name)) && (!node->isDir)) // Found a file matching the name (folder = ok, file = not)
 				return -4; // Error out
 		}
 
@@ -384,7 +302,7 @@ static Result FileOptions_Paste(void) {
 			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
 				strcat(copysource, "/");
 
-			FileOptions_RmdirRecursive(copysource); // Delete dir
+			fsFsDeleteDirectoryRecursively(&fs, copysource); // Delete dir
 		}
 	}
 
@@ -393,7 +311,7 @@ static Result FileOptions_Paste(void) {
 		ret = FileOptions_CopyFile(copysource, copytarget, true); // Copy file
 		
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
-			remove(copysource); // Delete file
+			fsFsDeleteFile(&fs, copysource); // Delete file
 	}
 
 	// Paste success
@@ -415,7 +333,7 @@ static void HandleDelete(void) {
 						// Add Trailing Slash
 						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
 						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						FileOptions_RmdirRecursive(multi_select_paths[i]);
+						fsFsDeleteDirectoryRecursively(&fs, multi_select_paths[i]);
 					}
 					else if (FS_FileExists(multi_select_paths[i]))
 						remove(multi_select_paths[i]);
@@ -484,17 +402,17 @@ void Menu_DisplayDeleteDialog(void) {
 
 	SDL_QueryTexture(dialog, NULL, NULL, &delete_width, &delete_height);
 
-	SDL_DrawImage(config_dark_theme? dialog_dark : dialog, ((1280 - (delete_width)) / 2), ((720 - (delete_height)) / 2));
-	SDL_DrawText(((1280 - (delete_width)) / 2) + 80, ((720 - (delete_height)) / 2) + 45, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
-	SDL_DrawText(((1280 - (text_width)) / 2), ((720 - (delete_height)) / 2) + 130, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
+	SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (delete_width)) / 2), ((720 - (delete_height)) / 2));
+	SDL_DrawText(((1280 - (delete_width)) / 2) + 80, ((720 - (delete_height)) / 2) + 45, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
+	SDL_DrawText(((1280 - (text_width)) / 2), ((720 - (delete_height)) / 2) + 130, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
 
 	if (delete_dialog_selection == 0)
-		SDL_DrawRect((1030 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_confirm_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect((1030 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_confirm_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (delete_dialog_selection == 1)
-		SDL_DrawRect((915 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_cancel_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect((915 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_cancel_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-	SDL_DrawText(1030 - (delete_confirm_width), ((720 - (delete_height)) / 2) + 245, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "YES");
-	SDL_DrawText(910 - (delete_cancel_width), ((720 - (delete_height)) / 2) + 245, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
+	SDL_DrawText(1030 - (delete_confirm_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "YES");
+	SDL_DrawText(910 - (delete_cancel_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
 }
 
 void Menu_ControlProperties(u64 input, TouchInfo touchInfo) {
@@ -518,25 +436,26 @@ void Menu_DisplayProperties(void) {
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
 
-	SDL_DrawImage(config_dark_theme? properties_dialog_dark : properties_dialog, 350, 85);
-	SDL_DrawText(370, 133, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
+	SDL_DrawImage(config.dark_theme? properties_dialog_dark : properties_dialog, 350, 85);
+	SDL_DrawText(370, 133, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
 	char utils_size[16];
-	u64 size = FS_GetFileSize(path);
+	u64 size = 0;
+	FS_GetFileSize(path, &size);
 	Utils_GetSizeString(utils_size, size);
 
-	SDL_DrawTextf(390, 183, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
-	SDL_DrawTextf(390, 233, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Parent: %s", cwd);
+	SDL_DrawTextf(390, 183, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
+	SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Parent: %s", cwd);
 
 	if (!file->isDir) {
-		SDL_DrawTextf(390, 283, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
-		//SDL_DrawText(390, 333, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
-		//SDL_DrawText(390, 383, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
+		SDL_DrawTextf(390, 283, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
+		//SDL_DrawText(390, 333, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
+		//SDL_DrawText(390, 383, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
 	}
 
 	SDL_GetTextDimensions(25, "OK", &properties_ok_width, &properties_ok_height);
-	SDL_DrawRect((890 - properties_ok_width) - 20, (595 - properties_ok_height) - 20, properties_ok_width + 40, properties_ok_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawText(890 - properties_ok_width, 595 - properties_ok_height, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
+	SDL_DrawRect((890 - properties_ok_width) - 20, (595 - properties_ok_height) - 20, properties_ok_width + 40, properties_ok_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawText(890 - properties_ok_width, 595 - properties_ok_height, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
 }
 
 static void HandleCopy() {
@@ -730,30 +649,30 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 }
 
 void Menu_DisplayOptions(void) {
-	SDL_DrawImage(config_dark_theme? options_dialog_dark : options_dialog, 350, 85);
-	SDL_DrawText(370, 133, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
+	SDL_DrawImage(config.dark_theme? options_dialog_dark : options_dialog, 350, 85);
+	SDL_DrawText(370, 133, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
 	SDL_GetTextDimensions(25, "CANCEL", &options_cancel_width, &options_cancel_height);
-	SDL_DrawText(900 - options_cancel_width, 605 - options_cancel_height, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "CANCEL");
+	SDL_DrawText(900 - options_cancel_width, 605 - options_cancel_height, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "CANCEL");
 	
 	if (row == 0 && column == 0)
-		SDL_DrawRect(354, 188, 287, 101, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(354, 188, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (row == 1 && column == 0)
-		SDL_DrawRect(638, 188, 287, 101, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(638, 188, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (row == 0 && column == 1)
-		SDL_DrawRect(354, 291, 287, 101, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(354, 291, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (row == 1 && column == 1)
-		SDL_DrawRect(638, 291, 287, 101, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(638, 291, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (row == 0 && column == 2)
-		SDL_DrawRect(354, 393, 287, 101, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(354, 393, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (row == 1 && column == 2)
-		SDL_DrawRect(638, 393, 287, 101, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		SDL_DrawRect(638, 393, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-	SDL_DrawText(385, 225, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Properties");
-	SDL_DrawText(385, 327, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Rename");
-	SDL_DrawText(385, 429, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, cut_status? "Paste" : "Move");
+	SDL_DrawText(385, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Properties");
+	SDL_DrawText(385, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Rename");
+	SDL_DrawText(385, 429, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, cut_status? "Paste" : "Move");
 		
-	SDL_DrawText(672, 225, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "New folder");
-	SDL_DrawText(672, 327, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, copy_status? "Paste" : "Copy");
-	SDL_DrawText(672, 429, 25, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Delete");
+	SDL_DrawText(672, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "New folder");
+	SDL_DrawText(672, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, copy_status? "Paste" : "Copy");
+	SDL_DrawText(672, 429, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Delete");
 }

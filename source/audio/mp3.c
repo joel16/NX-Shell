@@ -31,26 +31,22 @@ typedef long ssize_p;
 static int errors = 0;
 static off_t numberOfSamples;
 
-static struct
-{
+static struct {
 	int store_pics;
 	int do_scan;
-} param =
-{
+} param = {
 	  false
 	, true
 };
 
 static mpg123_handle *mp3_handle;
 
-struct genre
-{
+struct genre {
 	int code;
 	char text[112];
 };
 
-struct genre genreList[] =
-{
+struct genre genreList[] = {
 	{0 , "Blues"}, {1 , "Classic Rock"}, {2 , "Country"}, {3 , "Dance"}, {4 , "Disco"}, {5 , "Funk"}, {6 , "Grunge"}, {7 , "Hip-Hop"}, {8 , "Jazz"}, {9 , "Metal"}, {10 , "New Age"},
 	{11 , "Oldies"}, {12 , "Other"}, {13 , "Pop"}, {14 , "R&B"}, {15 , "Rap"}, {16 , "Reggae"}, {17 , "Rock"}, {18 , "Techno"}, {19 , "Industrial"}, {20 , "Alternative"},
 	{21 , "Ska"}, {22 , "Death Metal"}, {23 , "Pranks"}, {24 , "Soundtrack"}, {25 , "Euro-Techno"}, {26 , "Ambient"}, {27 , "Trip-Hop"}, {28 , "Vocal"}, {29 , "Jazz+Funk"}, {30 , "Fusion"},
@@ -69,20 +65,18 @@ struct genre genreList[] =
 };
 
 /* Helper for v1 printing, get these strings their zero byte. */
-static void safe_print(char *tag, char *name, char *data, size_t size)
-{
+static void safe_print(char *tag, char *name, char *data, size_t size) {
 	char safe[31];
 	if (size > 30) 
 		return;
 	memcpy(safe, data, size);
 	safe[size] = 0;
-	snprintf(tag, 0x1F, "%s: %s\n", name, safe);
+	snprintf(tag, 34, "%s: %s\n", name, safe);
 }
 
 
 /* Print out ID3v1 info. */
-static void print_v1(ID3_Tag *ID3tag, mpg123_id3v1 *v1)
-{
+static void print_v1(ID3_Tag *ID3tag, mpg123_id3v1 *v1) {
 	safe_print(ID3tag->title, "",   v1->title,   sizeof(v1->title));
 	safe_print(ID3tag->artist, "",  v1->artist,  sizeof(v1->artist));
 	safe_print(ID3tag->album, "",   v1->album,   sizeof(v1->album));

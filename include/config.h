@@ -3,10 +3,15 @@
 
 #include <switch.h>
 
-extern bool config_dark_theme;
-extern int config_sort_by;
+typedef struct {
+	bool dark_theme;
+	int sort;
+} nxshell_config_t;
 
-int Config_Save(bool config_dark_theme, int config_sort_by);
+extern nxshell_config_t config;
+
+int Config_Save(nxshell_config_t config);
 int Config_Load(void);
+int Config_GetLastDirectory(void);
 
 #endif

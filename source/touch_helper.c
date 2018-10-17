@@ -7,14 +7,12 @@
 #define LONG_TAP_PERIOD 1.5
 
 
-void Touch_Init(TouchInfo * touchInfo)
-{
+void Touch_Init(TouchInfo *touchInfo) {
     touchInfo->state = TouchNone;
     touchInfo->tapType = TapNone;
 }
 
-void Touch_Process(TouchInfo * touchInfo)
-{
+void Touch_Process(TouchInfo *touchInfo) {
     touchPosition currentTouch;
     u32 touches = hidTouchCount();
     
@@ -25,8 +23,7 @@ void Touch_Process(TouchInfo * touchInfo)
     timeGetCurrentTime(TimeType_UserSystemClock, &current_time);
     
     // On touch start.
-    if (touches == 1 && (touchInfo->state == TouchNone || touchInfo->state == TouchEnded))
-    {
+    if (touches == 1 && (touchInfo->state == TouchNone || touchInfo->state == TouchEnded)) {
         touchInfo->state = TouchStart;
         touchInfo->firstTouch = currentTouch;
         touchInfo->prevTouch = currentTouch;
@@ -34,8 +31,7 @@ void Touch_Process(TouchInfo * touchInfo)
         touchInfo->touchStart = current_time;
     }
     // On touch moving.
-    else if (touches >= 1 && touchInfo->state != TouchNone)
-    {
+    else if (touches >= 1 && touchInfo->state != TouchNone) {
         touchInfo->state = TouchMoving;
         touchInfo->prevTouch = currentTouch;
 

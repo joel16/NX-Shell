@@ -40,15 +40,15 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 }
 
 static void Menu_DisplayMenuBar(void) {
-	SDL_DrawRect(menubar_x, 0, 400, 720, config_dark_theme? BLACK_BG : WHITE);
-	SDL_DrawRect(menubar_x + 400, 0, 1, 720, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
+	SDL_DrawRect(menubar_x, 0, 400, 720, config.dark_theme? BLACK_BG : WHITE);
+	SDL_DrawRect(menubar_x + 400, 0, 1, 720, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
 	SDL_DrawImage(bg_header, menubar_x, 0);
 	SDL_DrawText(menubar_x + 15, 164, 30, WHITE, "NX Shell");
-	SDL_DrawImage(config_dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 254);
-	SDL_DrawText(menubar_x + 100, 254, 25, config_dark_theme? WHITE : BLACK, "External storage");
-	SDL_DrawText(menubar_x + 100, 284, 20, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
-	SDL_DrawRect(menubar_x + 10, 630, 80, 80, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawImage(config_dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
+	SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 254);
+	SDL_DrawText(menubar_x + 100, 254, 25, config.dark_theme? WHITE : BLACK, "External storage");
+	SDL_DrawText(menubar_x + 100, 284, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
+	SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
 }
 
 static void Menu_HandleMultiSelect(void) {
@@ -107,8 +107,8 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 			position++;
 		}
 
-		Utils_SetMax(&position, 0, ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount)));
-		Utils_SetMin(&position, ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount)), 0);
+		Utils_SetMax(&position, 0, (fileCount - 1));
+		Utils_SetMin(&position, (fileCount - 1), 0);
 
 		if (input & KEY_LEFT)
 			position = 0;
@@ -140,7 +140,7 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 	if (touchInfo.state == TouchStart && tapped_inside(touchInfo, 0, 140, 1280, 720))
 		initialPosition = (position == 0) ? 7 : position;
 	else if (touchInfo.state == TouchMoving && touchInfo.tapType == TapNone && tapped_inside(touchInfo, 0, 140, 1280, 720)) {
-		int lastPosition = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
+		int lastPosition = position = fileCount - 1;
 		if (lastPosition < 8)
 			return;
 		position = initialPosition + floor(((double) touchInfo.firstTouch.py - (double) touchInfo.prevTouch.py) / 73);
@@ -199,9 +199,9 @@ void Menu_Main(void) {
     	current_time = SDL_GetPerformanceCounter();
 		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
 
-		SDL_ClearScreen(config_dark_theme? BLACK_BG : WHITE);
-		SDL_DrawRect(0, 0, 1280, 40, config_dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
-		SDL_DrawRect(0, 40, 1280, 100, config_dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
+		SDL_ClearScreen(config.dark_theme? BLACK_BG : WHITE);
+		SDL_DrawRect(0, 0, 1280, 40, config.dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
+		SDL_DrawRect(0, 40, 1280, 100, config.dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
 		
 		StatusBar_DisplayTime();
 		Dirbrowse_DisplayFiles();

@@ -27,7 +27,7 @@ char multi_select_dir[512];       // Holds the current dir where multi-select ha
 char multi_select_paths[256][512]; // Holds the file paths of those in the clipboard.
 
 void Dirbrowse_RecursiveFree(File *node);
-void Dirbrowse_PopulateFiles(bool clear);
+Result Dirbrowse_PopulateFiles(bool clear);
 void Dirbrowse_DisplayFiles(void);
 File *Dirbrowse_GetFileIndex(int index);
 void Dirbrowse_OpenFile(void);

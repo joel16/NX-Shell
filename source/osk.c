@@ -51,7 +51,7 @@ static void OSK_BlinkText(int fade, int x, int y) {
 
 	FADE_WHITE = FC_MakeColor(255, 255, 255, fade);
 	FADE_BLACK = FC_MakeColor(0, 0, 0, fade);
-	SDL_DrawText(x, y, 30, config_dark_theme? FADE_WHITE : FADE_BLACK, "|");
+	SDL_DrawText(x, y, 30, config.dark_theme? FADE_WHITE : FADE_BLACK, "|");
 }
 
 static void OSK_HandleDelete(void) {
@@ -102,22 +102,22 @@ void OSK_Display(char *title, char *msg) {
 	bool osk_text_shift = false, osk_text_caps = false;
 
 	while(appletMainLoop()) {	
-		SDL_ClearScreen(config_dark_theme? BLACK_BG : WHITE);
-		SDL_DrawRect(0, 0, 1280, 40, config_dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
-		SDL_DrawRect(0, 40, 1280, 100, config_dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
+		SDL_ClearScreen(config.dark_theme? BLACK_BG : WHITE);
+		SDL_DrawRect(0, 0, 1280, 40, config.dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
+		SDL_DrawRect(0, 40, 1280, 100, config.dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
 
 		SDL_DrawImage(icon_back, 40, 66);
 
 		SDL_DrawText(128, 40 + ((100 - title_height)/2), 30, WHITE, title);
 
-		SDL_DrawRect(0, (660 - (text_height * 5)) - 30, 1280, 720 - ((660 - (text_height * 5)) - 30), config_dark_theme? OSK_BG_COLOUR_DARK : OSK_BG_COLOUR_LIGHT);
+		SDL_DrawRect(0, (660 - (text_height * 5)) - 30, 1280, 720 - ((660 - (text_height * 5)) - 30), config.dark_theme? OSK_BG_COLOUR_DARK : OSK_BG_COLOUR_LIGHT);
 
 		if (strlen(osk_buffer) != 0) {
 			SDL_GetTextDimensions(30, osk_buffer, &buf_width, &buf_height);
 			snprintf(buf2, osk_index + 1, osk_buffer);
 
 			SDL_GetTextDimensions(30, buf2, &buf_width_curr, NULL);
-			SDL_DrawTextf((1280 - buf_width) / 2, 210, 30, config_dark_theme? WHITE : BLACK, "%s", osk_buffer);
+			SDL_DrawTextf((1280 - buf_width) / 2, 210, 30, config.dark_theme? WHITE : BLACK, "%s", osk_buffer);
 		}
 
 		OSK_BlinkText(transp, (((1280 - buf_width) / 2) + (buf_width_curr + cursor_width)) - 11, 210);
@@ -126,7 +126,7 @@ void OSK_Display(char *title, char *msg) {
 		for (int x = 0; x <= MAX_X; x++) {
 			for (int y = 0; y <= MAX_Y; y++) {
 				if (osk_text_shift || osk_text_caps) {
-					if (config_dark_theme)
+					if (config.dark_theme)
 						SDL_DrawText(((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), 50, (x == osk_pos_x && y == osk_pos_y)? 
 							TITLE_COLOUR_DARK : WHITE, osk_textdisp_shift[x + y * 10]);
 					else
@@ -134,7 +134,7 @@ void OSK_Display(char *title, char *msg) {
 							TITLE_COLOUR : BLACK, osk_textdisp_shift[x + y * 10]);
 				}
 				else {
-					if (config_dark_theme)
+					if (config.dark_theme)
 						SDL_DrawText(((1280 - (text_width * 2)) / 2) + (100 * x), (660 - (text_height * 5)) + (60 * y), 50, (x == osk_pos_x && y == osk_pos_y)?
 							TITLE_COLOUR_DARK : WHITE, osk_textdisp[x + y * 10]);
 					else
@@ -144,8 +144,8 @@ void OSK_Display(char *title, char *msg) {
 			}
 		}
 
-		SDL_DrawImage(config_dark_theme? icon_remove_dark : icon_remove, 1190, 480);
-		SDL_DrawImage(config_dark_theme? icon_accept_dark : icon_accept, 1190, 600);
+		SDL_DrawImage(config.dark_theme? icon_remove_dark : icon_remove, 1190, 480);
+		SDL_DrawImage(config.dark_theme? icon_accept_dark : icon_accept, 1190, 600);
 
 		StatusBar_DisplayTime();
 

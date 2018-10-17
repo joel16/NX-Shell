@@ -29,23 +29,43 @@ static char playlist[1024][512], title[128];
 static int count = 0, selection = 0, state = 0;
 static Mix_Music *audio;
 
-static void Menu_GetMusicList(void) {
-	DIR *dir;
-	struct dirent *entries;
-	dir = opendir(cwd);
+static Result Menu_GetMusicList(void) {
+	FsDir dir;
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+		u64 entryCount = 0;
+		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
+			return ret;
+		
+		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		
+		if (R_SUCCEEDED(ret = fsDirRead(&dir, 0, NULL, entryCount, entries))) {
+			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
 
-	if (dir != NULL) {
-		while ((entries = readdir (dir)) != NULL) {
-			if ((strncasecmp(FS_GetFileExt(entries->d_name), "mp3", 3) == 0) || (strncasecmp(FS_GetFileExt(entries->d_name), "ogg", 3) == 0) 
-				|| (strncasecmp(FS_GetFileExt(entries->d_name), "wav", 3) == 0)) {
-				strcpy(playlist[count], cwd);
-				strcpy(playlist[count] + strlen(playlist[count]), entries->d_name);
-				count++;
+			for (u32 i = 0; i < entryCount; i++) {
+				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3)) 
+					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "mod", 3))
+					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "flac", 4)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "midi", 4))
+					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "mid", 3))) {
+					strcpy(playlist[count], cwd);
+					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
+					count++;
+				}
 			}
 		}
+		else {
+			free(entries);
+			return ret;
+		}
 
-		closedir(dir);
+		free(entries);
+		fsDirClose(&dir); // Close directory
 	}
+	else
+		return ret;
+
+	return 0;
 }
 
 static int Music_GetCurrentIndex(char *path) {
@@ -132,7 +152,6 @@ static void Music_HandlePause(bool *status) {
 }
 
 void Menu_PlayMusic(char *path) {
-	Result ret = 0;
 	Menu_GetMusicList();
 	Music_Play(path);
 

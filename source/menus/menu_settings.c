@@ -17,20 +17,20 @@ static int dialog_width = 0, dialog_height = 0;
 static void Save_SortConfig(int selection) {
 	switch (selection) {
 		case 0:
-			config_sort_by = 0;
+			config.sort = 0;
 			break;
 		case 1:
-			config_sort_by = 1;
+			config.sort = 1;
 			break;
 		case 2:
-			config_sort_by = 2;
+			config.sort = 2;
 			break;
 		case 3:
-			config_sort_by = 3;
+			config.sort = 3;
 			break;
 	}
 
-	Config_Save(config_dark_theme, config_sort_by);
+	Config_Save(config);
 }
 
 static void Menu_DisplaySortSettings(void) {
@@ -53,9 +53,9 @@ static void Menu_DisplaySortSettings(void) {
 	SDL_QueryTexture(icon_radio_dark_on, NULL, NULL, &radio_button_width, &radio_button_height);
 
 	while(appletMainLoop()) {
-		SDL_ClearScreen(config_dark_theme? BLACK_BG : WHITE);
-		SDL_DrawRect(0, 0, 1280, 40, config_dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
-		SDL_DrawRect(0, 40, 1280, 100, config_dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
+		SDL_ClearScreen(config.dark_theme? BLACK_BG : WHITE);
+		SDL_DrawRect(0, 0, 1280, 40, config.dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
+		SDL_DrawRect(0, 40, 1280, 100, config.dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
 
 		StatusBar_DisplayTime();
 
@@ -70,26 +70,26 @@ static void Menu_DisplaySortSettings(void) {
 
 			if (selection < FILES_PER_PAGE || i > (selection - FILES_PER_PAGE)) {
 				if (i == selection)
-					SDL_DrawRect(0, 140 + (73 * printed), 1280, 73, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+					SDL_DrawRect(0, 140 + (73 * printed), 1280, 73, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
 				SDL_GetTextDimensions(25, main_menu_items[i], NULL, &height);
-				SDL_DrawText(40, 140 + ((73 - height)/2) + (73 * printed), 25, config_dark_theme? WHITE : BLACK, main_menu_items[i]);
+				SDL_DrawText(40, 140 + ((73 - height)/2) + (73 * printed), 25, config.dark_theme? WHITE : BLACK, main_menu_items[i]);
 
 				printed++;
 			}
 		}
 
-		config_sort_by == 0? SDL_DrawImage(config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 152) : 
-			SDL_DrawImage(config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 152);
+		config.sort == 0? SDL_DrawImage(config.dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 152) : 
+			SDL_DrawImage(config.dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 152);
 		
-		config_sort_by == 1? SDL_DrawImage(config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 225) : 
-			SDL_DrawImage(config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 225);
+		config.sort == 1? SDL_DrawImage(config.dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 225) : 
+			SDL_DrawImage(config.dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 225);
 
-		config_sort_by == 2? SDL_DrawImage(config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 298) : 
-			SDL_DrawImage(config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 298);
+		config.sort == 2? SDL_DrawImage(config.dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 298) : 
+			SDL_DrawImage(config.dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 298);
 		
-		config_sort_by == 3? SDL_DrawImage(config_dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371) : 
-			SDL_DrawImage(config_dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371);
+		config.sort == 3? SDL_DrawImage(config.dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371) : 
+			SDL_DrawImage(config.dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371);
 		
 		SDL_Renderdisplay();
 
@@ -156,16 +156,16 @@ static void Menu_DisplayAboutDialog(void) {
 
 	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
 
-	SDL_DrawImage(config_dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2));
-	SDL_DrawText(((1280 - (dialog_width)) / 2) + 80, ((720 - (dialog_height)) / 2) + 45, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
-	SDL_DrawTextf(((1280 - (text1_width)) / 2), ((720 - (dialog_height)) / 2) + 70, 20, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
-	SDL_DrawText(((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, 20, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
-	SDL_DrawText(((1280 - (text3_width)) / 2), ((720 - (dialog_height)) / 2) + 130, 20, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors");
-	SDL_DrawText(((1280 - (text4_width)) / 2), ((720 - (dialog_height)) / 2) + 160, 20, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Touch screen: StevenMattera");
-	SDL_DrawText(((1280 - (text5_width)) / 2), ((720 - (dialog_height)) / 2) + 190, 20, config_dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "E-Book Reader: rock88");
+	SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2));
+	SDL_DrawText(((1280 - (dialog_width)) / 2) + 80, ((720 - (dialog_height)) / 2) + 45, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
+	SDL_DrawTextf(((1280 - (text1_width)) / 2), ((720 - (dialog_height)) / 2) + 70, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
+	SDL_DrawText(((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
+	SDL_DrawText(((1280 - (text3_width)) / 2), ((720 - (dialog_height)) / 2) + 130, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors");
+	SDL_DrawText(((1280 - (text4_width)) / 2), ((720 - (dialog_height)) / 2) + 160, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Touch screen: StevenMattera");
+	SDL_DrawText(((1280 - (text5_width)) / 2), ((720 - (dialog_height)) / 2) + 190, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "E-Book Reader: rock88");
 
-	SDL_DrawRect((1030 - (confirm_width)) - 20, (((720 - (dialog_height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawText(1030 - (confirm_width), ((720 - (dialog_height)) / 2) + 245, 25, config_dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
+	SDL_DrawRect((1030 - (confirm_width)) - 20, (((720 - (dialog_height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawText(1030 - (confirm_width), ((720 - (dialog_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
 }
 
 void Menu_DisplaySettings(void) {
@@ -189,9 +189,9 @@ void Menu_DisplaySettings(void) {
 	displayAbout = false;
 
 	while(appletMainLoop()) {
-		SDL_ClearScreen(config_dark_theme? BLACK_BG : WHITE);
-		SDL_DrawRect(0, 0, 1280, 40, config_dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
-		SDL_DrawRect(0, 40, 1280, 100, config_dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
+		SDL_ClearScreen(config.dark_theme? BLACK_BG : WHITE);
+		SDL_DrawRect(0, 0, 1280, 40, config.dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar
+		SDL_DrawRect(0, 40, 1280, 100, config.dark_theme? MENU_BAR_DARK : MENU_BAR_LIGHT);	// Menu bar
 
 		StatusBar_DisplayTime();
 
@@ -206,15 +206,15 @@ void Menu_DisplaySettings(void) {
 
 			if (selection < FILES_PER_PAGE || i > (selection - FILES_PER_PAGE)) {
 				if (i == selection)
-					SDL_DrawRect(0, 140 + (73 * printed), 1280, 73, config_dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+					SDL_DrawRect(0, 140 + (73 * printed), 1280, 73, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-				if (config_dark_theme)
-					SDL_DrawImage(config_dark_theme? icon_toggle_dark_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2));
+				if (config.dark_theme)
+					SDL_DrawImage(config.dark_theme? icon_toggle_dark_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2));
 				else
-					SDL_DrawImage(config_dark_theme? icon_toggle_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2));
+					SDL_DrawImage(config.dark_theme? icon_toggle_on : icon_toggle_off, 1180 - toggle_button_width, 213 + ((73 - toggle_button_height) / 2));
 				
 				SDL_GetTextDimensions(25, main_menu_items[i], NULL, &height);
-				SDL_DrawText(40, 140 + ((73 - height)/2) + (73 * printed), 25, config_dark_theme? WHITE : BLACK, main_menu_items[i]);
+				SDL_DrawText(40, 140 + ((73 - height)/2) + (73 * printed), 25, config.dark_theme? WHITE : BLACK, main_menu_items[i]);
 
 				printed++;
 			}
@@ -251,8 +251,8 @@ void Menu_DisplaySettings(void) {
 						Menu_DisplaySortSettings();
 						break;
 					case 1:
-						config_dark_theme = !config_dark_theme;
-						Config_Save(config_dark_theme, config_sort_by);
+						config.dark_theme = !config.dark_theme;
+						Config_Save(config);
 						break;
 					case 2:
 						displayAbout = true;
@@ -277,15 +277,13 @@ void Menu_DisplaySettings(void) {
 							Menu_DisplaySortSettings();
 							break;
 						case 1:
-							config_dark_theme = !config_dark_theme;
-							Config_Save(config_dark_theme, config_sort_by);
+							config.dark_theme = !config.dark_theme;
+							Config_Save(config);
 							break;
 						case 2:
 							displayAbout = true;
 							break;
 					}
-
-					Config_Save(config_dark_theme, config_sort_by);
 				}
 			}
 		}
