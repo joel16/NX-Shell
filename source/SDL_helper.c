@@ -3,7 +3,7 @@
 
 static SDL_Window *WINDOW;
 static SDL_Renderer *RENDERER;
-static FC_Font *font;
+static FC_Font *Roboto, *Roboto_large, *Roboto_small, *Roboto_OSK;
 static PlFontData fontData, fontExtData;
 
 SDL_Renderer *SDL_GetMainRenderer(void) {
@@ -11,8 +11,16 @@ SDL_Renderer *SDL_GetMainRenderer(void) {
 }
 
 static FC_Font *GetFont(int size) {
-	int font_size = size;
-	return font;
+	if (size == 20)
+		return Roboto_small;
+	else if (size == 25)
+		return Roboto;
+	else if (size == 30)
+		return Roboto_large;
+	else
+		return Roboto_OSK;
+
+	return Roboto;
 }
 
 void SDL_HelperInit(void) {
@@ -27,8 +35,17 @@ void SDL_HelperInit(void) {
 	plGetSharedFontByType(&fontData, PlSharedFontType_Standard);
     plGetSharedFontByType(&fontExtData, PlSharedFontType_NintendoExt);
 
-    font = FC_CreateFont();
-	FC_LoadFont_RW(font, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 20, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+    Roboto = FC_CreateFont();
+	FC_LoadFont_RW(Roboto, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 25, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+
+	Roboto_large = FC_CreateFont();
+	FC_LoadFont_RW(Roboto_large, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 30, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+
+	Roboto_small = FC_CreateFont();
+	FC_LoadFont_RW(Roboto_small, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 20, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+
+	Roboto_OSK = FC_CreateFont();
+	FC_LoadFont_RW(Roboto_OSK, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 50, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
 }
 
 void SDL_HelperTerm(void) {
