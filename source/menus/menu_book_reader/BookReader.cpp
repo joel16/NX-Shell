@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <libconfig.h>
 
-extern "C" 
-{
+extern "C" {
     #include "SDL_helper.h"
     #include "status_bar.h"
     #include "config.h"
@@ -15,10 +14,8 @@ extern "C"
 fz_context *ctx = NULL;
 config_t *config = NULL;
 
-static int load_last_page(const char *book_name) 
-{
-    if (!config)
-    {
+static int load_last_page(const char *book_name) {
+    if (!config) {
         config = (config_t *)malloc(sizeof(config_t));
         config_init(config);
         config_read_file(config, "/switch/NX-Shell/last_book_pages.cfg");
@@ -32,24 +29,20 @@ static int load_last_page(const char *book_name)
     return 0;
 }
 
-static void save_last_page(const char *book_name, int current_page)
-{
+static void save_last_page(const char *book_name, int current_page) {
     config_setting_t *setting = config_setting_get_member(config_root_setting(config), book_name);
     
     if (!setting)
         setting = config_setting_add(config_root_setting(config), book_name, CONFIG_TYPE_INT);
     
-    if (setting)
-    {
+    if (setting) {
         config_setting_set_int(setting, current_page);
         config_write_file(config, "/switch/NX-Shell/last_book_pages.cfg");
     }
 }
 
-BookReader::BookReader(const char *path)
-{
-    if (ctx == NULL)
-    {
+BookReader::BookReader(const char *path) {
+    if (ctx == NULL) {
         ctx = fz_new_context(NULL, NULL, 128 << 10);
         fz_register_document_handlers(ctx);
     }
@@ -69,35 +62,29 @@ BookReader::BookReader(const char *path)
         show_status_bar();
 }
 
-BookReader::~BookReader()
-{
+BookReader::~BookReader() {
     fz_drop_document(ctx, doc);
-    
     delete layout;
 }
 
-void BookReader::previous_page(int n)
-{
+void BookReader::previous_page(int n) {
     layout->previous_page(n);
     show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }
 
-void BookReader::next_page(int n)
-{
+void BookReader::next_page(int n) {
     layout->next_page(n);
     show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }
 
-void BookReader::zoom_in()
-{
+void BookReader::zoom_in() {
     layout->zoom_in();
     show_status_bar();
 }
 
-void BookReader::zoom_out()
-{
+void BookReader::zoom_out() {
     layout->zoom_out();
     show_status_bar();
 }
@@ -107,31 +94,25 @@ void BookReader::move_page_up()
     layout->move_up();
 }
 
-void BookReader::move_page_down()
-{
+void BookReader::move_page_down() {
     layout->move_down();
 }
 
-void BookReader::move_page_left()
-{
+void BookReader::move_page_left() {
     layout->move_left();
 }
 
-void BookReader::move_page_right()
-{
+void BookReader::move_page_right() {
     layout->move_right();
 }
 
-void BookReader::reset_page()
-{
+void BookReader::reset_page() {
     layout->reset();
     show_status_bar();
 }
 
-void BookReader::switch_page_layout()
-{
-    switch (_currentPageLayout)
-    {
+void BookReader::switch_page_layout() {
+    switch (_currentPageLayout) {
         case BookPageLayoutPortrait:
             switch_current_page_layout(BookPageLayoutLandscape, 0);
             break;
@@ -141,46 +122,42 @@ void BookReader::switch_page_layout()
     }
 }
 
-void BookReader::draw()
-{
+void BookReader::draw() {
     if (config_dark_theme == true)
-        SDL_ClearScreen(RENDERER, SDL_MakeColour(33, 39, 43, 255));
+        SDL_ClearScreen(FC_MakeColor(33, 39, 43, 255));
     else 
-        SDL_ClearScreen(RENDERER, SDL_MakeColour(255, 255, 255, 255));
+        SDL_ClearScreen(FC_MakeColor(255, 255, 255, 255));
 
-    SDL_RenderClear(RENDERER);
+    SDL_RenderClear(SDL_GetMainRenderer());
     
     layout->draw_page();
     
 #ifdef __SWITCH__
-    if (--status_bar_visible_counter > 0) 
-    {
+    if (--status_bar_visible_counter > 0) {
         char *title = layout->info();
         
-        int title_width = 0, title_height = 0;
-        TTF_SizeText(Roboto, title, &title_width, &title_height);
+        u32 title_width = 0, title_height = 0;
+        SDL_GetTextDimensions(25, title, &title_width, &title_height);
         
         SDL_Color color = config_dark_theme ? STATUS_BAR_DARK : STATUS_BAR_LIGHT;
         
-        SDL_DrawRect(RENDERER, 0, 0, 1280, 40, SDL_MakeColour(color.r, color.g, color.b , 128));
-        SDL_DrawText(RENDERER, Roboto, (1280 - title_width) / 2, (44 - title_height) / 2, WHITE, title);
+        SDL_DrawRect(0, 0, 1280, 40, FC_MakeColor(color.r, color.g, color.b , 128));
+        SDL_DrawText((1280 - title_width) / 2, (44 - title_height) / 2, 25, WHITE, title);
         
         StatusBar_DisplayTime();
     }
 #endif
-    
-    SDL_RenderPresent(RENDERER);
+
+    SDL_Renderdisplay();
 }
 
-void BookReader::show_status_bar()
-{
+void BookReader::show_status_bar() {
     status_bar_visible_counter = 50;
 }
 
 void BookReader::switch_current_page_layout(BookPageLayout bookPageLayout, int current_page)
 {
-    if (layout)
-    {
+    if (layout) {
         current_page = layout->current_page();
         delete layout;
         layout = NULL;
@@ -188,8 +165,7 @@ void BookReader::switch_current_page_layout(BookPageLayout bookPageLayout, int c
     
     _currentPageLayout = bookPageLayout;
     
-    switch (bookPageLayout)
-    {
+    switch (bookPageLayout) {
         case BookPageLayoutPortrait:
             layout = new PageLayout(doc, current_page);
             break;

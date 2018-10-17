@@ -30,49 +30,52 @@ include $(DEVKITPRO)/libnx/switch_rules
 #     - icon.jpg
 #     - <libnx folder>/default_icon.jpg
 #---------------------------------------------------------------------------------
-TARGET      := $(notdir $(CURDIR))
-BUILD       := build
-SOURCES     := source source/audio source/menus source/minizip source/menus/menu_book_reader
-DATA        := data
-INCLUDES    := include include/audio include/menus include/minizip mupdf/include mupdf/source/fitz
-EXEFS_SRC   := exefs_src
-ROMFS       := romfs
+TARGET        := $(notdir $(CURDIR))
+BUILD         := build
+SOURCES       := source source/audio source/menus source/minizip source/menus/menu_book_reader
+DATA          := data
+INCLUDES      := include include/audio include/menus include/minizip mupdf/include mupdf/source/fitz
+EXEFS_SRC     := exefs_src
+ROMFS         := romfs
 
 VERSION_MAJOR := 1
 VERSION_MINOR := 0
 VERSION_MICRO := 4
 GITVERSION    := $(shell git log -1 --pretty='%h')
 
-APP_TITLE   := NX-Shell
-APP_AUTHOR  := Joel16
-APP_VERSION := ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
+APP_TITLE     := NX-Shell
+APP_AUTHOR    := Joel16
+APP_VERSION   := ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE
+ARCH     := -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE
 
-CFLAGS	:=	-g -Werror -O2 -ffunction-sections `sdl2-config --cflags` `freetype-config --cflags` \
-			-DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO) \
-			-DAPP_TITLE="\"$(APP_TITLE)\"" \
-			-DGITVERSION="\"${GITVERSION}\"" \
-			$(ARCH) $(DEFINES)
+CFLAGS   := -g -O3 -ffunction-sections -Wall -Wno-write-strings `freetype-config --cflags` `sdl2-config --cflags` \
+            -DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO) \
+            -DAPP_TITLE="\"$(APP_TITLE)\"" \
+            -DGITVERSION="\"${GITVERSION}\"" \
+            $(ARCH) $(DEFINES)
 
-CFLAGS	+=	$(INCLUDE) -D__SWITCH__
+CFLAGS   += $(INCLUDE) -D__SWITCH__
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
 
-ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(PWD)/$(BUILD)
+ASFLAGS  := -g $(ARCH)
+LDFLAGS  = -specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(PWD)/$(BUILD)
 
-LIBS	:=	-lcurl -lSDL2_mixer -lmodplug -lmpg123 -lFLAC -lvorbisidec -logg -lSDL2_ttf -lSDL2_gfx -lSDL2_image \
-			-lpng -ljpeg `sdl2-config --libs` -lnx -lmupdf_core -lmupdf_thirdparty -lconfig
+LIBS     := -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lSDL2_gfx -lSDL2 \
+            -lpng -lz -ljpeg \
+            -lvorbisidec -logg -lmpg123 -lmodplug \
+            -lmupdf_core -lmupdf_thirdparty -lconfig \
+            -lfreetype -lbz2 -lEGL -lglapi -ldrm_nouveau -lnx \
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS) $(LIBNX)
+LIBDIRS := $(PORTLIBS) $(LIBNX)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -81,34 +84,34 @@ LIBDIRS	:= $(PORTLIBS) $(LIBNX)
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
-export TOPDIR	:=	$(CURDIR)
+export OUTPUT  := $(CURDIR)/$(TARGET)
+export TOPDIR  := $(CURDIR)
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export VPATH   := $(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+                  $(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR := $(CURDIR)/$(BUILD)
 
-CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+CFILES         := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES       := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+SFILES         := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+BINFILES       := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
 #---------------------------------------------------------------------------------
-export LD	:=	$(CXX)
+export LD              := $(CXX)
 
-export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
-export OFILES_SRC	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
-export OFILES 	:=	$(OFILES_BIN) $(OFILES_SRC)
-export HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
+export OFILES_BIN      := $(addsuffix .o,$(BINFILES))
+export OFILES_SRC      := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+export OFILES          := $(OFILES_BIN) $(OFILES_SRC)
+export HFILES_BIN      := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-			-I$(CURDIR)/$(BUILD)
+export INCLUDE         := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+                          $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+                          -I$(CURDIR)/$(BUILD)
 
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+export LIBPATHS        := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export BUILD_EXEFS_SRC := $(TOPDIR)/$(EXEFS_SRC)
 
@@ -177,21 +180,21 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-all	:	$(OUTPUT).pfs0 $(OUTPUT).nro
+all	           : $(OUTPUT).pfs0 $(OUTPUT).nro
 
-$(OUTPUT).pfs0	:	$(OUTPUT).nso
+$(OUTPUT).pfs0 : $(OUTPUT).nso
 
-$(OUTPUT).nso	:	$(OUTPUT).elf
+$(OUTPUT).nso  : $(OUTPUT).elf
 
 ifeq ($(strip $(NO_NACP)),)
-$(OUTPUT).nro	:	$(OUTPUT).elf $(OUTPUT).nacp
+$(OUTPUT).nro  : $(OUTPUT).elf $(OUTPUT).nacp
 else
-$(OUTPUT).nro	:	$(OUTPUT).elf
+$(OUTPUT).nro  : $(OUTPUT).elf
 endif
 
-$(OUTPUT).elf	:	$(OFILES)
+$(OUTPUT).elf  : $(OFILES)
 
-$(OFILES_SRC)	: $(HFILES_BIN)
+$(OFILES_SRC)  : $(HFILES_BIN)
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
