@@ -32,10 +32,13 @@ void SDL_HelperInit(void) {
 
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 
-	plGetSharedFontByType(&fontData, PlSharedFontType_Standard);
-    plGetSharedFontByType(&fontExtData, PlSharedFontType_NintendoExt);
+	Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096);
 
-    Roboto = FC_CreateFont();
+	plGetSharedFontByType(&fontData, PlSharedFontType_Standard);
+	plGetSharedFontByType(&fontExtData, PlSharedFontType_NintendoExt);
+
+	Roboto = FC_CreateFont();
 	FC_LoadFont_RW(Roboto, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 25, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
 
 	Roboto_large = FC_CreateFont();
@@ -49,7 +52,14 @@ void SDL_HelperInit(void) {
 }
 
 void SDL_HelperTerm(void) {
+	FC_FreeFont(Roboto_OSK);
+	FC_FreeFont(Roboto_small);
+	FC_FreeFont(Roboto_large);
+	FC_FreeFont(Roboto);
 	TTF_Quit();
+
+	Mix_CloseAudio();
+	Mix_Quit();
 
 	IMG_Quit();
 
