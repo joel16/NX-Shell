@@ -1,6 +1,3 @@
-#include <dirent.h>
-#include <sys/stat.h>
-
 #include "archive.h"
 #include "common.h"
 #include "config.h"
@@ -72,8 +69,7 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 
 	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		/* Add fake ".." entry except on root */
-		if (strcmp(cwd, ROOT_PATH))
-		{
+		if (strcmp(cwd, ROOT_PATH)) {
 			files = (File *)malloc(sizeof(File)); // New list
 			memset(files, 0, sizeof(File)); // Clear memory
 			strcpy(files->name, ".."); // Copy file Name

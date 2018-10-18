@@ -5,59 +5,35 @@
 
 #include "fs.h"
 
-int FS_MakeDir(const char *path) {
-	if (!path) 
-		return -1;
+Result FS_MakeDir(const char *path) {
+	Result ret = 0;
 
-	return mkdir(path, 0777);
-}
+	if (R_FAILED(ret = fsFsCreateDirectory(&fs, path)))
+		return ret;
 
-int FS_RecursiveMakeDir(const char * dir) {
-	int ret = 0;
-	char buf[256];
-	char *p = NULL;
-	size_t len;
-
-	snprintf(buf, sizeof(buf), "%s",dir);
-	len = strlen(buf);
-
-	if (buf[len - 1] == '/')
-		buf[len - 1] = 0;
-
-	for (p = buf + 1; *p; p++) {
-		if (*p == '/') {
-			*p = 0;
-
-			ret = FS_MakeDir(buf);
-			
-			*p = '/';
-		}
-		
-		ret = FS_MakeDir(buf);
-	}
-	
-	return ret;
+	return 0;
 }
 
 bool FS_FileExists(const char *path) {
-	FILE *temp = fopen(path, "r");
-	
-	if (temp == NULL)
-		return false;
-	
-	fclose(temp);
-	return true;
+	FsFile file;
+
+	if (R_SUCCEEDED(fsFsOpenFile(&fs, path, FS_OPEN_READ, &file))) {
+		fsFileClose(&file);
+		return true;
+	}
+
+	return false;
 }
 
 bool FS_DirExists(const char *path) {
-	struct stat info;
+	FsDir dir;
 
-	if (stat(path, &info) != 0)
-		return false;
-	else if (info.st_mode & S_IFDIR)
+	if (R_SUCCEEDED(fsFsOpenDirectory(&fs, path, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+		fsDirClose(&dir);
 		return true;
-	else
-		return false;
+	}
+
+	return false;
 }
 
 const char *FS_GetFileExt(const char *filename) {
@@ -67,13 +43,6 @@ const char *FS_GetFileExt(const char *filename) {
 		return "";
 	
 	return dot + 1;
-}
-
-char *FS_GetFileModifiedTime(const char *filename) {
-	struct stat attr;
-	stat(filename, &attr);
-	
-	return ctime(&attr.st_mtime);
 }
 
 Result FS_GetFileSize(const char *path, u64 *size) {

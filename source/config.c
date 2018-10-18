@@ -25,8 +25,10 @@ int Config_Save(nxshell_config_t config) {
 }
 
 int Config_Load(void) {
+	if (!FS_DirExists("/switch/"))
+		FS_MakeDir("/switch");
 	if (!FS_DirExists("/switch/NX-Shell/"))
-		FS_RecursiveMakeDir("/switch/NX-Shell/");
+		FS_MakeDir("/switch/NX-Shell");
 
 	if (!FS_FileExists("/switch/NX-Shell/config.cfg")) {
 		config.dark_theme = false;
