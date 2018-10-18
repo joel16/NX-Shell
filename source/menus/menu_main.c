@@ -18,7 +18,7 @@ static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
 
 void AnimateMenuBar(float delta_time) {  
-    menubar_x += 400.0f * (delta_time * 0.001);
+    menubar_x += 400.0f * (delta_time * 0.01);
 	
 	if (menubar_x > 0)
 		menubar_x = MENUBAR_X_BOUNDARY;

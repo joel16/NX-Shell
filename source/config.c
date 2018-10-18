@@ -79,7 +79,7 @@ Result Config_GetLastDirectory(void) {
 		}
 
 		buf[size] = '\0';
-		char temp_path[256];
+		char temp_path[513];
 		sscanf(buf, "%[^\n]s", temp_path);
 
 		if (FS_DirExists(temp_path)) // Incase a directory previously visited had been deleted, set start path to sdmc:/ to avoid errors.

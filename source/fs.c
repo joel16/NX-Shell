@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <switch.h>
@@ -26,14 +25,14 @@ bool FS_FileExists(const char *path) {
 }
 
 bool FS_DirExists(const char *path) {
-	FsDir dir;
+	struct stat info;
 
-	if (R_SUCCEEDED(fsFsOpenDirectory(&fs, path, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
-		fsDirClose(&dir);
+	if (stat(path, &info) != 0)
+		return false;
+	else if (info.st_mode & S_IFDIR)
 		return true;
-	}
-
-	return false;
+	else
+		return false;
 }
 
 const char *FS_GetFileExt(const char *filename) {
@@ -49,11 +48,15 @@ Result FS_GetFileSize(const char *path, u64 *size) {
 	FsFile file;
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file)))
+	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
-	if (R_FAILED(ret = fsFileGetSize(&file, size)))
+	if (R_FAILED(ret = fsFileGetSize(&file, size))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
 	fsFileClose(&file);
 	return 0;
@@ -65,11 +68,15 @@ Result FS_Read(const char *path, size_t size, void *buf) {
 
 	size_t out = 0;
 
-	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file)))
+	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file))) {
+		fsFileClose(&file);
 		return ret;
+	}
 	
-	if (R_FAILED(ret = fsFileRead(&file, 0, buf, size, &out)))
+	if (R_FAILED(ret = fsFileRead(&file, 0, buf, size, &out))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
 	fsFileClose(&file);
 	return 0;
@@ -85,23 +92,35 @@ Result FS_Write(const char *path, const void *buf) {
 	if (FS_FileExists(path))
 		fsFsDeleteFile(&fs, path);
 
-	if (R_FAILED(ret = fsFsCreateFile(&fs, path, 0, 0)))
+	if (R_FAILED(ret = fsFsCreateFile(&fs, path, 0, 0))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
-	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_WRITE, &file)))
+	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_WRITE, &file))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
-	if (R_FAILED(ret = fsFileGetSize(&file, &size)))
+	if (R_FAILED(ret = fsFileGetSize(&file, &size))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
-	if (R_FAILED(ret = fsFileSetSize(&file, size + len)))
+	if (R_FAILED(ret = fsFileSetSize(&file, size + len))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
-	if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size + len)))
+	if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size + len))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
-	if (R_FAILED(ret = fsFileFlush(&file)))
+	if (R_FAILED(ret = fsFileFlush(&file))) {
+		fsFileClose(&file);
 		return ret;
+	}
 
 	fsFileClose(&file);
 	return 0;
