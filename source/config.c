@@ -12,19 +12,24 @@ const char *configFile =
 	"theme = %d\n"
 	"sortBy = %d\n";
 
-int Config_Save(nxshell_config_t config) {
+Result Config_Save(nxshell_config_t config) {
+	Result ret = 0;
+
 	char *buf = (char *)malloc(64);
 	snprintf(buf, 64, configFile, config.dark_theme, config.sort);
 
-	FILE *file = fopen("/switch/NX-Shell/config.cfg", "w");
-	fprintf(file, buf);
-	fclose(file);
+	if (R_FAILED(ret = FS_Write("/switch/NX-Shell/config.cfg", buf))) {
+		free(buf);
+		return ret;
+	}
 
 	free(buf);
 	return 0;
 }
 
-int Config_Load(void) {
+Result Config_Load(void) {
+	Result ret = 0;
+
 	if (!FS_DirExists("/switch/"))
 		FS_MakeDir("/switch");
 	if (!FS_DirExists("/switch/NX-Shell/"))
@@ -40,9 +45,10 @@ int Config_Load(void) {
 	FS_GetFileSize("/switch/NX-Shell/config.cfg", &size);
 	char *buf = (char *)malloc(size + 1);
 
-	FILE *file = fopen("/switch/NX-Shell/config.cfg", "r");
-	fread(buf, size, 1, file);
-	fclose(file);
+	if (R_FAILED(ret = FS_Read("/switch/NX-Shell/config.cfg", size, buf))) {
+		free(buf);
+		return ret;
+	}
 
 	buf[size] = '\0';
 	sscanf(buf, configFile, &config.dark_theme, &config.sort);
@@ -51,29 +57,38 @@ int Config_Load(void) {
 	return 0;
 }
 
-int Config_GetLastDirectory(void) {
-	char *buf = (char *)malloc(256);
+Result Config_GetLastDirectory(void) {
+	Result ret = 0;
 
-	if (FS_FileExists("/switch/NX-Shell/lastdir.txt")) {
-		FILE *read = fopen("/switch/NX-Shell/lastdir.txt", "r");
-		fscanf(read, "%s", buf);
-		fclose(read);
-		
-		if (FS_DirExists(buf)) // Incase a directory previously visited had been deleted, set start path to sdmc:/ to avoid errors.
-			strcpy(cwd, buf);
-		else 
-			strcpy(cwd, START_PATH);
+	if (!FS_FileExists("/switch/NX-Shell/lastdir.txt")) {
+		if (R_FAILED(ret = FS_Write("/switch/NX-Shell/lastdir.txt", START_PATH))) {
+			strcpy(cwd, START_PATH); // Set Start Path to "sdmc:/" if lastdir.txt hasn't been created.
+			return ret;
+		}
+
+		strcpy(cwd, START_PATH);
 	}
 	else {
-		strcpy(buf, START_PATH);
-			
-		FILE *write = fopen("/switch/NX-Shell/lastdir.txt", "w");
-		fprintf(write, "%s", buf);
-		fclose(write);
+		u64 size = 0;
+		FS_GetFileSize("/switch/NX-Shell/lastdir.txt", &size);
+		char *buf = (char *)malloc(size + 1);
+
+		if (R_FAILED(ret = FS_Read("/switch/NX-Shell/lastdir.txt", size, buf))) {
+			free(buf);
+			return ret;
+		}
+
+		buf[size] = '\0';
+		char temp_path[256];
+		sscanf(buf, "%[^\n]s", temp_path);
+
+		if (FS_DirExists(temp_path)) // Incase a directory previously visited had been deleted, set start path to sdmc:/ to avoid errors.
+			strcpy(cwd, temp_path);
+		else
+			strcpy(cwd, START_PATH);
 		
-		strcpy(cwd, buf); // Set Start Path to "sdmc:/" if lastDir.txt hasn't been created.
+		free(buf);
 	}
 
-	free(buf);
 	return 0;
 }

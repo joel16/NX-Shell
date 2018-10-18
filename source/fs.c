@@ -58,3 +58,51 @@ Result FS_GetFileSize(const char *path, u64 *size) {
 	fsFileClose(&file);
 	return 0;
 }
+
+Result FS_Read(const char *path, size_t size, void *buf) {
+	FsFile file;
+	Result ret = 0;
+
+	size_t out = 0;
+
+	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file)))
+		return ret;
+	
+	if (R_FAILED(ret = fsFileRead(&file, 0, buf, size, &out)))
+		return ret;
+
+	fsFileClose(&file);
+	return 0;
+}
+
+Result FS_Write(const char *path, const void *buf) {
+	FsFile file;
+	Result ret = 0;
+	
+	size_t len = strlen(buf);
+	u64 size = 0;
+
+	if (FS_FileExists(path))
+		fsFsDeleteFile(&fs, path);
+
+	if (R_FAILED(ret = fsFsCreateFile(&fs, path, 0, 0)))
+		return ret;
+
+	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_WRITE, &file)))
+		return ret;
+
+	if (R_FAILED(ret = fsFileGetSize(&file, &size)))
+		return ret;
+
+	if (R_FAILED(ret = fsFileSetSize(&file, size + len)))
+		return ret;
+
+	if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size + len)))
+		return ret;
+
+	if (R_FAILED(ret = fsFileFlush(&file)))
+		return ret;
+
+	fsFileClose(&file);
+	return 0;
+}

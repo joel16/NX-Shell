@@ -213,14 +213,13 @@ void Dirbrowse_DisplayFiles(void) {
 	}
 }
 
-static void Dirbrowse_SaveLastDirectory(void) {
-	char *buf = (char *)malloc(512);
-	strcpy(buf, cwd);
+static Result Dirbrowse_SaveLastDirectory(void) {
+	Result ret = 0;
 
-	FILE *write = fopen("/switch/NX-Shell/lastdir.txt", "w");
-	fprintf(write, "%s", buf);
-	fclose(write);
-	free(buf);
+	if (R_FAILED(ret = FS_Write("/switch/NX-Shell/lastdir.txt", cwd)))
+		return ret;
+
+	return 0;
 }
 
 // Get file index

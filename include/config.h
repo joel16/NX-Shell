@@ -10,8 +10,8 @@ typedef struct {
 
 extern nxshell_config_t config;
 
-int Config_Save(nxshell_config_t config);
-int Config_Load(void);
-int Config_GetLastDirectory(void);
+Result Config_Save(nxshell_config_t config);
+Result Config_Load(void);
+Result Config_GetLastDirectory(void);
 
 #endif
