@@ -13,12 +13,15 @@
 #include "textures.h"
 
 static void Term_Services(void) {
+	fsFsClose(&fs);
+
 	Textures_Free();
 
 	#ifdef DEBUG
 		socketExit();
 	#endif
 
+	usbCommsExit();
 	timeExit();
 	SDL_HelperTerm();
 	romfsExit();
@@ -26,12 +29,26 @@ static void Term_Services(void) {
 	plExit();
 }
 
-static void Init_Services(void) {
-	plInitialize();
-	psmInitialize();
-	romfsInit();
-	SDL_HelperInit();
-	timeInitialize();
+static Result Init_Services(void) {
+	Result ret = 0;
+
+	if (R_FAILED(ret = plInitialize()))
+		return ret;
+
+	if (R_FAILED(ret = psmInitialize()))
+		return ret;
+
+	if (R_FAILED(ret = romfsInit()))
+		return ret;
+
+	if (R_FAILED(ret = SDL_HelperInit()))
+		return ret;
+
+	if (R_FAILED(ret = timeInitialize()))
+		return ret;
+
+	if (R_FAILED(ret = usbCommsInitialize()))
+		return ret;
 
 	#ifdef DEBUG
 		socketInitializeDefault();
@@ -44,6 +61,8 @@ static void Init_Services(void) {
 
 	Config_Load();
 	Config_GetLastDirectory();
+
+	return 0;
 }
 
 int main(int argc, char **argv) {

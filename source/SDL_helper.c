@@ -23,7 +23,9 @@ static FC_Font *GetFont(int size) {
 	return Roboto;
 }
 
-void SDL_HelperInit(void) {
+Result SDL_HelperInit(void) {
+	Result ret = 0;
+
 	SDL_Init(SDL_INIT_EVERYTHING);
 	WINDOW = SDL_CreateWindow("NX-Shell", 0, 0, 1280, 720, SDL_WINDOW_FULLSCREEN);
 	RENDERER = SDL_CreateRenderer(WINDOW, 0, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -35,8 +37,11 @@ void SDL_HelperInit(void) {
 	Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID);
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096);
 
-	plGetSharedFontByType(&fontData, PlSharedFontType_Standard);
-	plGetSharedFontByType(&fontExtData, PlSharedFontType_NintendoExt);
+	if (R_FAILED(ret = plGetSharedFontByType(&fontData, PlSharedFontType_Standard)))
+		return ret;
+
+	if (R_FAILED(ret = plGetSharedFontByType(&fontExtData, PlSharedFontType_NintendoExt)))
+		return ret;
 
 	Roboto = FC_CreateFont();
 	FC_LoadFont_RW(Roboto, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 25, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
@@ -49,6 +54,8 @@ void SDL_HelperInit(void) {
 
 	Roboto_OSK = FC_CreateFont();
 	FC_LoadFont_RW(Roboto_OSK, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 50, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+
+	return 0;
 }
 
 void SDL_HelperTerm(void) {

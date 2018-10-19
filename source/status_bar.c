@@ -35,7 +35,7 @@ static void StatusBar_GetBatteryStatus(int x, int y) {
 	u32 percent = 0;
 	ChargerType state;
 	u32 width = 0;
-	char buf[5];
+	char buf[6];
 
 	if (R_FAILED(psmGetChargerType(&state)))
 		state = 0;
@@ -86,12 +86,14 @@ static void StatusBar_GetBatteryStatus(int x, int y) {
 				SDL_DrawImage(battery_full, x, 3);
 		}
 
-		snprintf(buf, 5, "%d%%", percent);
+		snprintf(buf, 4, "%d", percent);
+		strcat(buf, "%%");
 		SDL_GetTextDimensions(25, buf, &width, NULL);
 		SDL_DrawText((x - width - 10), y, 25, WHITE, buf);
 	}
 	else {
-		snprintf(buf, 5, "%d%%", percent);
+		snprintf(buf, 4, "%d", percent);
+		strcat(buf, "%%");
 		SDL_GetTextDimensions(25, buf, &width, NULL);
 		SDL_DrawText((x - width - 10), y, 25, WHITE, buf);
 		SDL_DrawImage(battery_unknown, x, 1);
