@@ -9,11 +9,14 @@
 static char *Clock_GetCurrentTime(void) {
 	static char buffer[27];
 
-    time_t unixTime = time(NULL);
-	struct tm* timeStruct = gmtime((const time_t *)&unixTime);
+	time_t rawtime;
+	struct tm* timeStruct;
+
+	time(&rawtime);
+	timeStruct = localtime(&rawtime);
+
 	int hours = (timeStruct->tm_hour);
 	int minutes = timeStruct->tm_min;
-	
 	bool amOrPm = false;
 	
 	if (hours < 12)

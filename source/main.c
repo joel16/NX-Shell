@@ -12,6 +12,8 @@
 #include "SDL_helper.h"
 #include "textures.h"
 
+FsFileSystem fs;
+
 static void Term_Services(void) {
 	fsFsClose(&fs);
 
