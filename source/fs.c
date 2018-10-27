@@ -1,6 +1,8 @@
+#include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <switch.h>
+#include <time.h>
 
 #include "fs.h"
 
@@ -80,6 +82,21 @@ Result FS_Read(const char *path, size_t size, void *buf) {
 
 	fsFileClose(&file);
 	return 0;
+}
+
+char *FS_GetFilePermission(const char *filename) {
+	static char perms[11];
+	struct stat attr;
+	
+	if (R_FAILED(stat(filename, &attr)))
+		return NULL;
+
+	snprintf(perms, 11, "%s%s%s%s%s%s%s%s%s%s", (S_ISDIR(attr.st_mode)) ? "d" : "-", (attr.st_mode & S_IRUSR) ? "r" : "-",
+		(attr.st_mode & S_IWUSR) ? "w" : "-", (attr.st_mode & S_IXUSR) ? "x" : "-", (attr.st_mode & S_IRGRP) ? "r" : "-",
+		(attr.st_mode & S_IWGRP) ? "w" : "-", (attr.st_mode & S_IXGRP) ? "x" : "-", (attr.st_mode & S_IROTH) ? "r" : "-",
+		(attr.st_mode & S_IWOTH) ? "w" : "-", (attr.st_mode & S_IXOTH) ? "x" : "-");
+
+	return perms;
 }
 
 Result FS_Write(const char *path, const void *buf) {

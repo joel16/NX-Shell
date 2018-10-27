@@ -445,13 +445,13 @@ void Menu_DisplayProperties(void) {
 	Utils_GetSizeString(utils_size, size);
 
 	SDL_DrawTextf(390, 183, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
-	SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Parent: %s", cwd);
 
 	if (!file->isDir) {
-		SDL_DrawTextf(390, 283, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
-		//SDL_DrawText(390, 333, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Created: ");
-		//SDL_DrawText(390, 383, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Modified: ");
+		SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
+		SDL_DrawTextf(390, 283, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Permission: %s", FS_GetFilePermission(path));
 	}
+	else 
+		SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Permission: %s", FS_GetFilePermission(path));
 
 	SDL_GetTextDimensions(25, "OK", &properties_ok_width, &properties_ok_height);
 	SDL_DrawRect((890 - properties_ok_width) - 20, (595 - properties_ok_height) - 20, properties_ok_width + 40, properties_ok_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
