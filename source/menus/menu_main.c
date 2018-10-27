@@ -113,7 +113,7 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 		if (input & KEY_LEFT)
 			position = 0;
 		else if (input & KEY_RIGHT)
-			position = ((strcmp(cwd, ROOT_PATH) == 0? (fileCount - 1) : fileCount));
+			position = (fileCount - 1);
 
 		// Open options
 		if (input & KEY_X) {
