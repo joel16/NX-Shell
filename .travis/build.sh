@@ -5,8 +5,8 @@ sudo apt-get -y install build-essential
 source /etc/profile.d/devkit-env.sh
 export DEVKITA64=/opt/devkitpro/devkitA64
 
-cd /NX-Shell && git submodule foreach git pull origin master
-cd mupdf/ && make generate
+cd NX-Shell/mupdf/
+git checkout 1.14.0 && make generate
 cd ../ && make
 
 rm -rf .travis build include mupdf romfs source
