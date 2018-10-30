@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <minizip/unzip.h>
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -6,7 +7,6 @@
 #include "archive.h"
 #include "progress_bar.h"
 #include "fs.h"
-#include "unzip.h"
 #include "utils.h"
 
 Result unzExtractCurrentFile(unzFile *unzHandle, int *path)
