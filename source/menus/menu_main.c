@@ -16,6 +16,7 @@
 #define MENUBAR_X_BOUNDARY  0
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
+u64 total_storage = 0, used_storage = 0;
 
 void AnimateMenuBar(float delta_time) {  
     menubar_x += 400.0f * (delta_time * 0.01);
@@ -193,6 +194,9 @@ void Menu_Main(void) {
 	memset(multi_select, 0, sizeof(multi_select)); // Reset all multi selected items
 
 	u64 current_time = 0, last_time = 0;
+
+	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
+	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
 
 	while(appletMainLoop()) {
 		last_time = current_time;

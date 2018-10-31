@@ -58,3 +58,27 @@ void Utils_AppendArr(char subject[], const char insert[], int pos) {
 	strcpy(subject, buf);   // copy it back to subject
 	// deallocate buf[] here, if used malloc()
 }
+
+u64 Utils_GetTotalStorage(FsStorageId storage_id) {
+	Result ret = 0;
+	u64 total = 0;
+
+	if (R_FAILED(ret = nsGetTotalSpaceSize(storage_id, &total)))
+		printf("nsGetFreeSpaceSize() failed: 0x%x.\n\n", ret);
+
+	return total;
+}
+
+static u64 Utils_GetFreeStorage(FsStorageId storage_id) {
+	Result ret = 0;
+	u64 free = 0;
+
+	if (R_FAILED(ret = nsGetFreeSpaceSize(storage_id, &free)))
+		printf("nsGetFreeSpaceSize() failed: 0x%x.\n\n", ret);
+
+	return free;
+}
+
+u64 Utils_GetUsedStorage(FsStorageId storage_id) {
+	return (Utils_GetTotalStorage(storage_id) - Utils_GetFreeStorage(storage_id));
+}
