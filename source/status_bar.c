@@ -1,5 +1,4 @@
 #include <time.h>
-#include <switch.h>
 
 #include "common.h"
 #include "SDL_helper.h"

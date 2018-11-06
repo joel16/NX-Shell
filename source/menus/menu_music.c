@@ -1,8 +1,6 @@
 #include <dirent.h>
 #include <time.h>
 
-#include <switch.h>
-
 #include "common.h"
 #include "dirbrowse.h"
 #include "fs.h"

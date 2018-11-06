@@ -1,4 +1,3 @@
-#include <switch.h>
 #include <math.h>
 
 #include "common.h"
@@ -17,8 +16,6 @@
 static int menubar_selection = 0;
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
-u64 total_storage = 0, used_storage = 0;
-FsFileSystem user_fs;
 
 static char *user_partitions[] = {
 	"SD",
@@ -42,6 +39,7 @@ static void Mount_SD(void) {
 	BROWSE_STATE = STATE_SD;
 	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
 	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
+
 	Config_GetLastDirectory();
 	Dirbrowse_PopulateFiles(true);
 }
@@ -50,7 +48,7 @@ static void Mount_Prodinfof(void) {
 	if (BROWSE_STATE != STATE_SD)
 		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
 
-	BROWSE_STATE = STATE_SAFE;
+	BROWSE_STATE = STATE_PRODINFOF;
 
 	fsOpenBisFileSystem(&user_fs, 28, "");
 	fsdevMountDevice("kPRODINFOF", user_fs);

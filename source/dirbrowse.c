@@ -146,7 +146,7 @@ void Dirbrowse_DisplayFiles(void) {
 	SDL_DrawImage(icon_nav_drawer, 20, 58);
 	SDL_DrawImage(icon_actions, (1260 - 64), 58);
 	SDL_DrawText(170, 40 + ((100 - title_height) / 2), 30, WHITE, cwd);
-	
+
 	if ((BROWSE_STATE != STATE_PRODINFOF) || (BROWSE_STATE != STATE_SAFE)) {
 		SDL_DrawRect(170, 40 + ((100 - title_height) / 2) + title_height + 10, 940, 6, config.dark_theme? SELECTOR_COLOUR_DARK : FC_MakeColor(10, 73, 163, 255));
 		SDL_DrawRect(170, 40 + ((100 - title_height) / 2) + title_height + 10, (((double)used_storage/(double)total_storage) * 940.0), 6, config.dark_theme? 

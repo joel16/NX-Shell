@@ -1,7 +1,5 @@
 #include <dirent.h>
 
-#include <switch.h>
-
 #include "common.h"
 #include "fs.h"
 #include "menu_gallery.h"

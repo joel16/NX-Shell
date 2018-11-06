@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <switch.h>
 
 #ifdef DEBUG
 #include <sys/socket.h>
@@ -7,17 +6,12 @@
 
 #include "common.h"
 #include "config.h"
-#include "fs.h"
 #include "menu_main.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
 
-FsFileSystem *fs;
-
 static void Term_Services(void) {
-	//fsFsClose(&fs);
-
 	Textures_Free();
 
 	#ifdef DEBUG
