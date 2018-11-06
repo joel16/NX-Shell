@@ -22,6 +22,7 @@ FsFileSystem user_fs;
 
 static char *user_partitions[] = {
 	"SD",
+	"kPRODINFOF",
 	"kSAFE",
 	"kSYSTEM",
 	"kUSER"
@@ -34,66 +35,96 @@ void AnimateMenuBar(float delta_time) {
 		menubar_x = MENUBAR_X_BOUNDARY;
 }
 
+static void Mount_SD(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+	BROWSE_STATE = STATE_SD;
+	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
+	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
+	Config_GetLastDirectory();
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_Prodinfof(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+	BROWSE_STATE = STATE_SAFE;
+
+	fsOpenBisFileSystem(&user_fs, 28, "");
+	fsdevMountDevice("kPRODINFOF", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_Safe(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+	BROWSE_STATE = STATE_SAFE;
+
+	fsOpenBisFileSystem(&user_fs, 29, "");
+	fsdevMountDevice("kSAFE", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_System(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+	BROWSE_STATE = STATE_SYSTEM;
+	total_storage = Utils_GetTotalStorage(FsStorageId_NandSystem);
+	used_storage = Utils_GetUsedStorage(FsStorageId_NandSystem);
+
+	fsOpenBisFileSystem(&user_fs, 31, "");
+	fsdevMountDevice("kSYSTEM", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_User(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+	
+	BROWSE_STATE = STATE_USER;
+	total_storage = Utils_GetTotalStorage(FsStorageId_NandUser);
+	used_storage = Utils_GetUsedStorage(FsStorageId_NandUser);
+
+	fsOpenBisFileSystem(&user_fs, 30, "");
+	fsdevMountDevice("kUSER", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
 static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
-	const char *buf = "";
 	if (input & KEY_DUP)
 		menubar_selection--;
 	else if (input & KEY_DDOWN)
 		menubar_selection++;
 
-	Utils_SetMax(&menubar_selection, 0, 4);
-	Utils_SetMin(&menubar_selection, 4, 0);
+	Utils_SetMax(&menubar_selection, 0, 5);
+	Utils_SetMin(&menubar_selection, 5, 0);
 
 	if (input & KEY_A) {
 		switch (menubar_selection) {
 			case 0:
-				if (BROWSE_STATE != STATE_SD)
-					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
-
-				BROWSE_STATE = STATE_SD;
-				total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
-				used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
-				Config_GetLastDirectory();
-				Dirbrowse_PopulateFiles(true);
+				Mount_SD();
 				break;
 			case 1:
-				if (BROWSE_STATE != STATE_SD)
-					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
-
-				BROWSE_STATE = STATE_SAFE;
-
-				fsOpenBisFileSystem(&user_fs, 29, buf);
-				fsdevMountDevice("kSAFE", user_fs);
-				strcpy(cwd, ROOT_PATH);
-				Dirbrowse_PopulateFiles(true);
+				Mount_Prodinfof();
 				break;
 			case 2:
-				if (BROWSE_STATE != STATE_SD)
-					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
-
-				BROWSE_STATE = STATE_SYSTEM;
-				total_storage = Utils_GetTotalStorage(FsStorageId_NandSystem);
-				used_storage = Utils_GetUsedStorage(FsStorageId_NandSystem);
-
-				fsOpenBisFileSystem(&user_fs, 31, buf);
-				fsdevMountDevice("kSYSTEM", user_fs);
-				strcpy(cwd, ROOT_PATH);
-				Dirbrowse_PopulateFiles(true);
+				Mount_Safe();
 				break;
 			case 3:
-				if (BROWSE_STATE != STATE_SD)
-					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
-
-				BROWSE_STATE = STATE_USER;
-				total_storage = Utils_GetTotalStorage(FsStorageId_NandUser);
-				used_storage = Utils_GetUsedStorage(FsStorageId_NandUser);
-
-				fsOpenBisFileSystem(&user_fs, 30, buf);
-				fsdevMountDevice("kUSER", user_fs);
-				strcpy(cwd, ROOT_PATH);
-				Dirbrowse_PopulateFiles(true);
+				Mount_System();
 				break;
 			case 4:
+				Mount_User();
+				break;
+			case 5:
 				MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 				break;
 		}
@@ -107,6 +138,26 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 	if ((touchInfo.state == TouchEnded) && (touchInfo.tapType != TapNone)) {
 		if (touchInfo.firstTouch.px >= menubar_x + 400)
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		else if (tapped_inside(touchInfo, menubar_x, 214, 400, 293)) {
+			menubar_selection = 0;
+			Mount_SD();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 294, 400, 373)) {
+			menubar_selection = 1;
+			Mount_Prodinfof();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 374, 400, 453)) {
+			menubar_selection = 2;
+			Mount_Safe();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 454, 400, 533)) {
+			menubar_selection = 3;
+			Mount_System();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 534, 400, 613)) {
+			menubar_selection = 4;
+			Mount_User();
+		}
 		else if (tapped_inside(touchInfo, menubar_x + 20, 630, menubar_x + 80, 710))
 			MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 	}
@@ -118,26 +169,30 @@ static void Menu_DisplayMenuBar(void) {
 	SDL_DrawImage(bg_header, menubar_x, 0);
 	SDL_DrawText(menubar_x + 15, 164, 30, WHITE, "NX Shell");
 
-	if (menubar_selection != 4)
-		SDL_DrawRect(menubar_x, 214 + (90 * menubar_selection), 400, 90, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	if (menubar_selection != 5)
+		SDL_DrawRect(menubar_x, 214 + (80 * menubar_selection), 400, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else
 		SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	
-	SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 234);
-	SDL_DrawText(menubar_x + 100, 234, 25, config.dark_theme? WHITE : BLACK, "External storage");
-	SDL_DrawText(menubar_x + 100, 264, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc:/");
+	SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 224);
+	SDL_DrawText(menubar_x + 100, 229, 25, config.dark_theme? WHITE : BLACK, "External storage");
+	SDL_DrawText(menubar_x + 100, 259, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "SDMC:/");
 
-	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 324);
-	SDL_DrawText(menubar_x + 100, 324, 25, config.dark_theme? WHITE : BLACK, "SafeMode");
-	SDL_DrawText(menubar_x + 100, 354, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "safe:/");
+	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 304);
+	SDL_DrawText(menubar_x + 100, 309, 25, config.dark_theme? WHITE : BLACK, "CalibrationFile");
+	SDL_DrawText(menubar_x + 100, 339, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "PRODINFOF:/");
 
-	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 414);
-	SDL_DrawText(menubar_x + 100, 414, 25, config.dark_theme? WHITE : BLACK, "System");
-	SDL_DrawText(menubar_x + 100, 444, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "system:/");
+	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 384);
+	SDL_DrawText(menubar_x + 100, 389, 25, config.dark_theme? WHITE : BLACK, "SafeMode");
+	SDL_DrawText(menubar_x + 100, 419, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "SAFE:/");
 
-	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 504);
-	SDL_DrawText(menubar_x + 100, 504, 25, config.dark_theme? WHITE : BLACK, "User");
-	SDL_DrawText(menubar_x + 100, 534, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "user:/");
+	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 464);
+	SDL_DrawText(menubar_x + 100, 469, 25, config.dark_theme? WHITE : BLACK, "System");
+	SDL_DrawText(menubar_x + 100, 499, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "SYSTEM:/");
+
+	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 544);
+	SDL_DrawText(menubar_x + 100, 549, 25, config.dark_theme? WHITE : BLACK, "User");
+	SDL_DrawText(menubar_x + 100, 579, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "USER:/");
 
 	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
 }

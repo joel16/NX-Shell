@@ -27,9 +27,10 @@ enum MENU_STATES {
 
 enum BROWSE_STATES {
     STATE_SD = 0,
-    STATE_SAFE = 1,
-    STATE_SYSTEM = 2,
-    STATE_USER = 3
+    STATE_PRODINFOF = 1,
+    STATE_SAFE = 2,
+    STATE_SYSTEM = 3,
+    STATE_USER = 4
 };
 
 extern char cwd[512];
