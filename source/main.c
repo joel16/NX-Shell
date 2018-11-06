@@ -11,11 +11,12 @@
 #include "menu_main.h"
 #include "SDL_helper.h"
 #include "textures.h"
+#include "utils.h"
 
-FsFileSystem fs;
+FsFileSystem *fs;
 
 static void Term_Services(void) {
-	fsFsClose(&fs);
+	//fsFsClose(&fs);
 
 	Textures_Free();
 
@@ -63,7 +64,10 @@ static Result Init_Services(void) {
 
 	Textures_Load();
 
-	fsMountSdcard(&fs);
+	BROWSE_STATE = STATE_SD;
+	fs = fsdevGetDefaultFileSystem();
+	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
+	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
 
 	Config_Load();
 	Config_GetLastDirectory();

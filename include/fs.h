@@ -3,7 +3,9 @@
 
 #include <switch.h>
 
-extern FsFileSystem fs;
+extern FsFileSystem *fs;
+extern FsFileSystem user_fs;
+extern u64 total_storage, used_storage;
 
 Result FS_MakeDir(const char *path);
 bool FS_FileExists(const char *path);

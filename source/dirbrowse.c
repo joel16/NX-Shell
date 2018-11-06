@@ -67,7 +67,7 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 	FsDir dir;
 	Result ret = 0;
 
-	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		/* Add fake ".." entry except on root */
 		if (strcmp(cwd, ROOT_PATH)) {
 			files = (File *)malloc(sizeof(File)); // New list
@@ -146,8 +146,12 @@ void Dirbrowse_DisplayFiles(void) {
 	SDL_DrawImage(icon_nav_drawer, 20, 58);
 	SDL_DrawImage(icon_actions, (1260 - 64), 58);
 	SDL_DrawText(170, 40 + ((100 - title_height) / 2), 30, WHITE, cwd);
-	SDL_DrawRect(170, 40 + ((100 - title_height) / 2) + title_height + 10, 940, 6, config.dark_theme? SELECTOR_COLOUR_DARK : FC_MakeColor(10, 73, 163, 255));
-	SDL_DrawRect(170, 40 + ((100 - title_height) / 2) + title_height + 10, (((double)used_storage/(double)total_storage) * 940.0), 6, config.dark_theme? TITLE_COLOUR_DARK : FC_MakeColor(49, 161, 224, 255));
+	
+	if (BROWSE_STATE != STATE_SAFE) {
+		SDL_DrawRect(170, 40 + ((100 - title_height) / 2) + title_height + 10, 940, 6, config.dark_theme? SELECTOR_COLOUR_DARK : FC_MakeColor(10, 73, 163, 255));
+		SDL_DrawRect(170, 40 + ((100 - title_height) / 2) + title_height + 10, (((double)used_storage/(double)total_storage) * 940.0), 6, config.dark_theme? 
+			TITLE_COLOUR_DARK : FC_MakeColor(49, 161, 224, 255));
+	}
 
 	int i = 0, printed = 0;
 	File *file = files; // Draw file list
@@ -218,8 +222,10 @@ void Dirbrowse_DisplayFiles(void) {
 static Result Dirbrowse_SaveLastDirectory(void) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = FS_Write("/switch/NX-Shell/lastdir.txt", cwd)))
-		return ret;
+	if (BROWSE_STATE == STATE_SD) {
+		if (R_FAILED(ret = FS_Write("/switch/NX-Shell/lastdir.txt", cwd)))
+			return ret;
+	}
 
 	return 0;
 }

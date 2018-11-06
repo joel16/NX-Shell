@@ -54,7 +54,7 @@ static Result FileOptions_CreateFolder(void) {
 	osk_buffer[0] = '\0';
 
 	Result ret = 0;
-	if (R_FAILED(ret = fsFsCreateDirectory(&fs, path)))
+	if (R_FAILED(ret = fsFsCreateDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
 		return ret;
 	
 	Dirbrowse_PopulateFiles(true);
@@ -87,11 +87,11 @@ static Result FileOptions_Rename(void) {
 	osk_buffer[0] = '\0';
 
 	if (file->isDir) {
-		if (R_FAILED(ret = fsFsRenameDirectory(&fs, oldPath, newPath)))
+		if (R_FAILED(ret = fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, oldPath, newPath)))
 			return ret;
 	}
 	else {
-		if (R_FAILED(ret = fsFsRenameFile(&fs, oldPath, newPath)))
+		if (R_FAILED(ret = fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, oldPath, newPath)))
 			return ret;
 	}
 	
@@ -123,12 +123,12 @@ static int FileOptions_DeleteFile(void) {
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		return fsFsDeleteDirectoryRecursively(&fs, path);
+		return fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
 	}
 
 	// Delete File
 	else 
-		return fsFsDeleteFile(&fs, path);
+		return fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
 }
 
 // Copy file from src to dst
@@ -302,7 +302,7 @@ static Result FileOptions_Paste(void) {
 			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
 				strcat(copysource, "/");
 
-			fsFsDeleteDirectoryRecursively(&fs, copysource); // Delete dir
+			fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource); // Delete dir
 		}
 	}
 
@@ -311,7 +311,7 @@ static Result FileOptions_Paste(void) {
 		ret = FileOptions_CopyFile(copysource, copytarget, true); // Copy file
 		
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
-			fsFsDeleteFile(&fs, copysource); // Delete file
+			fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource); // Delete file
 	}
 
 	// Paste success
@@ -333,7 +333,7 @@ static void HandleDelete(void) {
 						// Add Trailing Slash
 						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
 						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						fsFsDeleteDirectoryRecursively(&fs, multi_select_paths[i]);
+						fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
 					}
 					else if (FS_FileExists(multi_select_paths[i]))
 						remove(multi_select_paths[i]);

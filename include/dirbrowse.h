@@ -20,8 +20,6 @@ extern int initialPosition;
 extern int position;
 extern int fileCount;
 
-extern u64 total_storage, used_storage;
-
 int multi_select_index;           // Multi-select index.
 bool multi_select[256];           // Array of indices selected.
 int multi_select_indices[256];    // Array to hold the indices.

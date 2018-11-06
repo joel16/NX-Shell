@@ -14,9 +14,18 @@
 #include "utils.h"
 
 #define MENUBAR_X_BOUNDARY  0
+static int menubar_selection = 0;
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
 u64 total_storage = 0, used_storage = 0;
+FsFileSystem user_fs;
+
+static char *user_partitions[] = {
+	"SD",
+	"kSAFE",
+	"kSYSTEM",
+	"kUSER"
+};
 
 void AnimateMenuBar(float delta_time) {  
     menubar_x += 400.0f * (delta_time * 0.01);
@@ -26,11 +35,74 @@ void AnimateMenuBar(float delta_time) {
 }
 
 static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
-	if (input & KEY_A)
-		MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
+	const char *buf = "";
+	if (input & KEY_DUP)
+		menubar_selection--;
+	else if (input & KEY_DDOWN)
+		menubar_selection++;
 
-	if ((input & KEY_MINUS) || (input & KEY_B))
+	Utils_SetMax(&menubar_selection, 0, 4);
+	Utils_SetMin(&menubar_selection, 4, 0);
+
+	if (input & KEY_A) {
+		switch (menubar_selection) {
+			case 0:
+				if (BROWSE_STATE != STATE_SD)
+					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+				BROWSE_STATE = STATE_SD;
+				total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
+				used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
+				Config_GetLastDirectory();
+				Dirbrowse_PopulateFiles(true);
+				break;
+			case 1:
+				if (BROWSE_STATE != STATE_SD)
+					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+				BROWSE_STATE = STATE_SAFE;
+
+				fsOpenBisFileSystem(&user_fs, 29, buf);
+				fsdevMountDevice("kSAFE", user_fs);
+				strcpy(cwd, ROOT_PATH);
+				Dirbrowse_PopulateFiles(true);
+				break;
+			case 2:
+				if (BROWSE_STATE != STATE_SD)
+					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+				BROWSE_STATE = STATE_SYSTEM;
+				total_storage = Utils_GetTotalStorage(FsStorageId_NandSystem);
+				used_storage = Utils_GetUsedStorage(FsStorageId_NandSystem);
+
+				fsOpenBisFileSystem(&user_fs, 31, buf);
+				fsdevMountDevice("kSYSTEM", user_fs);
+				strcpy(cwd, ROOT_PATH);
+				Dirbrowse_PopulateFiles(true);
+				break;
+			case 3:
+				if (BROWSE_STATE != STATE_SD)
+					fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+				BROWSE_STATE = STATE_USER;
+				total_storage = Utils_GetTotalStorage(FsStorageId_NandUser);
+				used_storage = Utils_GetUsedStorage(FsStorageId_NandUser);
+
+				fsOpenBisFileSystem(&user_fs, 30, buf);
+				fsdevMountDevice("kUSER", user_fs);
+				strcpy(cwd, ROOT_PATH);
+				Dirbrowse_PopulateFiles(true);
+				break;
+			case 4:
+				MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
+				break;
+		}
+	}
+
+	if ((input & KEY_MINUS) || (input & KEY_B)) {
+		menubar_selection = 0;
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	}
 	
 	if ((touchInfo.state == TouchEnded) && (touchInfo.tapType != TapNone)) {
 		if (touchInfo.firstTouch.px >= menubar_x + 400)
@@ -45,10 +117,28 @@ static void Menu_DisplayMenuBar(void) {
 	SDL_DrawRect(menubar_x + 400, 0, 1, 720, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
 	SDL_DrawImage(bg_header, menubar_x, 0);
 	SDL_DrawText(menubar_x + 15, 164, 30, WHITE, "NX Shell");
-	SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 254);
-	SDL_DrawText(menubar_x + 100, 254, 25, config.dark_theme? WHITE : BLACK, "External storage");
-	SDL_DrawText(menubar_x + 100, 284, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
-	SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+
+	if (menubar_selection != 4)
+		SDL_DrawRect(menubar_x, 214 + (90 * menubar_selection), 400, 90, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	else
+		SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	
+	SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 234);
+	SDL_DrawText(menubar_x + 100, 234, 25, config.dark_theme? WHITE : BLACK, "External storage");
+	SDL_DrawText(menubar_x + 100, 264, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc:/");
+
+	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 324);
+	SDL_DrawText(menubar_x + 100, 324, 25, config.dark_theme? WHITE : BLACK, "SafeMode");
+	SDL_DrawText(menubar_x + 100, 354, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "safe:/");
+
+	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 414);
+	SDL_DrawText(menubar_x + 100, 414, 25, config.dark_theme? WHITE : BLACK, "System");
+	SDL_DrawText(menubar_x + 100, 444, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "system:/");
+
+	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 504);
+	SDL_DrawText(menubar_x + 100, 504, 25, config.dark_theme? WHITE : BLACK, "User");
+	SDL_DrawText(menubar_x + 100, 534, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "user:/");
+
 	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
 }
 
@@ -194,9 +284,6 @@ void Menu_Main(void) {
 	memset(multi_select, 0, sizeof(multi_select)); // Reset all multi selected items
 
 	u64 current_time = 0, last_time = 0;
-
-	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
-	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
 
 	while(appletMainLoop()) {
 		last_time = current_time;

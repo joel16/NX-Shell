@@ -4,12 +4,13 @@
 #include <switch.h>
 #include <time.h>
 
+#include "common.h"
 #include "fs.h"
 
 Result FS_MakeDir(const char *path) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsCreateDirectory(&fs, path)))
+	if (R_FAILED(ret = fsFsCreateDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
 		return ret;
 
 	return 0;
@@ -18,7 +19,7 @@ Result FS_MakeDir(const char *path) {
 bool FS_FileExists(const char *path) {
 	FsFile file;
 
-	if (R_SUCCEEDED(fsFsOpenFile(&fs, path, FS_OPEN_READ, &file))) {
+	if (R_SUCCEEDED(fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_READ, &file))) {
 		fsFileClose(&file);
 		return true;
 	}
@@ -50,7 +51,7 @@ Result FS_GetFileSize(const char *path, u64 *size) {
 	FsFile file;
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_READ, &file))) {
 		fsFileClose(&file);
 		return ret;
 	}
@@ -70,7 +71,7 @@ Result FS_Read(const char *path, size_t size, void *buf) {
 
 	size_t out = 0;
 
-	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_READ, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_READ, &file))) {
 		fsFileClose(&file);
 		return ret;
 	}
@@ -107,14 +108,14 @@ Result FS_Write(const char *path, const void *buf) {
 	u64 size = 0;
 
 	if (FS_FileExists(path))
-		fsFsDeleteFile(&fs, path);
+		fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
 
-	if (R_FAILED(ret = fsFsCreateFile(&fs, path, 0, 0))) {
+	if (R_FAILED(ret = fsFsCreateFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, 0, 0))) {
 		fsFileClose(&file);
 		return ret;
 	}
 
-	if (R_FAILED(ret = fsFsOpenFile(&fs, path, FS_OPEN_WRITE, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_WRITE, &file))) {
 		fsFileClose(&file);
 		return ret;
 	}
