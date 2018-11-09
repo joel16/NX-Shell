@@ -3,6 +3,7 @@
 #include "common.h"
 #include "config.h"
 #include "dirbrowse.h"
+#include "fs.h"
 #include "menu_main.h"
 #include "menu_options.h"
 #include "menu_settings.h"
@@ -13,7 +14,7 @@
 #include "utils.h"
 
 #define MENUBAR_X_BOUNDARY  0
-static int menubar_selection = 0;
+static int menubar_selection = 0, menubar_max_items = 0;
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
 
@@ -102,8 +103,8 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 	else if (input & KEY_DDOWN)
 		menubar_selection++;
 
-	Utils_SetMax(&menubar_selection, 0, 5);
-	Utils_SetMin(&menubar_selection, 5, 0);
+	Utils_SetMax(&menubar_selection, 0, menubar_max_items + 1);
+	Utils_SetMin(&menubar_selection, menubar_max_items + 1, 0);
 
 	if (input & KEY_A) {
 		switch (menubar_selection) {
@@ -162,35 +163,62 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 }
 
 static void Menu_DisplayMenuBar(void) {
+	bool isGameCardInserted = false;
+	isGameCardInserted = fsIsGameCardInserted(&fsDeviceOperator);
+
+	if (isGameCardInserted)
+		menubar_max_items = 5;
+	else
+		menubar_max_items = 4;
+
+	const char *menubar_items[] = {
+		"External storage",
+		"CalibrationFile",
+		"SafeMode",
+		"System",
+		"User",
+		"Gamecard"
+	};
+
+	const char *menubar_desc[] = {
+		"/",
+		"PRODINFOF:/",
+		"SAFE:/",
+		"SYSTEM:/",
+		"USER:/",
+		"/"
+	};
+
 	SDL_DrawRect(menubar_x, 0, 400, 720, config.dark_theme? BLACK_BG : WHITE);
 	SDL_DrawRect(menubar_x + 400, 0, 1, 720, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
 	SDL_DrawImage(bg_header, menubar_x, 0);
 	SDL_DrawText(menubar_x + 15, 164, 30, WHITE, "NX Shell");
 
-	if (menubar_selection != 5)
-		SDL_DrawRect(menubar_x, 214 + (80 * menubar_selection), 400, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	else
+	int printed = 0, selection = 0; 
+
+	if (menubar_selection == menubar_max_items + 1)
 		SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	
-	SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 224);
-	SDL_DrawText(menubar_x + 100, 229, 25, config.dark_theme? WHITE : BLACK, "External storage");
-	SDL_DrawText(menubar_x + 100, 259, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "SDMC:/");
+	else
+		selection = menubar_selection;
 
-	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 304);
-	SDL_DrawText(menubar_x + 100, 309, 25, config.dark_theme? WHITE : BLACK, "CalibrationFile");
-	SDL_DrawText(menubar_x + 100, 339, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "PRODINFOF:/");
+	for (int i = 0; i < menubar_max_items + 1; i++) {
+		if (printed == 5)
+				break;
+		if (selection < 5 || i > (selection - 5)) {
+			if ((i == selection) && (menubar_selection != menubar_max_items + 1))
+				SDL_DrawRect(menubar_x, 214 + (80 * printed), 400, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 384);
-	SDL_DrawText(menubar_x + 100, 389, 25, config.dark_theme? WHITE : BLACK, "SafeMode");
-	SDL_DrawText(menubar_x + 100, 419, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "SAFE:/");
+			SDL_DrawText(menubar_x + 100, 229 + (80 * printed), 25, config.dark_theme? WHITE : BLACK, menubar_items[i]);
+			SDL_DrawText(menubar_x + 100, 259 + (80 * printed), 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, menubar_desc[i]);
 
-	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 464);
-	SDL_DrawText(menubar_x + 100, 469, 25, config.dark_theme? WHITE : BLACK, "System");
-	SDL_DrawText(menubar_x + 100, 499, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "SYSTEM:/");
+			if (!strcmp(menubar_items[i], "External storage"))
+				SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 224 + (80 * printed));
+			else
+				SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 224 + (80 * printed));
 
-	SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 544);
-	SDL_DrawText(menubar_x + 100, 549, 25, config.dark_theme? WHITE : BLACK, "User");
-	SDL_DrawText(menubar_x + 100, 579, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "USER:/");
+			printed++;
+		}
+	}
 
 	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
 }
@@ -224,9 +252,6 @@ static void Menu_HandleMultiSelect(void) {
 }
 
 static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
-	if (input & KEY_PLUS)
-		longjmp(exitJmp, 1);
-
 	if (input & KEY_MINUS) {
 		if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
@@ -377,5 +402,8 @@ void Menu_Main(void) {
 			Menu_DisplaySettings();
 
 		SDL_Renderdisplay();
+
+		if (kDown & KEY_PLUS)
+			longjmp(exitJmp, 1);
 	}
 }

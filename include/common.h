@@ -16,6 +16,7 @@ extern int MENU_DEFAULT_STATE;
 extern int BROWSE_STATE;
 extern FsFileSystem *fs;
 extern FsFileSystem user_fs;
+extern FsDeviceOperator fsDeviceOperator;
 extern u64 total_storage, used_storage;
 
 enum MENU_STATES {
