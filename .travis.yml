@@ -24,7 +24,6 @@ install:
   - sh .travis/.travis-deps.sh
 
 script:
-  - cd $TRAVIS_BUILD_DIR
   - sh .travis/.build.sh
 
 deploy:
