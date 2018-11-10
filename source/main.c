@@ -18,7 +18,6 @@ static void Term_Services(void) {
 		socketExit();
 	#endif
 
-	fsDeviceOperatorClose(&fsDeviceOperator);
 	nsExit();
 	usbCommsExit();
 	timeExit();
@@ -63,9 +62,6 @@ static Result Init_Services(void) {
 	fs = fsdevGetDefaultFileSystem();
 	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
 	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
-
-	if (R_FAILED(ret = fsOpenDeviceOperator(&fsDeviceOperator)))
-		return ret;
 
 	Config_Load();
 	Config_GetLastDirectory();

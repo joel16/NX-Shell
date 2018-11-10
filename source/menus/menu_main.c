@@ -14,7 +14,7 @@
 #include "utils.h"
 
 #define MENUBAR_X_BOUNDARY  0
-static int menubar_selection = 0, menubar_max_items = 0;
+static int menubar_selection = 0, menubar_max_items = 4;
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
 
@@ -163,21 +163,12 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 }
 
 static void Menu_DisplayMenuBar(void) {
-	bool isGameCardInserted = false;
-	isGameCardInserted = fsIsGameCardInserted(&fsDeviceOperator);
-
-	if (isGameCardInserted)
-		menubar_max_items = 5;
-	else
-		menubar_max_items = 4;
-
 	const char *menubar_items[] = {
 		"External storage",
 		"CalibrationFile",
 		"SafeMode",
 		"System",
 		"User",
-		"Gamecard"
 	};
 
 	const char *menubar_desc[] = {
@@ -186,7 +177,6 @@ static void Menu_DisplayMenuBar(void) {
 		"SAFE:/",
 		"SYSTEM:/",
 		"USER:/",
-		"/"
 	};
 
 	SDL_DrawRect(menubar_x, 0, 400, 720, config.dark_theme? BLACK_BG : WHITE);
