@@ -106,6 +106,8 @@ Result FS_Write(const char *path, const void *buf) {
 	size_t len = strlen(buf);
 	u64 size = 0;
 
+	appletLockExit();
+
 	if (FS_FileExists(path))
 		fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
 
@@ -140,5 +142,6 @@ Result FS_Write(const char *path, const void *buf) {
 	}
 
 	fsFileClose(&file);
+	appletUnlockExit();
 	return 0;
 }

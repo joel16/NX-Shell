@@ -325,6 +325,8 @@ static Result FileOptions_Paste(void) {
 }
 
 static void HandleDelete(void) {
+	appletLockExit();
+
 	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
 		for (int i = 0; i < multi_select_index; i++) {
 			if (strlen(multi_select_paths[i]) != 0) {
@@ -346,6 +348,7 @@ static void HandleDelete(void) {
 	else if (FileOptions_DeleteFile() != 0)
 		return;
 
+	appletUnlockExit();
 	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
@@ -459,6 +462,8 @@ void Menu_DisplayProperties(void) {
 }
 
 static void HandleCopy() {
+	appletLockExit();
+
 	if ((!copy_status) && (!cut_status )) {
 		copy_status = true;
 		FileOptions_Copy(COPY_KEEP_ON_FINISH);
@@ -492,9 +497,13 @@ static void HandleCopy() {
 		Dirbrowse_PopulateFiles(true);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
+
+	appletUnlockExit();
 }
 
 static void HandleCut() {
+	appletLockExit();
+
 	if ((!cut_status ) && (!copy_status)) {
 		cut_status = true;
 		FileOptions_Copy(COPY_DELETE_ON_FINISH);
@@ -531,6 +540,8 @@ static void HandleCut() {
 		Dirbrowse_PopulateFiles(true);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
+
+	appletUnlockExit();
 }
 
 void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
