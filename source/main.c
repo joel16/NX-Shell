@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <switch.h>
 
 #ifdef DEBUG
 #include <sys/socket.h>
@@ -7,16 +6,12 @@
 
 #include "common.h"
 #include "config.h"
-#include "fs.h"
 #include "menu_main.h"
 #include "SDL_helper.h"
 #include "textures.h"
-
-FsFileSystem fs;
+#include "utils.h"
 
 static void Term_Services(void) {
-	fsFsClose(&fs);
-
 	Textures_Free();
 
 	#ifdef DEBUG
@@ -63,7 +58,10 @@ static Result Init_Services(void) {
 
 	Textures_Load();
 
-	fsMountSdcard(&fs);
+	BROWSE_STATE = STATE_SD;
+	fs = fsdevGetDefaultFileSystem();
+	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
+	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
 
 	Config_Load();
 	Config_GetLastDirectory();

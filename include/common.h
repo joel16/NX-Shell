@@ -1,6 +1,7 @@
 #ifndef NX_SHELL_COMMON_H
 #define NX_SHELL_COMMON_H
 
+#include <switch.h>
 #include <setjmp.h>
 
 #define ROOT_PATH "/"
@@ -13,6 +14,9 @@ extern jmp_buf exitJmp;
 
 extern int MENU_DEFAULT_STATE;
 extern int BROWSE_STATE;
+extern FsFileSystem *fs;
+extern FsFileSystem user_fs;
+extern u64 total_storage, used_storage;
 
 enum MENU_STATES {
     MENU_STATE_HOME = 0,
@@ -27,7 +31,10 @@ enum MENU_STATES {
 
 enum BROWSE_STATES {
     STATE_SD = 0,
-    STATE_NAND = 1
+    STATE_PRODINFOF = 1,
+    STATE_SAFE = 2,
+    STATE_SYSTEM = 3,
+    STATE_USER = 4
 };
 
 extern char cwd[512];

@@ -1,8 +1,6 @@
 #include <dirent.h>
 #include <time.h>
 
-#include <switch.h>
-
 #include "common.h"
 #include "dirbrowse.h"
 #include "fs.h"
@@ -33,7 +31,7 @@ static Result Menu_GetMusicList(void) {
 	FsDir dir;
 	Result ret = 0;
 	
-	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		u64 entryCount = 0;
 		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
 			return ret;

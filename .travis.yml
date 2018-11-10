@@ -2,12 +2,29 @@ language: c
 
 sudo: true
 
-services: docker
+#Cache devkitARM and doxygen
+cache:
+  directories:
+    - /home/travis/devkitPro
+
+before_install:
+  - wget https://github.com/devkitPro/pacman/releases/download/devkitpro-pacman-1.0.1/devkitpro-pacman.deb
+  - sudo dpkg -i devkitpro-pacman.deb
+
 install:
-- docker pull devkitpro/devkita64
+  - sudo dkp-pacman -Syu switch-dev --noconfirm --needed
+  - sudo dkp-pacman -S switch-sdl2 --noconfirm
+  - sudo dkp-pacman -S switch-sdl2_gfx --noconfirm
+  - sudo dkp-pacman -S switch-sdl2_image --noconfirm
+  - sudo dkp-pacman -S switch-sdl2_mixer --noconfirm
+  - sudo dkp-pacman -S switch-sdl2_ttf --noconfirm
+  - sudo dkp-pacman -S switch-libdrm_nouveau --noconfirm
+  - sudo dkp-pacman -S switch-libconfig --noconfirm
+  - source /etc/profile.d/devkit-env.sh
+  - sh .travis/.travis-deps.sh
+
 script:
-- docker run -e ENABLE_COMPATIBILITY_REPORTING -v $TRAVIS_BUILD_DIR:/NX-Shell
-  devkitpro/devkita64 /bin/bash -ex /NX-Shell/.travis/build.sh
+  - sh .travis/.build.sh
 
 deploy:
   provider: pages

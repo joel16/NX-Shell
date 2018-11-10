@@ -1,7 +1,5 @@
 #include <dirent.h>
 
-#include <switch.h>
-
 #include "common.h"
 #include "fs.h"
 #include "menu_gallery.h"
@@ -19,7 +17,7 @@ static Result Gallery_GetImageList(void) {
 	FsDir dir;
 	Result ret = 0;
 	
-	if (R_SUCCEEDED(ret = fsFsOpenDirectory(&fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = fsFsOpenDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		u64 entryCount = 0;
 		if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entryCount)))
 			return ret;

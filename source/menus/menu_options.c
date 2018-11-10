@@ -26,7 +26,7 @@ static int copymode = NOTHING_TO_COPY;
 static char copysource[512];
 
 static int delete_dialog_selection = 0, row = 0, column = 0;
-static bool copy_status = false, cut_status = false;
+static bool copy_status = false, cut_status = false, options_more = false;
 
 static int delete_width = 0, delete_height = 0;
 static u32 delete_confirm_width = 0, delete_confirm_height = 0;
@@ -43,7 +43,7 @@ void FileOptions_ResetClipboard(void) {
 }
 
 static Result FileOptions_CreateFolder(void) {
-	OSK_Display("Create Folder", "");
+	OSK_Display("Create Folder", "New Folder");
 
 	if (!strncmp(osk_buffer, "", 1))
 		return -1;
@@ -54,10 +54,32 @@ static Result FileOptions_CreateFolder(void) {
 	osk_buffer[0] = '\0';
 
 	Result ret = 0;
-	if (R_FAILED(ret = fsFsCreateDirectory(&fs, path)))
+	if (R_FAILED(ret = fsFsCreateDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
 		return ret;
 	
 	Dirbrowse_PopulateFiles(true);
+	options_more = false;
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	return 0;
+}
+
+static Result FileOptions_CreateFile(void) {
+	OSK_Display("Create Folder", "New File");
+
+	if (!strncmp(osk_buffer, "", 1))
+		return -1;
+
+	char path[500];
+	strcpy(path, cwd);
+	strcat(path, osk_buffer);
+	osk_buffer[0] = '\0';
+
+	Result ret = 0;
+	if (R_FAILED(ret = fsFsCreateFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, 0, 0)))
+		return ret;
+	
+	Dirbrowse_PopulateFiles(true);
+	options_more = false;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	return 0;
 }
@@ -87,20 +109,21 @@ static Result FileOptions_Rename(void) {
 	osk_buffer[0] = '\0';
 
 	if (file->isDir) {
-		if (R_FAILED(ret = fsFsRenameDirectory(&fs, oldPath, newPath)))
+		if (R_FAILED(ret = fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, oldPath, newPath)))
 			return ret;
 	}
 	else {
-		if (R_FAILED(ret = fsFsRenameFile(&fs, oldPath, newPath)))
+		if (R_FAILED(ret = fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, oldPath, newPath)))
 			return ret;
 	}
 	
 	Dirbrowse_PopulateFiles(true);
+	options_more = false;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	return 0;
 }
 
-static int FileOptions_DeleteFile(void) {
+static Result FileOptions_Delete(void) {
 	// Find File
 	File *file = Dirbrowse_GetFileIndex(position);
 
@@ -123,12 +146,151 @@ static int FileOptions_DeleteFile(void) {
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		return fsFsDeleteDirectoryRecursively(&fs, path);
+		return fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
 	}
 
 	// Delete File
 	else 
-		return fsFsDeleteFile(&fs, path);
+		return fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
+
+	return 0;
+}
+
+static void HandleDelete(void) {
+	appletLockExit();
+
+	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
+		for (int i = 0; i < multi_select_index; i++) {
+			if (strlen(multi_select_paths[i]) != 0) {
+				if (strncmp(multi_select_paths[i], "..", 2) != 0) {
+					if (FS_DirExists(multi_select_paths[i])) {
+						// Add Trailing Slash
+						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
+						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
+						fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
+					}
+					else if (FS_FileExists(multi_select_paths[i]))
+						remove(multi_select_paths[i]);
+				}
+			}
+		}
+
+		FileOptions_ResetClipboard();
+	}
+	else if (FileOptions_Delete() != 0)
+		return;
+
+	appletUnlockExit();
+	Dirbrowse_PopulateFiles(true);
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;
+}
+
+void Menu_ControlDeleteDialog(u64 input, TouchInfo touchInfo) {
+	if ((input & KEY_RIGHT) || (input & KEY_LSTICK_RIGHT) || (input & KEY_RSTICK_RIGHT))
+		delete_dialog_selection++;
+	else if ((input & KEY_LEFT) || (input & KEY_LSTICK_LEFT) || (input & KEY_RSTICK_LEFT))
+		delete_dialog_selection--;
+
+	Utils_SetMax(&delete_dialog_selection, 0, 1);
+	Utils_SetMin(&delete_dialog_selection, 1, 0);
+
+	if (input & KEY_B) {
+		delete_dialog_selection = 0;
+		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+	}
+
+	if (input & KEY_A) {
+		if (delete_dialog_selection == 0)
+			HandleDelete();
+		else
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+
+		delete_dialog_selection = 0;
+	}
+
+	if (touchInfo.state == TouchStart) {
+		// Confirm Button
+		if (tapped_inside(touchInfo, 1010 - delete_confirm_width, (720 - delete_height) / 2 + 225, 1050 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_confirm_height))
+			delete_dialog_selection = 0;
+		// Cancel Button
+		else if (tapped_inside(touchInfo, 895 - delete_confirm_width, (720 - delete_height) / 2 + 225, 935 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_cancel_height))
+			delete_dialog_selection = 1;
+	}
+	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		// Touched outside
+		if (tapped_outside(touchInfo, (1280 - delete_width) / 2, (720 - delete_height) / 2, (1280 + delete_width) / 2, (720 + delete_height) / 2))
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+		// Confirm Button
+		else if (tapped_inside(touchInfo, 1010 - delete_confirm_width, (720 - delete_height) / 2 + 225, 1050 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_confirm_height))
+			HandleDelete();
+		// Cancel Button
+		else if (tapped_inside(touchInfo, 895 - delete_confirm_width, (720 - delete_height) / 2 + 225, 935 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_cancel_height))
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+	}
+}
+
+void Menu_DisplayDeleteDialog(void) {
+	u32 text_width = 0;
+	SDL_GetTextDimensions(25, "Do you want to continue?", &text_width, NULL);
+	SDL_GetTextDimensions(25, "YES", &delete_confirm_width, &delete_confirm_height);
+	SDL_GetTextDimensions(25, "NO", &delete_cancel_width, &delete_cancel_height);
+
+	SDL_QueryTexture(dialog, NULL, NULL, &delete_width, &delete_height);
+
+	SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (delete_width)) / 2), ((720 - (delete_height)) / 2));
+	SDL_DrawText(((1280 - (delete_width)) / 2) + 80, ((720 - (delete_height)) / 2) + 45, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
+	SDL_DrawText(((1280 - (text_width)) / 2), ((720 - (delete_height)) / 2) + 130, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
+
+	if (delete_dialog_selection == 0)
+		SDL_DrawRect((1030 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_confirm_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	else if (delete_dialog_selection == 1)
+		SDL_DrawRect((915 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_cancel_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+
+	SDL_DrawText(1030 - (delete_confirm_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "YES");
+	SDL_DrawText(910 - (delete_cancel_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
+}
+
+void Menu_ControlProperties(u64 input, TouchInfo touchInfo) {
+	if ((input & KEY_A) || (input & KEY_B))
+		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+	
+	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		if (tapped_outside(touchInfo, 350, 85, 930, 635))
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+		// Ok Button
+		else if (tapped_inside(touchInfo, 870 - properties_ok_width, 575 - properties_ok_height, 910 + properties_ok_width, 615 + properties_ok_height))
+			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
+	}
+}
+
+void Menu_DisplayProperties(void) {
+	// Find File
+	File *file = Dirbrowse_GetFileIndex(position);
+
+	char path[512];
+	strcpy(path, cwd);
+	strcpy(path + strlen(path), file->name);
+
+	SDL_DrawImage(config.dark_theme? properties_dialog_dark : properties_dialog, 350, 85);
+	SDL_DrawText(370, 133, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
+
+	char utils_size[16];
+	u64 size = 0;
+	FS_GetFileSize(path, &size);
+	Utils_GetSizeString(utils_size, size);
+
+	SDL_DrawTextf(390, 183, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
+
+	if (!file->isDir) {
+		SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
+		SDL_DrawTextf(390, 283, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Permission: %s", FS_GetFilePermission(path));
+	}
+	else 
+		SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Permission: %s", FS_GetFilePermission(path));
+
+	SDL_GetTextDimensions(25, "OK", &properties_ok_width, &properties_ok_height);
+	SDL_DrawRect((890 - properties_ok_width) - 20, (595 - properties_ok_height) - 20, properties_ok_width + 40, properties_ok_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	SDL_DrawText(890 - properties_ok_width, 595 - properties_ok_height, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
 }
 
 // Copy file from src to dst
@@ -302,7 +464,7 @@ static Result FileOptions_Paste(void) {
 			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
 				strcat(copysource, "/");
 
-			fsFsDeleteDirectoryRecursively(&fs, copysource); // Delete dir
+			fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource); // Delete dir
 		}
 	}
 
@@ -311,7 +473,7 @@ static Result FileOptions_Paste(void) {
 		ret = FileOptions_CopyFile(copysource, copytarget, true); // Copy file
 		
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
-			fsFsDeleteFile(&fs, copysource); // Delete file
+			fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource); // Delete file
 	}
 
 	// Paste success
@@ -324,141 +486,9 @@ static Result FileOptions_Paste(void) {
 	return ret; // Return result
 }
 
-static void HandleDelete(void) {
-	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
-		for (int i = 0; i < multi_select_index; i++) {
-			if (strlen(multi_select_paths[i]) != 0) {
-				if (strncmp(multi_select_paths[i], "..", 2) != 0) {
-					if (FS_DirExists(multi_select_paths[i])) {
-						// Add Trailing Slash
-						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
-						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						fsFsDeleteDirectoryRecursively(&fs, multi_select_paths[i]);
-					}
-					else if (FS_FileExists(multi_select_paths[i]))
-						remove(multi_select_paths[i]);
-				}
-			}
-		}
-
-		FileOptions_ResetClipboard();
-	}
-	else if (FileOptions_DeleteFile() != 0)
-		return;
-
-	Dirbrowse_PopulateFiles(true);
-	MENU_DEFAULT_STATE = MENU_STATE_HOME;
-}
-
-void Menu_ControlDeleteDialog(u64 input, TouchInfo touchInfo) {
-	if ((input & KEY_RIGHT) || (input & KEY_LSTICK_RIGHT) || (input & KEY_RSTICK_RIGHT))
-		delete_dialog_selection++;
-	else if ((input & KEY_LEFT) || (input & KEY_LSTICK_LEFT) || (input & KEY_RSTICK_LEFT))
-		delete_dialog_selection--;
-
-	Utils_SetMax(&delete_dialog_selection, 0, 1);
-	Utils_SetMin(&delete_dialog_selection, 1, 0);
-
-	if (input & KEY_B) {
-		delete_dialog_selection = 0;
-		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-	}
-
-	if (input & KEY_A) {
-		if (delete_dialog_selection == 0)
-			HandleDelete();
-		else
-			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-
-		delete_dialog_selection = 0;
-	}
-
-	if (touchInfo.state == TouchStart) {
-		// Confirm Button
-		if (tapped_inside(touchInfo, 1010 - delete_confirm_width, (720 - delete_height) / 2 + 225, 1050 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_confirm_height))
-			delete_dialog_selection = 0;
-		// Cancel Button
-		else if (tapped_inside(touchInfo, 895 - delete_confirm_width, (720 - delete_height) / 2 + 225, 935 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_cancel_height))
-			delete_dialog_selection = 1;
-	}
-	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
-		// Touched outside
-		if (tapped_outside(touchInfo, (1280 - delete_width) / 2, (720 - delete_height) / 2, (1280 + delete_width) / 2, (720 + delete_height) / 2))
-			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		// Confirm Button
-		else if (tapped_inside(touchInfo, 1010 - delete_confirm_width, (720 - delete_height) / 2 + 225, 1050 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_confirm_height))
-			HandleDelete();
-		// Cancel Button
-		else if (tapped_inside(touchInfo, 895 - delete_confirm_width, (720 - delete_height) / 2 + 225, 935 + delete_confirm_width, (720 - delete_height) / 2 + 265 + delete_cancel_height))
-			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-	}
-}
-
-void Menu_DisplayDeleteDialog(void) {
-	u32 text_width = 0;
-	SDL_GetTextDimensions(25, "Do you want to continue?", &text_width, NULL);
-	SDL_GetTextDimensions(25, "YES", &delete_confirm_width, &delete_confirm_height);
-	SDL_GetTextDimensions(25, "NO", &delete_cancel_width, &delete_cancel_height);
-
-	SDL_QueryTexture(dialog, NULL, NULL, &delete_width, &delete_height);
-
-	SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (delete_width)) / 2), ((720 - (delete_height)) / 2));
-	SDL_DrawText(((1280 - (delete_width)) / 2) + 80, ((720 - (delete_height)) / 2) + 45, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
-	SDL_DrawText(((1280 - (text_width)) / 2), ((720 - (delete_height)) / 2) + 130, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
-
-	if (delete_dialog_selection == 0)
-		SDL_DrawRect((1030 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_confirm_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	else if (delete_dialog_selection == 1)
-		SDL_DrawRect((915 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_cancel_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-
-	SDL_DrawText(1030 - (delete_confirm_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "YES");
-	SDL_DrawText(910 - (delete_cancel_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
-}
-
-void Menu_ControlProperties(u64 input, TouchInfo touchInfo) {
-	if ((input & KEY_A) || (input & KEY_B))
-		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-	
-	if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
-		if (tapped_outside(touchInfo, 350, 85, 930, 635))
-			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-		// Ok Button
-		else if (tapped_inside(touchInfo, 870 - properties_ok_width, 575 - properties_ok_height, 910 + properties_ok_width, 615 + properties_ok_height))
-			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
-	}
-}
-
-void Menu_DisplayProperties(void) {
-	// Find File
-	File *file = Dirbrowse_GetFileIndex(position);
-
-	char path[512];
-	strcpy(path, cwd);
-	strcpy(path + strlen(path), file->name);
-
-	SDL_DrawImage(config.dark_theme? properties_dialog_dark : properties_dialog, 350, 85);
-	SDL_DrawText(370, 133, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
-
-	char utils_size[16];
-	u64 size = 0;
-	FS_GetFileSize(path, &size);
-	Utils_GetSizeString(utils_size, size);
-
-	SDL_DrawTextf(390, 183, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
-
-	if (!file->isDir) {
-		SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Size: %s", utils_size);
-		SDL_DrawTextf(390, 283, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Permission: %s", FS_GetFilePermission(path));
-	}
-	else 
-		SDL_DrawTextf(390, 233, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Permission: %s", FS_GetFilePermission(path));
-
-	SDL_GetTextDimensions(25, "OK", &properties_ok_width, &properties_ok_height);
-	SDL_DrawRect((890 - properties_ok_width) - 20, (595 - properties_ok_height) - 20, properties_ok_width + 40, properties_ok_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	SDL_DrawText(890 - properties_ok_width, 595 - properties_ok_height, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
-}
-
 static void HandleCopy() {
+	appletLockExit();
+
 	if ((!copy_status) && (!cut_status )) {
 		copy_status = true;
 		FileOptions_Copy(COPY_KEEP_ON_FINISH);
@@ -492,9 +522,13 @@ static void HandleCopy() {
 		Dirbrowse_PopulateFiles(true);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
+
+	appletUnlockExit();
 }
 
 static void HandleCut() {
+	appletLockExit();
+
 	if ((!cut_status ) && (!copy_status)) {
 		cut_status = true;
 		FileOptions_Copy(COPY_DELETE_ON_FINISH);
@@ -506,12 +540,14 @@ static void HandleCut() {
 		if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
 			for (int i = 0; i < multi_select_index; i++) {
 				if (strlen(multi_select_paths[i]) != 0) {
-					snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
+					if (strncmp(multi_select_paths[i], "..", 2) != 0) {
+						snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 					
-					if (FS_DirExists(multi_select_paths[i]))
-						rename(multi_select_paths[i], dest);
-					else if (FS_FileExists(multi_select_paths[i]))
-						rename(multi_select_paths[i], dest);
+						if (FS_DirExists(multi_select_paths[i]))
+							fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i], dest);
+						else if (FS_FileExists(multi_select_paths[i]))
+							fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i], dest);
+					}
 				}
 			}
 
@@ -521,9 +557,9 @@ static void HandleCut() {
 			snprintf(dest, 512, "%s%s", cwd, Utils_Basename(copysource));
 
 			if (FS_DirExists(copysource))
-				rename(copysource, dest);
+				fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource, dest);
 			else if (FS_FileExists(copysource))
-				rename(copysource, dest);
+				fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource, dest);
 		}
 
 		cut_status = false;
@@ -531,6 +567,65 @@ static void HandleCut() {
 		Dirbrowse_PopulateFiles(true);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
+
+	appletUnlockExit();
+}
+
+static Result FileOptions_SetArchiveBit(void) {
+	// Find File
+	File *file = Dirbrowse_GetFileIndex(position);
+
+	// Not found
+	if (file == NULL) 
+		return -1;
+
+	if ((!strcmp(file->name, "..")) || (!strcmp(file->name, "Nintendo"))) 
+		return -2;
+
+	char path[512];
+
+	// Puzzle Path
+	strcpy(path, cwd);
+	strcpy(path + strlen(path), file->name);
+
+	if (file->isDir) {
+		// Add Trailing Slash
+		path[strlen(path) + 1] = 0;
+		path[strlen(path)] = '/';
+
+		// Delete Folder
+		return fsFsSetArchiveBit(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
+	}
+
+	return 0;
+}
+
+static void HandleArchiveBit(void) {
+	appletLockExit();
+
+	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
+		for (int i = 0; i < multi_select_index; i++) {
+			if (strlen(multi_select_paths[i]) != 0) {
+				if ((strncmp(multi_select_paths[i], "..", 2) != 0) && (strncmp(multi_select_paths[i], "/Nintendo", 9) != 0)) {
+					if (FS_DirExists(multi_select_paths[i])) {
+						// Add Trailing Slash
+						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
+						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
+						fsFsSetArchiveBit(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
+					}
+				}
+			}
+		}
+
+		FileOptions_ResetClipboard();
+	}
+	else if (FileOptions_SetArchiveBit() != 0)
+		return;
+
+	appletUnlockExit();
+	Dirbrowse_PopulateFiles(true);
+	options_more = false;
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
 
 void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
@@ -544,33 +639,69 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 	else if ((input & KEY_DUP) || (input & KEY_LSTICK_UP) || (input & KEY_RSTICK_UP))
 		column--;
 
-	Utils_SetMax(&row, 0, 1);
-	Utils_SetMin(&row, 1, 0);
+	if (!options_more) {
+		Utils_SetMax(&row, 0, 1);
+		Utils_SetMin(&row, 1, 0);
 
-	Utils_SetMax(&column, 0, 2);
-	Utils_SetMin(&column, 2, 0);
-	
+		Utils_SetMax(&column, 0, 2);
+		Utils_SetMin(&column, 2, 0);
+	}
+	else {
+		Utils_SetMax(&row, 0, 1);
+		Utils_SetMin(&row, 1, 0);
+
+		Utils_SetMax(&column, 0, 1);
+		Utils_SetMin(&column, 1, 0);
+	}
+
 	if (input & KEY_A) {
-		if (row == 0 && column == 0)
-			MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
-		else if (row == 1 && column == 0)
-			FileOptions_CreateFolder();
-		else if (row == 0 && column == 1)
-			FileOptions_Rename();
+		if (row == 0 && column == 0) {
+			if (options_more)
+				FileOptions_CreateFolder();
+			else
+				MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
+		}
+		else if (row == 1 && column == 0) {
+			if (options_more)
+				FileOptions_CreateFile();
+			else {
+				options_more = false;
+				row = 0;
+				column = 0;
+				Dirbrowse_PopulateFiles(true);
+				MENU_DEFAULT_STATE = MENU_STATE_HOME;
+			}
+		}
+		else if (row == 0 && column == 1) {
+			if (options_more)
+				FileOptions_Rename();
+			else
+				HandleCopy();
+		}
 		else if (row == 1 && column == 1)
-			HandleCopy();
-		else if (row == 0 && column == 2)
 			HandleCut();
-		else if (row == 1 && column == 2)
+		else if (row == 0 && column == 2)
 			MENU_DEFAULT_STATE = MENU_STATE_DELETE_DIALOG;
+		else if (row == 1 && column == 2) {
+			row = 0;
+			column = 0;
+			options_more = true;
+		}
 	}
 
 	if (input & KEY_B) {
-		copy_status = false;
-		cut_status = false;
-		row = 0;
-		column = 0;
-		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		if (!options_more) {
+			copy_status = false;
+			cut_status = false;
+			row = 0;
+			column = 0;
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		}
+		else {
+			row = 0;
+			column = 0;
+			options_more = false;
+		}
 	}
 
 	if (input & KEY_X)
@@ -618,29 +749,53 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 		// Column 0
 		else if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289) {
 			// Row 0
-			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-				MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+				if (options_more)
+					FileOptions_CreateFolder();
+				else
+					MENU_DEFAULT_STATE = MENU_STATE_PROPERTIES;
+			}
 			// Row 1
-			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-				FileOptions_CreateFolder();
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+				if (options_more)
+					FileOptions_CreateFile();
+				else {
+					options_more = false;
+					row = 0;
+					column = 0;
+					Dirbrowse_PopulateFiles(true);
+					MENU_DEFAULT_STATE = MENU_STATE_HOME;
+				}
+			}
 		}
 		// Column 1
 		else if (touchInfo.firstTouch.py >= 291 && touchInfo.firstTouch.py <= 392) {
 			// Row 0
-			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-				FileOptions_Rename();
+			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638) {
+				if (options_more)
+					FileOptions_Rename();
+				else
+					HandleCopy();
+			}
 			// Row 1
-			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
-				HandleCopy();
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+				if (options_more)
+					HandleArchiveBit();
+				else
+					HandleCut();
+			}
 		}
 		// Column 2
 		else if (touchInfo.firstTouch.py >= 393 && touchInfo.firstTouch.py <= 494) {
 			// Row 0
 			if (touchInfo.firstTouch.px >= 354 && touchInfo.firstTouch.px <= 638)
-				HandleCut();
-			// Row 1
-			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924)
 				MENU_DEFAULT_STATE = MENU_STATE_DELETE_DIALOG;
+			// Row 1
+			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
+				row = 0;
+				column = 0;
+				options_more = true;
+			}
 		}
 		// Cancel Button
 		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height))
@@ -668,11 +823,20 @@ void Menu_DisplayOptions(void) {
 	else if (row == 1 && column == 2)
 		SDL_DrawRect(638, 393, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 
-	SDL_DrawText(385, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Properties");
-	SDL_DrawText(385, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Rename");
-	SDL_DrawText(385, 429, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, cut_status? "Paste" : "Move");
+	if (!options_more) {
+		SDL_DrawText(385, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Properties");
+		SDL_DrawText(385, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, copy_status? "Paste" : "Copy");
+		SDL_DrawText(385, 429, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Delete");
 		
-	SDL_DrawText(672, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "New folder");
-	SDL_DrawText(672, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, copy_status? "Paste" : "Copy");
-	SDL_DrawText(672, 429, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Delete");
+		SDL_DrawText(672, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Refresh");
+		SDL_DrawText(672, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, cut_status? "Paste" : "Move");
+		SDL_DrawText(672, 429, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "More...");
+	}
+	else {
+		SDL_DrawText(385, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "New folder");
+		SDL_DrawText(385, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Rename");
+		
+		SDL_DrawText(672, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "New file");
+		SDL_DrawText(672, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Set archive bit");
+	}
 }

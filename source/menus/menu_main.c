@@ -1,9 +1,9 @@
-#include <switch.h>
 #include <math.h>
 
 #include "common.h"
 #include "config.h"
 #include "dirbrowse.h"
+#include "fs.h"
 #include "menu_main.h"
 #include "menu_options.h"
 #include "menu_settings.h"
@@ -14,9 +14,17 @@
 #include "utils.h"
 
 #define MENUBAR_X_BOUNDARY  0
+static int menubar_selection = 0, menubar_max_items = 4;
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
-u64 total_storage = 0, used_storage = 0;
+
+static char *user_partitions[] = {
+	"SD",
+	"kPRODINFOF",
+	"kSAFE",
+	"kSYSTEM",
+	"kUSER"
+};
 
 void AnimateMenuBar(float delta_time) {  
     menubar_x += 400.0f * (delta_time * 0.01);
@@ -25,34 +33,187 @@ void AnimateMenuBar(float delta_time) {
 		menubar_x = MENUBAR_X_BOUNDARY;
 }
 
-static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
-	if (input & KEY_A)
-		MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
+static void Mount_SD(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
 
-	if ((input & KEY_MINUS) || (input & KEY_B))
+	BROWSE_STATE = STATE_SD;
+	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
+	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
+
+	Config_GetLastDirectory();
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_Prodinfof(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+	BROWSE_STATE = STATE_PRODINFOF;
+
+	fsOpenBisFileSystem(&user_fs, 28, "");
+	fsdevMountDevice("kPRODINFOF", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_Safe(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+	BROWSE_STATE = STATE_SAFE;
+
+	fsOpenBisFileSystem(&user_fs, 29, "");
+	fsdevMountDevice("kSAFE", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_System(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+
+	BROWSE_STATE = STATE_SYSTEM;
+	total_storage = Utils_GetTotalStorage(FsStorageId_NandSystem);
+	used_storage = Utils_GetUsedStorage(FsStorageId_NandSystem);
+
+	fsOpenBisFileSystem(&user_fs, 31, "");
+	fsdevMountDevice("kSYSTEM", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Mount_User(void) {
+	if (BROWSE_STATE != STATE_SD)
+		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);
+	
+	BROWSE_STATE = STATE_USER;
+	total_storage = Utils_GetTotalStorage(FsStorageId_NandUser);
+	used_storage = Utils_GetUsedStorage(FsStorageId_NandUser);
+
+	fsOpenBisFileSystem(&user_fs, 30, "");
+	fsdevMountDevice("kUSER", user_fs);
+	strcpy(cwd, ROOT_PATH);
+	Dirbrowse_PopulateFiles(true);
+}
+
+static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
+	if (input & KEY_DUP)
+		menubar_selection--;
+	else if (input & KEY_DDOWN)
+		menubar_selection++;
+
+	Utils_SetMax(&menubar_selection, 0, menubar_max_items + 1);
+	Utils_SetMin(&menubar_selection, menubar_max_items + 1, 0);
+
+	if (input & KEY_A) {
+		switch (menubar_selection) {
+			case 0:
+				Mount_SD();
+				break;
+			case 1:
+				Mount_Prodinfof();
+				break;
+			case 2:
+				Mount_Safe();
+				break;
+			case 3:
+				Mount_System();
+				break;
+			case 4:
+				Mount_User();
+				break;
+			case 5:
+				MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
+				break;
+		}
+	}
+
+	if ((input & KEY_MINUS) || (input & KEY_B)) {
+		menubar_selection = 0;
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+	}
 	
 	if ((touchInfo.state == TouchEnded) && (touchInfo.tapType != TapNone)) {
 		if (touchInfo.firstTouch.px >= menubar_x + 400)
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		else if (tapped_inside(touchInfo, menubar_x, 214, 400, 293)) {
+			menubar_selection = 0;
+			Mount_SD();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 294, 400, 373)) {
+			menubar_selection = 1;
+			Mount_Prodinfof();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 374, 400, 453)) {
+			menubar_selection = 2;
+			Mount_Safe();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 454, 400, 533)) {
+			menubar_selection = 3;
+			Mount_System();
+		}
+		else if (tapped_inside(touchInfo, menubar_x, 534, 400, 613)) {
+			menubar_selection = 4;
+			Mount_User();
+		}
 		else if (tapped_inside(touchInfo, menubar_x + 20, 630, menubar_x + 80, 710))
 			MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 	}
 }
 
 static void Menu_DisplayMenuBar(void) {
+	const char *menubar_items[] = {
+		"External storage",
+		"CalibrationFile",
+		"SafeMode",
+		"System",
+		"User",
+	};
+
+	const char *menubar_desc[] = {
+		"/",
+		"PRODINFOF:/",
+		"SAFE:/",
+		"SYSTEM:/",
+		"USER:/",
+	};
+
 	SDL_DrawRect(menubar_x, 0, 400, 720, config.dark_theme? BLACK_BG : WHITE);
 	SDL_DrawRect(menubar_x + 400, 0, 1, 720, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
 	SDL_DrawImage(bg_header, menubar_x, 0);
 	SDL_DrawText(menubar_x + 15, 164, 30, WHITE, "NX Shell");
-	SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 254);
-	SDL_DrawText(menubar_x + 100, 254, 25, config.dark_theme? WHITE : BLACK, "External storage");
-	SDL_DrawText(menubar_x + 100, 284, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "sdmc");
-	SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+
+	int printed = 0, selection = 0; 
+
+	if (menubar_selection == menubar_max_items + 1)
+		SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	else
+		selection = menubar_selection;
+
+	for (int i = 0; i < menubar_max_items + 1; i++) {
+		if (printed == 5)
+				break;
+		if (selection < 5 || i > (selection - 5)) {
+			if ((i == selection) && (menubar_selection != menubar_max_items + 1))
+				SDL_DrawRect(menubar_x, 214 + (80 * printed), 400, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+
+			SDL_DrawText(menubar_x + 100, 229 + (80 * printed), 25, config.dark_theme? WHITE : BLACK, menubar_items[i]);
+			SDL_DrawText(menubar_x + 100, 259 + (80 * printed), 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, menubar_desc[i]);
+
+			if (!strcmp(menubar_items[i], "External storage"))
+				SDL_DrawImage(config.dark_theme? icon_sd_dark : icon_sd, menubar_x + 20, 224 + (80 * printed));
+			else
+				SDL_DrawImage(config.dark_theme? icon_secure_dark : icon_secure, menubar_x + 20, 224 + (80 * printed));
+
+			printed++;
+		}
+	}
+
 	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
 }
 
-static void Menu_HandleMultiSelect(void) {
+static void Menu_HandleMultiSelect(int position) {
 	// multi_select_dir can only hold one dir
 	strcpy(multi_select_dir_old, cwd);
 	if (strcmp(multi_select_dir_old, multi_select_dir) != 0)
@@ -81,9 +242,6 @@ static void Menu_HandleMultiSelect(void) {
 }
 
 static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
-	if (input & KEY_PLUS)
-		longjmp(exitJmp, 1);
-
 	if (input & KEY_MINUS) {
 		if (MENU_DEFAULT_STATE == MENU_STATE_MENUBAR)
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
@@ -125,7 +283,7 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 		}
 
 		if (input & KEY_Y)
-			Menu_HandleMultiSelect();
+			Menu_HandleMultiSelect(position);
 
 		if (input & KEY_A) {
 			wait(5);
@@ -168,13 +326,12 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 			if (position > 7)
 				tapped_selection += position - 7;
 
-			position = tapped_selection;
-
-			if ((touchInfo.firstTouch.px >= 0) && (touchInfo.firstTouch.px <= 80 )) {
+			if ((touchInfo.firstTouch.px >= 0) && (touchInfo.firstTouch.px <= 80)) {
 				wait(1);
-				Menu_HandleMultiSelect();
+				Menu_HandleMultiSelect(tapped_selection);
 			}
 			else {
+				position = tapped_selection;
 				if ((strcmp(cwd, ROOT_PATH) != 0 && position == 0) || touchInfo.tapType == TapShort) {
 					wait(1);
 					Dirbrowse_OpenFile();
@@ -194,9 +351,6 @@ void Menu_Main(void) {
 	memset(multi_select, 0, sizeof(multi_select)); // Reset all multi selected items
 
 	u64 current_time = 0, last_time = 0;
-
-	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
-	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
 
 	while(appletMainLoop()) {
 		last_time = current_time;
@@ -237,5 +391,8 @@ void Menu_Main(void) {
 			Menu_DisplaySettings();
 
 		SDL_Renderdisplay();
+
+		if (kDown & KEY_PLUS)
+			longjmp(exitJmp, 1);
 	}
 }
