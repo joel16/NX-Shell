@@ -544,9 +544,9 @@ static void HandleCut() {
 						snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 					
 						if (FS_DirExists(multi_select_paths[i]))
-							rename(multi_select_paths[i], dest);
+							fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i], dest);
 						else if (FS_FileExists(multi_select_paths[i]))
-							rename(multi_select_paths[i], dest);
+							fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i], dest);
 					}
 				}
 			}
@@ -557,9 +557,9 @@ static void HandleCut() {
 			snprintf(dest, 512, "%s%s", cwd, Utils_Basename(copysource));
 
 			if (FS_DirExists(copysource))
-				rename(copysource, dest);
+				fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource, dest);
 			else if (FS_FileExists(copysource))
-				rename(copysource, dest);
+				fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource, dest);
 		}
 
 		cut_status = false;
