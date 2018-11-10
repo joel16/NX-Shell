@@ -213,7 +213,7 @@ static void Menu_DisplayMenuBar(void) {
 	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
 }
 
-static void Menu_HandleMultiSelect(void) {
+static void Menu_HandleMultiSelect(int position) {
 	// multi_select_dir can only hold one dir
 	strcpy(multi_select_dir_old, cwd);
 	if (strcmp(multi_select_dir_old, multi_select_dir) != 0)
@@ -283,7 +283,7 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 		}
 
 		if (input & KEY_Y)
-			Menu_HandleMultiSelect();
+			Menu_HandleMultiSelect(position);
 
 		if (input & KEY_A) {
 			wait(5);
@@ -326,13 +326,12 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 			if (position > 7)
 				tapped_selection += position - 7;
 
-			position = tapped_selection;
-
-			if ((touchInfo.firstTouch.px >= 0) && (touchInfo.firstTouch.px <= 80 )) {
+			if ((touchInfo.firstTouch.px >= 0) && (touchInfo.firstTouch.px <= 80)) {
 				wait(1);
-				Menu_HandleMultiSelect();
+				Menu_HandleMultiSelect(tapped_selection);
 			}
 			else {
+				position = tapped_selection;
 				if ((strcmp(cwd, ROOT_PATH) != 0 && position == 0) || touchInfo.tapType == TapShort) {
 					wait(1);
 					Dirbrowse_OpenFile();
