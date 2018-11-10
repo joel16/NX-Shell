@@ -124,7 +124,7 @@ static Result FileOptions_Rename(void) {
 }
 
 static Result FileOptions_Delete(void) {
-	// Find File
+	Result ret = 0;
 	File *file = Dirbrowse_GetFileIndex(position);
 
 	// Not found
@@ -146,12 +146,15 @@ static Result FileOptions_Delete(void) {
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		return fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
+		if (R_FAILED(ret = fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
+			return ret;
 	}
 
 	// Delete File
-	else 
-		return fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
+	else {
+		if (R_FAILED(ret = fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
+			return ret;
+	}
 
 	return 0;
 }
@@ -170,14 +173,14 @@ static void HandleDelete(void) {
 						fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
 					}
 					else if (FS_FileExists(multi_select_paths[i]))
-						remove(multi_select_paths[i]);
+						 fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
 				}
 			}
 		}
 
 		FileOptions_ResetClipboard();
 	}
-	else if (FileOptions_Delete() != 0)
+	else if (R_FAILED(FileOptions_Delete()))
 		return;
 
 	appletUnlockExit();
@@ -515,7 +518,7 @@ static void HandleCopy() {
 			copymode = NOTHING_TO_COPY;
 			
 		}
-		else if (FileOptions_Paste() != 0)
+		else if (R_FAILED(FileOptions_Paste()))
 			return;
 
 		copy_status = false;
@@ -572,7 +575,7 @@ static void HandleCut() {
 }
 
 static Result FileOptions_SetArchiveBit(void) {
-	// Find File
+	Result ret = 0;
 	File *file = Dirbrowse_GetFileIndex(position);
 
 	// Not found
@@ -593,8 +596,9 @@ static Result FileOptions_SetArchiveBit(void) {
 		path[strlen(path) + 1] = 0;
 		path[strlen(path)] = '/';
 
-		// Delete Folder
-		return fsFsSetArchiveBit(BROWSE_STATE == STATE_SD? fs : &user_fs, path);
+		// Set archive bit to path
+		if (R_FAILED(ret = fsFsSetArchiveBit(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
+			return ret;
 	}
 
 	return 0;
@@ -619,7 +623,7 @@ static void HandleArchiveBit(void) {
 
 		FileOptions_ResetClipboard();
 	}
-	else if (FileOptions_SetArchiveBit() != 0)
+	else if (R_FAILED(FileOptions_SetArchiveBit()))
 		return;
 
 	appletUnlockExit();
@@ -678,8 +682,12 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 			else
 				HandleCopy();
 		}
-		else if (row == 1 && column == 1)
-			HandleCut();
+		else if (row == 1 && column == 1) {
+			if (options_more)
+				HandleArchiveBit();
+			else
+				HandleCut();
+		}
 		else if (row == 0 && column == 2)
 			MENU_DEFAULT_STATE = MENU_STATE_DELETE_DIALOG;
 		else if (row == 1 && column == 2) {
