@@ -21,11 +21,11 @@ install:
   - sudo dkp-pacman -S switch-libdrm_nouveau --noconfirm
   - sudo dkp-pacman -S switch-libconfig --noconfirm
   - source /etc/profile.d/devkit-env.sh
-  - sh resources/.travis-deps.sh
+  - sh .travis/.travis-deps.sh
 
 script:
   - cd $TRAVIS_BUILD_DIR
-  - sh resources/.build.sh
+  - sh .travis/.build.sh
 
 deploy:
   provider: pages
