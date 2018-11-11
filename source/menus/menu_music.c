@@ -215,6 +215,9 @@ void Menu_PlayMusic(char *path) {
 		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
+		if (kDown & KEY_PLUS)
+			longjmp(exitJmp, 1);
+
 		if (!Mix_PlayingMusic()) {
 			wait(1);
 

@@ -153,6 +153,9 @@ void Gallery_DisplayImage(char *path) {
 		
 		if (kDown & KEY_B)
 			break;
+
+		if (kDown & KEY_PLUS)
+			longjmp(exitJmp, 1);
 	}
 
 	SDL_DestroyTexture(image);
