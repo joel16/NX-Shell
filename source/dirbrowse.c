@@ -3,9 +3,9 @@
 #include "config.h"
 #include "dirbrowse.h"
 #include "fs.h"
+#include "menu_book_reader.h"
 #include "menu_gallery.h"
 #include "menu_music.h"
-#include "menu_book_reader.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
@@ -145,7 +145,7 @@ void Dirbrowse_DisplayFiles(void) {
 	SDL_GetTextDimensions(30, cwd, NULL, &title_height);
 	SDL_DrawImage(icon_nav_drawer, 20, 58);
 	SDL_DrawImage(icon_actions, (1260 - 64), 58);
-	SDL_DrawText(170, 40 + ((100 - title_height) / 2), 30, WHITE, cwd);
+	SDL_DrawTextf(170, 40 + ((100 - title_height) / 2), 30, WHITE, "%.53s", cwd);
 
 	if ((BROWSE_STATE != STATE_PRODINFOF) || (BROWSE_STATE != STATE_SAFE)) {
 		SDL_DrawRect(170, 40 + ((100 - title_height) / 2) + title_height + 10, 940, 6, config.dark_theme? SELECTOR_COLOUR_DARK : FC_MakeColor(10, 73, 163, 255));
@@ -272,9 +272,6 @@ void Dirbrowse_OpenFile(void) {
 		Menu_PlayMusic(path);
 	else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3)) || (!strncasecmp(file->ext, "epub", 4)))
 		Menu_OpenBook(path);
-
-	/*else if (!strncasecmp(file->ext, "txt", 3))
-		TextViewer_DisplayText(path);*/
 }
 
 // Navigate to Folder

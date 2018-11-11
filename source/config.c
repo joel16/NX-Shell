@@ -6,17 +6,22 @@
 #include "config.h"
 #include "fs.h"
 
+#define CONFIG_VERSION 0
+
 nxshell_config_t config;
+static int config_version_holder = 0;
 
 const char *configFile =
+	"config_ver = %d\n"
 	"theme = %d\n"
-	"sortBy = %d\n";
+	"dev_options = %d\n"
+	"sort = %d\n";
 
 Result Config_Save(nxshell_config_t config) {
 	Result ret = 0;
 
 	char *buf = (char *)malloc(64);
-	snprintf(buf, 64, configFile, config.dark_theme, config.sort);
+	snprintf(buf, 64, configFile, CONFIG_VERSION, config.dark_theme, config.dev_options, config.sort);
 
 	if (R_FAILED(ret = FS_Write("/switch/NX-Shell/config.cfg", buf))) {
 		free(buf);
@@ -37,6 +42,7 @@ Result Config_Load(void) {
 
 	if (!FS_FileExists("/switch/NX-Shell/config.cfg")) {
 		config.dark_theme = false;
+		config.dev_options = false;
 		config.sort = 0;
 		return Config_Save(config);
 	}
@@ -51,8 +57,17 @@ Result Config_Load(void) {
 	}
 
 	buf[size] = '\0';
-	sscanf(buf, configFile, &config.dark_theme, &config.sort);
+	sscanf(buf, configFile, &config_version_holder, &config.dark_theme, &config.dev_options, &config.sort);
 	free(buf);
+
+	// Delete config file if config file is updated. This will rarely happen.
+	if (config_version_holder  < CONFIG_VERSION) {
+		fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, "/switch/NX-Shell/config.cfg");
+		config.dark_theme = false;
+		config.dev_options = false;
+		config.sort = 0;
+		return Config_Save(config);
+	}
 
 	return 0;
 }

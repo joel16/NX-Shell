@@ -5,6 +5,7 @@
 
 typedef struct {
 	bool dark_theme;
+	bool dev_options;
 	int sort;
 } nxshell_config_t;
 
