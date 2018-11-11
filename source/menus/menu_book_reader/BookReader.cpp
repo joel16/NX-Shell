@@ -69,13 +69,13 @@ BookReader::~BookReader() {
 
 void BookReader::previous_page(int n) {
     layout->previous_page(n);
-    show_status_bar();
+    //show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }
 
 void BookReader::next_page(int n) {
     layout->next_page(n);
-    show_status_bar();
+   //show_status_bar();
     save_last_page(book_name.c_str(), layout->current_page());
 }
 
@@ -89,8 +89,7 @@ void BookReader::zoom_out() {
     show_status_bar();
 }
 
-void BookReader::move_page_up()
-{
+void BookReader::move_page_up() {
     layout->move_up();
 }
 
@@ -150,8 +149,7 @@ void BookReader::show_status_bar() {
     status_bar_visible_counter = 50;
 }
 
-void BookReader::switch_current_page_layout(BookPageLayout bookPageLayout, int current_page)
-{
+void BookReader::switch_current_page_layout(BookPageLayout bookPageLayout, int current_page) {
     if (layout) {
         current_page = layout->current_page();
         delete layout;

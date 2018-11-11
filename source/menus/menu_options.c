@@ -662,11 +662,24 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 		Utils_SetMin(&column, 2, 0);
 	}
 	else {
-		Utils_SetMax(&row, 0, 1);
-		Utils_SetMin(&row, 1, 0);
-
 		Utils_SetMax(&column, 0, 1);
 		Utils_SetMin(&column, 1, 0);
+
+		if (config.dev_options) {
+			Utils_SetMax(&row, 0, 1);
+			Utils_SetMin(&row, 1, 0);
+		}
+
+		else {
+			if (column == 0) {
+				Utils_SetMax(&row, 0, 1);
+				Utils_SetMin(&row, 1, 0);
+			}
+			else if (column == 1) {
+				Utils_SetMax(&row, 0, 0);
+				Utils_SetMin(&row, 0, 0);
+			}
+		}
 	}
 
 	if (input & KEY_A) {
@@ -798,8 +811,10 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 			}
 			// Row 1
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
-				if (options_more)
-					HandleArchiveBit();
+				if (options_more) {
+					if (config.dev_options)
+						HandleArchiveBit();
+				}
 				else
 					HandleCut();
 			}
@@ -856,6 +871,7 @@ void Menu_DisplayOptions(void) {
 		SDL_DrawText(385, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Rename");
 		
 		SDL_DrawText(672, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "New file");
-		SDL_DrawText(672, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Set archive bit");
+		if (config.dev_options)
+			SDL_DrawText(672, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Set archive bit");
 	}
 }

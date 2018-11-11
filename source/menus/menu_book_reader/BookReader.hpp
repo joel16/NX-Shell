@@ -7,14 +7,12 @@
 
 struct SDL_Texture;
 
-typedef enum
-{
+typedef enum {
     BookPageLayoutPortrait,
     BookPageLayoutLandscape
 } BookPageLayout;
 
-class BookReader
-{
+class BookReader {
     public:
         BookReader(const char *path);
         ~BookReader();
@@ -30,14 +28,13 @@ class BookReader
         void reset_page();
         void switch_page_layout();
         void draw();
+        void show_status_bar();
     
-        BookPageLayout currentPageLayout()
-        {
+        BookPageLayout currentPageLayout() {
             return _currentPageLayout;
         }
     
     private:
-        void show_status_bar();
         void switch_current_page_layout(BookPageLayout bookPageLayout, int current_page);
     
         fz_document *doc = NULL;

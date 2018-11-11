@@ -40,7 +40,7 @@ ROMFS         := romfs
 
 VERSION_MAJOR := 1
 VERSION_MINOR := 0
-VERSION_MICRO := 4
+VERSION_MICRO := 5
 GITVERSION    := $(shell git log -1 --pretty='%h')
 
 APP_TITLE     := NX-Shell

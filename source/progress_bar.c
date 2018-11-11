@@ -5,7 +5,7 @@
 #include "SDL_helper.h"
 #include "textures.h"
 
-void ProgressBar_DisplayProgress(char *msg, char *src, u32 offset, u32 size) {
+void ProgressBar_DisplayProgress(char *msg, char *src, u64 offset, u64 size) {
 	u32 text_width = 0;
 	SDL_GetTextDimensions(25, src, &text_width, NULL);
 
