@@ -51,7 +51,7 @@ static void Mount_Prodinfof(void) {
 
 	BROWSE_STATE = STATE_PRODINFOF;
 
-	fsOpenBisFileSystem(&user_fs, 28, "");
+	FS_OpenBisFileSystem(&user_fs, 28, "");
 	fsdevMountDevice("kPRODINFOF", user_fs);
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);
@@ -63,7 +63,7 @@ static void Mount_Safe(void) {
 
 	BROWSE_STATE = STATE_SAFE;
 
-	fsOpenBisFileSystem(&user_fs, 29, "");
+	FS_OpenBisFileSystem(&user_fs, 29, "");
 	fsdevMountDevice("kSAFE", user_fs);
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);
@@ -77,7 +77,7 @@ static void Mount_System(void) {
 	total_storage = Utils_GetTotalStorage(FsStorageId_NandSystem);
 	used_storage = Utils_GetUsedStorage(FsStorageId_NandSystem);
 
-	fsOpenBisFileSystem(&user_fs, 31, "");
+	FS_OpenBisFileSystem(&user_fs, 31, "");
 	fsdevMountDevice("kSYSTEM", user_fs);
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);
@@ -91,7 +91,7 @@ static void Mount_User(void) {
 	total_storage = Utils_GetTotalStorage(FsStorageId_NandUser);
 	used_storage = Utils_GetUsedStorage(FsStorageId_NandUser);
 
-	fsOpenBisFileSystem(&user_fs, 30, "");
+	FS_OpenBisFileSystem(&user_fs, 30, "");
 	fsdevMountDevice("kUSER", user_fs);
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);

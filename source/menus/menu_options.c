@@ -1,4 +1,3 @@
-#include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -54,9 +53,9 @@ static Result FileOptions_CreateFolder(void) {
 	osk_buffer[0] = '\0';
 
 	Result ret = 0;
-	if (R_FAILED(ret = fsFsCreateDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
+	if (R_FAILED(ret = FS_MakeDir(path)))
 		return ret;
-	
+
 	Dirbrowse_PopulateFiles(true);
 	options_more = false;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
@@ -75,7 +74,7 @@ static Result FileOptions_CreateFile(void) {
 	osk_buffer[0] = '\0';
 
 	Result ret = 0;
-	if (R_FAILED(ret = fsFsCreateFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, 0, 0)))
+	if (R_FAILED(ret = FS_CreateFile(path, 0, 0)))
 		return ret;
 	
 	Dirbrowse_PopulateFiles(true);
@@ -109,11 +108,11 @@ static Result FileOptions_Rename(void) {
 	osk_buffer[0] = '\0';
 
 	if (file->isDir) {
-		if (R_FAILED(ret = fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, oldPath, newPath)))
+		if (R_FAILED(ret = FS_RenameDir(oldPath, newPath)))
 			return ret;
 	}
 	else {
-		if (R_FAILED(ret = fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, oldPath, newPath)))
+		if (R_FAILED(ret = FS_RenameFile(oldPath, newPath)))
 			return ret;
 	}
 	
@@ -146,13 +145,13 @@ static Result FileOptions_Delete(void) {
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		if (R_FAILED(ret = fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
+		if (R_FAILED(ret = FS_RemoveDirRecursive(path)))
 			return ret;
 	}
 
 	// Delete File
 	else {
-		if (R_FAILED(ret = fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
+		if (R_FAILED(ret = FS_RemoveFile(path)))
 			return ret;
 	}
 
@@ -170,10 +169,10 @@ static void HandleDelete(void) {
 						// Add Trailing Slash
 						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
 						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
+						FS_RemoveDirRecursive(multi_select_paths[i]);
 					}
 					else if (FS_FileExists(multi_select_paths[i]))
-						 fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
+						 FS_RemoveFile(multi_select_paths[i]);
 				}
 			}
 		}
@@ -313,7 +312,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim) {
 	// Opened file for reading
 	if (in >= 0) {
 		if (FS_FileExists(dst))
-			remove(dst); // Delete output file (if existing)
+			FS_RemoveFile(dst); // Delete output file (if existing)
 
 		int out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0777); // Open output file for writing
 
@@ -350,58 +349,70 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim) {
 	return result; // Return result
 }
 
-// Recursively copy file from src to dst
 static Result FileOptions_CopyDir(char *src, char *dst) {
-	DIR *directory = opendir(src);
-
-	if (directory) {
-		// Create Output Directory (is allowed to fail, we can merge folders after all)
+	FsDir dir;
+	Result ret = 0;
+	
+	if (R_SUCCEEDED(ret = FS_OpenDirectory(src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		FS_MakeDir(dst);
+
+		u64 entryCount = 0;
+		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount)))
+			return ret;
 		
-		struct dirent *entries;
+		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
 
-		// Iterate Files
-		while ((entries = readdir(directory)) != NULL) {
-			if (strlen(entries->d_name) > 0) {
-				// Calculate Buffer Size
-				int insize = strlen(src) + strlen(entries->d_name) + 2;
-				int outsize = strlen(dst) + strlen(entries->d_name) + 2;
+		if (R_SUCCEEDED(ret = FS_ReadDir(&dir, 0, NULL, entryCount, entries))) {
+			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
 
-				// Allocate Buffer
-				char *inbuffer = (char *)malloc(insize);
-				char *outbuffer = (char *)malloc(outsize);
+			for (u32 i = 0; i < entryCount; i++) {
+				if (strlen(entries[i].name) > 0) {
+					// Calculate Buffer Size
+					int insize = strlen(src) + strlen(entries[i].name) + 2;
+					int outsize = strlen(dst) + strlen(entries[i].name) + 2;
 
-				// Puzzle Input Path
-				strcpy(inbuffer, src);
-				inbuffer[strlen(inbuffer) + 1] = 0;
-				inbuffer[strlen(inbuffer)] = '/';
-				strcpy(inbuffer + strlen(inbuffer), entries->d_name);
+					// Allocate Buffer
+					char *inbuffer = (char *)malloc(insize);
+					char *outbuffer = (char *)malloc(outsize);
 
-				// Puzzle Output Path
-				strcpy(outbuffer, dst);
-				outbuffer[strlen(outbuffer) + 1] = 0;
-				outbuffer[strlen(outbuffer)] = '/';
-				strcpy(outbuffer + strlen(outbuffer), entries->d_name);
+					// Puzzle Input Path
+					strcpy(inbuffer, src);
+					inbuffer[strlen(inbuffer) + 1] = 0;
+					inbuffer[strlen(inbuffer)] = '/';
+					strcpy(inbuffer + strlen(inbuffer), entries[i].name);
 
-				// Another Folder
-				if (entries->d_type == DT_DIR)
-					FileOptions_CopyDir(inbuffer, outbuffer); // Copy Folder (via recursion)
+					// Puzzle Output Path
+					strcpy(outbuffer, dst);
+					outbuffer[strlen(outbuffer) + 1] = 0;
+					outbuffer[strlen(outbuffer)] = '/';
+					strcpy(outbuffer + strlen(outbuffer), entries[i].name);
 
-				// Simple File
-				else
-					FileOptions_CopyFile(inbuffer, outbuffer, true); // Copy File
+					// Another Folder
+					if (entries[i].type == ENTRYTYPE_DIR)
+						FileOptions_CopyDir(inbuffer, outbuffer); // Copy Folder (via recursion)
 
-				// Free Buffer
-				free(inbuffer);
-				free(outbuffer);
+					// Simple File
+					else
+						FileOptions_CopyFile(inbuffer, outbuffer, true); // Copy File
+
+					// Free Buffer
+					free(inbuffer);
+					free(outbuffer);
+				}
 			}
 		}
+		else {
+			free(entries);
+			return ret;
+		}
 
-		closedir(directory);
-		return 0;
+		free(entries);
+		fsDirClose(&dir); // Close directory
 	}
+	else
+		return ret;
 
-	return -1;
+	return 0;
 }
 
 static void FileOptions_Copy(int flag) {
@@ -467,7 +478,7 @@ static Result FileOptions_Paste(void) {
 			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
 				strcat(copysource, "/");
 
-			fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource); // Delete dir
+			FS_RemoveDirRecursive(copysource); // Delete dir
 		}
 	}
 
@@ -476,7 +487,7 @@ static Result FileOptions_Paste(void) {
 		ret = FileOptions_CopyFile(copysource, copytarget, true); // Copy file
 		
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
-			fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource); // Delete file
+			FS_RemoveFile(copysource); // Delete file
 	}
 
 	// Paste success
@@ -547,9 +558,9 @@ static void HandleCut() {
 						snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 					
 						if (FS_DirExists(multi_select_paths[i]))
-							fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i], dest);
+							FS_RenameDir(multi_select_paths[i], dest);
 						else if (FS_FileExists(multi_select_paths[i]))
-							fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i], dest);
+							FS_RenameFile(multi_select_paths[i], dest);
 					}
 				}
 			}
@@ -560,9 +571,9 @@ static void HandleCut() {
 			snprintf(dest, 512, "%s%s", cwd, Utils_Basename(copysource));
 
 			if (FS_DirExists(copysource))
-				fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource, dest);
+				FS_RenameDir(copysource, dest);
 			else if (FS_FileExists(copysource))
-				fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, copysource, dest);
+				FS_RenameFile(copysource, dest);
 		}
 
 		cut_status = false;
@@ -597,7 +608,7 @@ static Result FileOptions_SetArchiveBit(void) {
 		path[strlen(path)] = '/';
 
 		// Set archive bit to path
-		if (R_FAILED(ret = fsFsSetArchiveBit(BROWSE_STATE == STATE_SD? fs : &user_fs, path)))
+		if (R_FAILED(ret = FS_SetArchiveBit(path)))
 			return ret;
 	}
 
@@ -615,7 +626,7 @@ static void HandleArchiveBit(void) {
 						// Add Trailing Slash
 						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
 						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						fsFsSetArchiveBit(BROWSE_STATE == STATE_SD? fs : &user_fs, multi_select_paths[i]);
+						FS_SetArchiveBit(multi_select_paths[i]);
 					}
 				}
 			}

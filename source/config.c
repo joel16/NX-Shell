@@ -62,7 +62,7 @@ Result Config_Load(void) {
 
 	// Delete config file if config file is updated. This will rarely happen.
 	if (config_version_holder  < CONFIG_VERSION) {
-		fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, "/switch/NX-Shell/config.cfg");
+		FS_RemoveFile("/switch/NX-Shell/config.cfg");
 		config.dark_theme = false;
 		config.dev_options = false;
 		config.sort = 0;
