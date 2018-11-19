@@ -658,18 +658,17 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 		Utils_SetMax(&row, 0, 1);
 		Utils_SetMin(&row, 1, 0);
 
-		Utils_SetMax(&column, 0, 2);
-		Utils_SetMin(&column, 2, 0);
+		Utils_SetMax(&column, 0, 3);
+		Utils_SetMin(&column, 3, 0);
 	}
 	else {
-		Utils_SetMax(&column, 0, 1);
-		Utils_SetMin(&column, 1, 0);
+		Utils_SetMax(&column, 0, 2);
+		Utils_SetMin(&column, 2, 0);
 
 		if (config.dev_options) {
 			Utils_SetMax(&row, 0, 1);
 			Utils_SetMin(&row, 1, 0);
 		}
-
 		else {
 			if (column == 0) {
 				Utils_SetMax(&row, 0, 1);
@@ -712,12 +711,27 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 			else
 				HandleCut();
 		}
-		else if (row == 0 && column == 2)
+		else if (row == 0 && column == 2 && !options_more)
 			MENU_DEFAULT_STATE = MENU_STATE_DELETE_DIALOG;
-		else if (row == 1 && column == 2) {
+		else if (row == 1 && column == 2 && !options_more) {
 			row = 0;
 			column = 0;
 			options_more = true;
+		}
+		else if (column == 3 && !options_more) {
+			copy_status = false;
+			cut_status = false;
+			row = 0;
+			column = 0;
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		}
+		else if (column == 2 && options_more) {
+			copy_status = false;
+			cut_status = false;
+			options_more = false;
+			row = 0;
+			column = 0;
+			MENU_DEFAULT_STATE = MENU_STATE_HOME;
 		}
 	}
 
@@ -842,7 +856,6 @@ void Menu_DisplayOptions(void) {
 	SDL_DrawText(370, 133, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
 	SDL_GetTextDimensions(25, "CANCEL", &options_cancel_width, &options_cancel_height);
-	SDL_DrawText(900 - options_cancel_width, 605 - options_cancel_height, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "CANCEL");
 	
 	if (row == 0 && column == 0)
 		SDL_DrawRect(354, 188, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
@@ -852,10 +865,17 @@ void Menu_DisplayOptions(void) {
 		SDL_DrawRect(354, 291, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	else if (row == 1 && column == 1)
 		SDL_DrawRect(638, 291, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	else if (row == 0 && column == 2)
+	else if (row == 0 && column == 2 && !options_more)
 		SDL_DrawRect(354, 393, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	else if (row == 1 && column == 2)
+	else if (row == 1 && column == 2 && !options_more)
 		SDL_DrawRect(638, 393, 287, 101, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	else if (column == 3 && !options_more)
+		SDL_DrawRect((900 - options_cancel_width) - 20, (605 - options_cancel_height) - 20, options_cancel_width + 40, options_cancel_height + 40, 
+			config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	else if (column == 2 && options_more)
+		SDL_DrawRect((900 - options_cancel_width) - 20, (605 - options_cancel_height) - 20, options_cancel_width + 40, options_cancel_height + 40, 
+			config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+
 
 	if (!options_more) {
 		SDL_DrawText(385, 225, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Properties");
@@ -874,4 +894,6 @@ void Menu_DisplayOptions(void) {
 		if (config.dev_options)
 			SDL_DrawText(672, 327, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Set archive bit");
 	}
+
+	SDL_DrawText(900 - options_cancel_width, 605 - options_cancel_height, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "CANCEL");
 }
