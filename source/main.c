@@ -20,7 +20,6 @@ static void Term_Services(void) {
 
 	nsExit();
 	usbCommsExit();
-	timeExit();
 	SDL_HelperTerm();
 	romfsExit();
 	psmExit();
@@ -40,9 +39,6 @@ static Result Init_Services(void) {
 		return ret;
 
 	if (R_FAILED(ret = SDL_HelperInit()))
-		return ret;
-
-	if (R_FAILED(ret = timeInitialize()))
 		return ret;
 
 	if (R_FAILED(ret = usbCommsInitialize()))

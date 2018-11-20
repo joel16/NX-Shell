@@ -76,10 +76,15 @@ static void Gallery_HandleNext(bool forward) {
 	SDL_QueryTexture(image, NULL, NULL, &width, &height);
 }
 
-static void Gallery_DrawImage(int x, int y, int w, int h, float zoom_factor) {
-	SDL_Rect position;
-	position.x = x; position.y = y; position.w = w * zoom_factor; position.h = h * zoom_factor;
-	SDL_RenderCopy(SDL_GetMainRenderer(), image, NULL, &position);
+static void Gallery_DrawImage(int x, int y, int w, int h, float zoom_factor, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip) {
+	SDL_Rect position = { x, y, w * zoom_factor, h * zoom_factor};
+
+	if (clip != NULL) {
+		position.w = clip->w;
+		position.h = clip->h;
+	}
+
+	SDL_RenderCopyEx(SDL_GetMainRenderer(), image, clip, &position, angle, center, flip);
 }
 
 void Gallery_DisplayImage(char *path) {
@@ -93,6 +98,8 @@ void Gallery_DisplayImage(char *path) {
 
 	u64 current_time = 0, last_time = 0;
 	float zoom_factor = 1.0f;
+	double degrees = 0;
+	SDL_RendererFlip flip_type = SDL_FLIP_NONE;
 
 	while(appletMainLoop()) {
 		SDL_ClearScreen(FC_MakeColor(33, 39, 43, 255));
@@ -103,13 +110,13 @@ void Gallery_DisplayImage(char *path) {
 
 		if (height <= 720)
 			Gallery_DrawImage((1280 - (width * zoom_factor)) / 2, (720 - (height * zoom_factor)) / 2, 
-			width, height, zoom_factor);
+			width, height, zoom_factor, NULL, degrees, NULL, flip_type);
 		else if (height > 720) {
 			scale_factor = (720.0f / (float)height);
 			width = width * scale_factor;
 			height = height * scale_factor;
 			Gallery_DrawImage((float)((1280.0f - (width * zoom_factor)) / 2.0f), 
-			(float)((720.0f - (height * zoom_factor)) / 2.0f), (float)width, (float)height, zoom_factor);
+			(float)((720.0f - (height * zoom_factor)) / 2.0f), (float)width, (float)height, zoom_factor, NULL, degrees, NULL, flip_type);
 		}
 
 		hidScanInput();
@@ -118,11 +125,13 @@ void Gallery_DisplayImage(char *path) {
 		u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
 
 		if ((kDown & KEY_DLEFT) || (kDown & KEY_L)) {
-			wait(1);
+			degrees = 0;
+			flip_type = SDL_FLIP_NONE;
 			Gallery_HandleNext(false);
 		}
 		else if ((kDown & KEY_DRIGHT) || (kDown & KEY_R)) {
-			wait(1);
+			degrees = 0;
+			flip_type = SDL_FLIP_NONE;
 			Gallery_HandleNext(true);
 		}
 
@@ -138,14 +147,34 @@ void Gallery_DisplayImage(char *path) {
 			if (zoom_factor < 0.5f)
 				zoom_factor = 0.5f;
 		}
+
+		if (kDown & KEY_Y) {
+			if (flip_type == SDL_FLIP_HORIZONTAL)
+				flip_type = SDL_FLIP_NONE;
+			else
+				flip_type = SDL_FLIP_HORIZONTAL;
+		}
+		else if (kDown & KEY_X) {
+			if (flip_type == SDL_FLIP_VERTICAL)
+				flip_type = SDL_FLIP_NONE;
+			else
+				flip_type = SDL_FLIP_VERTICAL;
+		}
+
+		if (kDown & KEY_ZL)
+			degrees -= 90;
+		else if (kDown & KEY_ZR)
+			degrees += 90;
 		
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 			if (tapped_inside(touchInfo, 0, 0, 120, 720)) {
-				wait(1);
+				degrees = 0;
+				flip_type = SDL_FLIP_NONE;
 				Gallery_HandleNext(false);
 			}
 			else if (tapped_inside(touchInfo, 1160, 0, 1280, 720)) {
-				wait(1);
+				degrees = 0;
+				flip_type = SDL_FLIP_NONE;
 				Gallery_HandleNext(true);
 			}
 		}
