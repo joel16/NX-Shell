@@ -65,13 +65,13 @@ void Menu_OpenBook(char *path) {
             if (reader->currentPageLayout() == BookPageLayoutPortrait || (!hidGetHandheldMode()))
                 reader->move_page_up();
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
-                reader->move_page_left();
+                reader->move_page_right();
         }
         else if (kHeld & KEY_LSTICK_DOWN) {
             if (reader->currentPageLayout() == BookPageLayoutPortrait || (!hidGetHandheldMode()))
                 reader->move_page_down();
             else if ((reader->currentPageLayout() == BookPageLayoutLandscape) && (hidGetHandheldMode()))
-                reader->move_page_right();
+                reader->move_page_left();
         }
         else if (kHeld & KEY_LSTICK_LEFT) {
             if (reader->currentPageLayout() == BookPageLayoutPortrait || (!hidGetHandheldMode()))
