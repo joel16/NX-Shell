@@ -887,7 +887,7 @@ static void FC_LoadGlyphsFromTTF(FC_Font* font, TTF_Font* ttf, SDL_Surface** sur
             font->last_glyph.cache_level = *num_surfaces;
 
             surfaces[*num_surfaces] = FC_CreateSurface32(w, h);
-            *num_surfaces++;
+            num_surfaces++;
         }
 
         // Try packing for the new surface, then blit onto it.

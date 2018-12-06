@@ -65,11 +65,14 @@ CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS  := -g $(ARCH)
 LDFLAGS  = -specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(PWD)/$(BUILD)
 
-LIBS     := -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lSDL2_gfx -lSDL2 \
-            -lpng -lminizip -lz -ljpeg \
-            -lvorbisidec -logg -lmpg123 -lmodplug \
-            -lmupdf_core -lmupdf_thirdparty -lconfig \
-            -lfreetype -lbz2 -lEGL -lglapi -ldrm_nouveau -lnx \
+LIBS     := -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lSDL2 -lSDL2_gfx \
+			-lpng  -ljpeg \
+			-lglad -lEGL -lglapi -ldrm_nouveau \
+			-lvorbisidec -logg -lmpg123 -lmodplug -lstdc++ \
+			-lglad -lEGL -lglapi -ldrm_nouveau \
+			-lavformat -lavcodec -lswresample -lswscale -lavutil -lbz2 -lass -ltheora -lvorbis -lopus\
+			-lmupdf_core -lmupdf_thirdparty -lconfig \
+			-lnx -lm -lfreetype -lminizip -lz
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

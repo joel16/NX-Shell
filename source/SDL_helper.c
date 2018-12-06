@@ -10,6 +10,10 @@ SDL_Renderer *SDL_GetMainRenderer(void) {
 	return RENDERER;
 }
 
+SDL_Window *SDL_GetMainWindow(void) {
+	return WINDOW;
+}
+
 static FC_Font *GetFont(int size) {
 	if (size == 20)
 		return Roboto_small;
@@ -28,7 +32,7 @@ Result SDL_HelperInit(void) {
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	WINDOW = SDL_CreateWindow("NX-Shell", 0, 0, 1280, 720, SDL_WINDOW_FULLSCREEN);
-	RENDERER = SDL_CreateRenderer(WINDOW, 0, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	RENDERER = SDL_CreateRenderer(WINDOW, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(RENDERER, SDL_BLENDMODE_BLEND);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 

@@ -24,6 +24,7 @@
 #define BAR_COLOUR            FC_MakeColor(200, 200, 200, 255)
 
 SDL_Renderer *SDL_GetMainRenderer(void);
+SDL_Window *SDL_GetMainWindow(void);
 Result SDL_HelperInit(void);
 void SDL_HelperTerm(void);
 void SDL_ClearScreen(SDL_Color colour);
