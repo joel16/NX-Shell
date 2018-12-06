@@ -20,6 +20,10 @@ install:
   - sudo dkp-pacman -S switch-sdl2_ttf --noconfirm
   - sudo dkp-pacman -S switch-libdrm_nouveau --noconfirm
   - sudo dkp-pacman -S switch-libconfig --noconfirm
+  - sudo dkp-pacman -S switch-glad --noconfirm
+  - sudo dkp-pacman -S switch-glm  --noconfirm
+  - sudo dkp-pacman -S switch-libopus  --noconfirm
+  - sudo dkp-pacman -S switch-ffmpeg --noconfirm
   - source /etc/profile.d/devkit-env.sh
   - sh .travis/.travis-deps.sh
 

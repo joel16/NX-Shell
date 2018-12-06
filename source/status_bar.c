@@ -91,13 +91,13 @@ static void StatusBar_GetBatteryStatus(int x, int y) {
 		snprintf(buf, 4, "%d", percent);
 		strcat(buf, "%%");
 		SDL_GetTextDimensions(25, buf, &width, NULL);
-		SDL_DrawText((x - width - 10), y, 25, WHITE, buf);
+		SDL_DrawText((x - width - 10), y + 2, 25, WHITE, buf);
 	}
 	else {
 		snprintf(buf, 4, "%d", percent);
 		strcat(buf, "%%");
 		SDL_GetTextDimensions(25, buf, &width, NULL);
-		SDL_DrawText((x - width - 10), y, 25, WHITE, buf);
+		SDL_DrawText((x - width - 10), y + 2, 25, WHITE, buf);
 		SDL_DrawImage(battery_unknown, x, 1);
 	}
 }
@@ -107,5 +107,5 @@ void StatusBar_DisplayTime(void) {
 	SDL_GetTextDimensions(25, Clock_GetCurrentTime(), &width, &height);
 
 	StatusBar_GetBatteryStatus(1260 - width - 44, (40 - height) / 2);
-	SDL_DrawText(1260 - width, (40 - height) / 2, 25, WHITE, Clock_GetCurrentTime());
+	SDL_DrawText(1260 - width, ((40 - height) / 2) + 2, 25, WHITE, Clock_GetCurrentTime());
 }

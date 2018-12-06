@@ -27,7 +27,7 @@ static char *user_partitions[] = {
 };
 
 void AnimateMenuBar(float delta_time) {  
-    menubar_x += 400.0f * (delta_time * 0.01);
+    menubar_x += 1 * delta_time;
 	
 	if (menubar_x > 0)
 		menubar_x = MENUBAR_X_BOUNDARY;
@@ -350,12 +350,13 @@ void Menu_Main(void) {
 	Dirbrowse_PopulateFiles(false);
 	memset(multi_select, 0, sizeof(multi_select)); // Reset all multi selected items
 
-	u64 current_time = 0, last_time = 0;
+	u64 current_time = SDL_GetPerformanceCounter(), last_time = 0;
 
 	while(appletMainLoop()) {
 		last_time = current_time;
     	current_time = SDL_GetPerformanceCounter();
 		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
+		//delta_time *= 0.001;
 
 		SDL_ClearScreen(config.dark_theme? BLACK_BG : WHITE);
 		SDL_DrawRect(0, 0, 1280, 40, config.dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar

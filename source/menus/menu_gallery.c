@@ -114,7 +114,6 @@ void Gallery_DisplayImage(char *path) {
 		last_time = current_time;
     	current_time = SDL_GetPerformanceCounter();
 		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
-		delta_time *= 0.001;
 
 		if (height <= 720)
 			Gallery_DrawImage((1280 - (width * zoom_factor)) / 2, (720 - (height * zoom_factor)) / 2, 
@@ -146,13 +145,13 @@ void Gallery_DisplayImage(char *path) {
 		}
 
 		if ((kHeld & KEY_DUP) || (kHeld & KEY_RSTICK_UP)) {
-			zoom_factor += 0.5f * delta_time;
+			zoom_factor += 0.5f * (delta_time * 0.001);
 
 			if (zoom_factor > 2.0f)
 				zoom_factor = 2.0f;
 		}
 		else if ((kHeld & KEY_DDOWN) || (kHeld & KEY_RSTICK_DOWN)) {
-			zoom_factor -= 0.5f * delta_time;
+			zoom_factor -= 0.5f * (delta_time * 0.001);
 
 			if (zoom_factor < 0.5f)
 				zoom_factor = 0.5f;
@@ -164,7 +163,7 @@ void Gallery_DisplayImage(char *path) {
 		}
 
 		if ((height * zoom_factor > 720) || (width * zoom_factor > 1280)) {
-			double velocity = 1000.0f/ zoom_factor;
+			double velocity = 1 / zoom_factor;
 			if (kHeld & KEY_LSTICK_UP)
 				pos_y -= ((velocity * zoom_factor) * delta_time);
 			else if (kHeld & KEY_LSTICK_DOWN)
