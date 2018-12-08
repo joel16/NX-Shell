@@ -69,11 +69,11 @@ typedef struct SDL_Output{
 } SDL_Output;
 
 typedef struct VideoState{
-    int64_t frame_cur_pts;
-    int64_t frame_last_pts;
-    int64_t cur_display_time;
-    int64_t last_display_time;
-    int64_t sleep_time;
+    s64 frame_cur_pts;
+    s64 frame_last_pts;
+    s64 cur_display_time;
+    s64 last_display_time;
+    s64 sleep_time;
     int is_first_frame;
     int last_frame_displayed;
     double time_base;
@@ -594,7 +594,7 @@ static int AudioThread(void *arg) {
     AVPacket packet;
     AVFrame *pFrame = NULL;
     int Stream = c->stream;
-    int i = 0, size=0;
+    int i = 0, size = 0;
     void *buf=NULL, *ptr;
     short *itr;
     int frame_size, write_size, left_size;
@@ -777,7 +777,7 @@ static int ReadThread(void *arg) {
 
 static int Display(SDL_Output *Output, VideoState *vs) {
     FrameNode frameNode;
-    int64_t delay, pts_delay, time;
+    s64 delay, pts_delay, time;
     int ret;
 
     //video display loop
@@ -831,7 +831,7 @@ int Menu_PlayVideo(char *path) {
     Codec ACodec, VCodec;
     AVFormatContext *pFormatCtx = NULL;
     SDL_Output Output;
-    int ret;
+    int ret, duration_total_seconds, duration_hours, duration_minutes, duration_seconds;
     SDL_Event event;
     VideoState vs;
     SDL_Thread *read_tid, *audio_tid, *video_tid;
@@ -851,6 +851,13 @@ int Menu_PlayVideo(char *path) {
     }
 
     av_dump_format(pFormatCtx, 0, path, 0);
+
+    duration_total_seconds = (int)pFormatCtx->duration / AV_TIME_BASE;
+    duration_hours = duration_total_seconds / 3600;
+    duration_minutes = duration_total_seconds % 3600 / 60;
+    duration_seconds = duration_total_seconds % 60;
+
+    DEBUG_LOG("Duration: %02d:%02d:%02d, Bit Rate: %ld kb/s\n", duration_hours, duration_minutes, duration_seconds, pFormatCtx->bit_rate / 1000);
 
     if (CodecInit(AVMEDIA_TYPE_VIDEO, pFormatCtx, &VCodec)!=0)
         return -1;
