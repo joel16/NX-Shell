@@ -400,7 +400,7 @@ static int RB_PullData(RingBuffer *rb, void *data, int size) {
     return read_size;
 }
 
-static void SimpleCallback(void* userdata, Uint8 *stream, int queryLen) {
+static void SimpleCallback(void* userdata, u8 *stream, int queryLen) {
     void *buf;
     int read_size = 0, len;
     
@@ -433,7 +433,7 @@ static int InitSDLAVOutput(SDL_Output *pOutput, int width, int height, int freq,
     unsigned char *VPlane;
 
     /*init SDL video display*/
-    window = SDL_CreateWindow("Simple Player", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_FULLSCREEN);
+    window = SDL_CreateWindow("Simple Player", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     if (!window) {
         DEBUG_LOG("SDL create window failed\n");
         return -1;
@@ -524,7 +524,7 @@ static void DisplayFrame(SDL_Output *pOutput) {
     SDL_RenderPresent(pOutput->renderer);
 }
 
-static int decode_video(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt) {
+static int DecodeVideoFrame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt) {
     int ret;
 
     *got_frame = 0;
@@ -568,7 +568,7 @@ static int VideoThread(void *arg) {
             break;
 
         //Decode video frame
-        decode_video(pCodecCtx, pFrame, &frameFinished, &packet);
+        DecodeVideoFrame(pCodecCtx, pFrame, &frameFinished, &packet);
         av_packet_unref(&packet);
         if (frameFinished) {
             fn.frame = pFrame;
@@ -836,6 +836,8 @@ int Menu_PlayVideo(char *path) {
     VideoState vs;
     SDL_Thread *read_tid, *audio_tid, *video_tid;
     //bool paused = false;
+
+    DEBUG_LOG("%s:\n", path);
 
     //Open and get stream info
     pFormatCtx = avformat_alloc_context();

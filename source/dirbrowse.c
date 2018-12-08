@@ -191,6 +191,8 @@ void Dirbrowse_DisplayFiles(void) {
 				SDL_DrawImageScale(icon_text, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3)) || (!strncasecmp(file->ext, "epub", 4)))
 				SDL_DrawImageScale(icon_doc, 80, 141 + (73 * printed), 72, 72);
+			else if ((!strncasecmp(file->ext, "avi", 3)) || (!strncasecmp(file->ext, "flv", 3)) || (!strncasecmp(file->ext, "mkv", 3)) || (!strncasecmp(file->ext, "mp4", 3)))
+				SDL_DrawImageScale(icon_video, 80, 141 + (73 * printed), 72, 72);
 			else
 				SDL_DrawImageScale(icon_file, 80, 141 + (73 * printed), 72, 72);
 
@@ -273,7 +275,7 @@ void Dirbrowse_OpenFile(void) {
 		Menu_PlayMusic(path);
 	else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3)) || (!strncasecmp(file->ext, "epub", 4)))
 		Menu_OpenBook(path);
-	else if ((!strncasecmp(file->ext, "mp4", 3)) || (!strncasecmp(file->ext, "mkv", 3)))
+	else if ((!strncasecmp(file->ext, "avi", 3)) || (!strncasecmp(file->ext, "flv", 3)) || (!strncasecmp(file->ext, "mkv", 3)) || (!strncasecmp(file->ext, "mp4", 3)))
 		Menu_PlayVideo(path);
 }
 
