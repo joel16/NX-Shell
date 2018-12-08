@@ -136,6 +136,7 @@ static void Music_HandlePause(bool *status) {
 }
 
 void Menu_PlayMusic(char *path) {
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096);
 	Menu_GetMusicList();
 	Music_Play(path);
 
@@ -305,5 +306,6 @@ void Menu_PlayMusic(char *path) {
 	Mix_FreeMusic(audio);
 	memset(playlist, 0, sizeof(playlist[0][0]) * 512 * 512);
 	count = 0;
+	Mix_CloseAudio();
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
