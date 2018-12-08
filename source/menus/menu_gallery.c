@@ -126,7 +126,7 @@ void Gallery_DisplayImage(char *path) {
 			(float)((720.0f - (height * zoom_factor)) / 2.0f), (float)width, (float)height, zoom_factor, NULL, degrees, NULL, flip_type);
 		}
 
-		SDL_DrawTextf(0, 0, 30, WHITE, "x: %d, y: %d, zoom: %lf, degrees: %lf", pos_x, pos_y, zoom_factor, degrees);
+		//SDL_DrawTextf(0, 0, 30, WHITE, "x: %d, y: %d, zoom: %lf, degrees: %lf", pos_x, pos_y, zoom_factor, degrees);
 
 		hidScanInput();
 		Touch_Process(&touchInfo);
