@@ -3,8 +3,7 @@
 
 #include <switch.h>
 
-typedef struct File
-{
+typedef struct File {
 	struct File *next; // Next item
 	int isDir;          // Folder flag
 	int isReadOnly;     // Read-only flag
@@ -24,7 +23,7 @@ int multi_select_index;           // Multi-select index.
 bool multi_select[256];           // Array of indices selected.
 int multi_select_indices[256];    // Array to hold the indices.
 char multi_select_dir[512];       // Holds the current dir where multi-select happens.
-char multi_select_paths[256][512]; // Holds the file paths of those in the clipboard.
+char multi_select_paths[512][512]; // Holds the file paths of those in the clipboard.
 
 void Dirbrowse_RecursiveFree(File *node);
 Result Dirbrowse_PopulateFiles(bool clear);

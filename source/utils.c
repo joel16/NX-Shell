@@ -46,17 +46,15 @@ int Utils_Alphasort(const void *p1, const void *p2) {
 }
 
 void Utils_AppendArr(char subject[], const char insert[], int pos) {
-	char buf[100] = {}; // 100 so that it's big enough. fill with 0
-	// or you could use malloc() to allocate sufficient space
-	
-	strncpy(buf, subject, pos); // copy at most first pos characters
+	char buf[512] = {};
+
+	strncpy(buf, subject, pos);
 	int len = strlen(buf);
-	strcpy(buf+len, insert); // copy all of insert[] at the end
-	len += strlen(insert);  // increase the length by length of insert[]
-	strcpy(buf+len, subject+pos); // copy the rest
+	strcpy(buf + len, insert);
+	len += strlen(insert);
+	strcpy(buf+len, subject + pos);
 	
-	strcpy(subject, buf);   // copy it back to subject
-	// deallocate buf[] here, if used malloc()
+	strcpy(subject, buf);
 }
 
 u64 Utils_GetTotalStorage(FsStorageId storage_id) {
