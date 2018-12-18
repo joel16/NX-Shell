@@ -26,8 +26,8 @@ static char *user_partitions[] = {
 	"kUSER"
 };
 
-void AnimateMenuBar(float delta_time) {  
-    menubar_x += 1 * delta_time;
+void AnimateMenuBar(float delta_time) {
+	menubar_x += 1 * delta_time;
 	
 	if (menubar_x > 0)
 		menubar_x = MENUBAR_X_BOUNDARY;
