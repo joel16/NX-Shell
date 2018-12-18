@@ -163,7 +163,7 @@ void Gallery_DisplayImage(char *path) {
 		}
 
 		if ((height * zoom_factor > 720) || (width * zoom_factor > 1280)) {
-			double velocity = 1 / zoom_factor;
+			double velocity = 2 / zoom_factor;
 			if (kHeld & KEY_LSTICK_UP)
 				pos_y -= ((velocity * zoom_factor) * delta_time);
 			else if (kHeld & KEY_LSTICK_DOWN)
