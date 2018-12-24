@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "config.h"
+#include "dirbrowse.h"
 #include "ftp.h"
 #include "SDL_helper.h"
 #include "textures.h"
@@ -50,8 +51,8 @@ void Menu_FTP(void) {
 			SDL_DrawRect(pBar, ((720 - (dialog_height)) / 2) + 220, 120, 10, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR);
 
 			// Boundary stuff
-			SDL_DrawRect(210, ((720 - (dialog_height)) / 2) + 220, 120, 10, config.dark_theme? MENU_BAR_DARK : WHITE);
-			SDL_DrawRect(950, ((720 - (dialog_height)) / 2) + 220, 120, 10, config.dark_theme? MENU_BAR_DARK : WHITE); 
+			SDL_DrawRect(210, ((720 - (dialog_height)) / 2) + 220, 120, 10, config.dark_theme? FC_MakeColor(48, 48, 48, 255) : WHITE);
+			SDL_DrawRect(950, ((720 - (dialog_height)) / 2) + 220, 120, 10, config.dark_theme? FC_MakeColor(48, 48, 48, 255) : WHITE); 
 			pBar += 3;
 			
 			if (pBar >= xlim)
@@ -69,5 +70,6 @@ void Menu_FTP(void) {
 
 	ftp_exit();
 	nifmExit();
+	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
