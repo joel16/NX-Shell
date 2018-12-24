@@ -121,8 +121,7 @@ void SDL_LoadImage(SDL_Texture **texture, char *path) {
 	loaded_surface = IMG_Load(path);
 
 	if (loaded_surface) {
-		Uint32 colorkey = SDL_MapRGB(loaded_surface->format, 0, 0, 0);
-		SDL_SetColorKey(loaded_surface, SDL_TRUE, colorkey);
+		SDL_ConvertSurfaceFormat(loaded_surface, SDL_PIXELFORMAT_RGBA8888, 0);
 		*texture = SDL_CreateTextureFromSurface(RENDERER, loaded_surface);
 	}
 
