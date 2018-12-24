@@ -158,7 +158,7 @@ static void Menu_DisplayAboutDialog(void) {
 	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
 
 	SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2));
-	SDL_DrawText(((1280 - (dialog_width)) / 2) + 20, ((720 - (dialog_height)) / 2) + 20, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
+	SDL_DrawText(((1280 - (dialog_width)) / 2) + 30, ((720 - (dialog_height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "About");
 	SDL_DrawTextf(((1280 - (text1_width)) / 2), ((720 - (dialog_height)) / 2) + 70, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "NX Shell v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
 	SDL_DrawText(((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
 	SDL_DrawText(((1280 - (text3_width)) / 2), ((720 - (dialog_height)) / 2) + 130, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors");

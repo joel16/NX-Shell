@@ -34,7 +34,7 @@ void Menu_FTP(void) {
 		Dirbrowse_DisplayFiles();
 
 		SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2));
-		SDL_DrawText(((1280 - (dialog_width)) / 2) + 20, ((720 - (dialog_height)) / 2) + 20, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "FTP");
+		SDL_DrawText(((1280 - (dialog_width)) / 2) + 30, ((720 - (dialog_height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "FTP");
 
 		SDL_DrawText(((1280 - (ip_width)) / 2), ((720 - (dialog_height)) / 2) + 70, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, 
 			R_SUCCEEDED(ret)? hostname : NULL);

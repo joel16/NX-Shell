@@ -240,7 +240,7 @@ void Menu_DisplayDeleteDialog(void) {
 	SDL_QueryTexture(dialog, NULL, NULL, &delete_width, &delete_height);
 
 	SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (delete_width)) / 2), ((720 - (delete_height)) / 2));
-	SDL_DrawText(((1280 - (delete_width)) / 2) + 20, ((720 - (delete_height)) / 2) + 20, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
+	SDL_DrawText(((1280 - (delete_width)) / 2) + 30, ((720 - (delete_height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
 	SDL_DrawText(((1280 - (text_width)) / 2), ((720 - (delete_height)) / 2) + 130, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
 
 	if (delete_dialog_selection == 0)
@@ -274,7 +274,7 @@ void Menu_DisplayProperties(void) {
 	strcpy(path + strlen(path), file->name);
 
 	SDL_DrawImage(config.dark_theme? properties_dialog_dark : properties_dialog, 350, 85);
-	SDL_DrawText(370, 105, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Properties");
+	SDL_DrawText(380, 115, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Properties");
 
 	char utils_size[16];
 	u64 size = 0;
@@ -853,7 +853,7 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 
 void Menu_DisplayOptions(void) {
 	SDL_DrawImage(config.dark_theme? options_dialog_dark : options_dialog, 350, 85);
-	SDL_DrawText(370, 105, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
+	SDL_DrawText(380, 115, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 
 	SDL_GetTextDimensions(25, "CANCEL", &options_cancel_width, &options_cancel_height);
 	
