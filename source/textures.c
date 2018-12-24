@@ -27,9 +27,11 @@ void Textures_Load(void) {
 	SDL_LoadImage(&icon_settings, "romfs:/res/drawable/ic_material_light_settings.png");
 	SDL_LoadImage(&icon_sd, "romfs:/res/drawable/ic_material_light_sdcard.png");
 	SDL_LoadImage(&icon_secure, "romfs:/res/drawable/ic_material_light_secure.png");
+	SDL_LoadImage(&icon_ftp, "romfs:/res/drawable/ic_material_light_remote.png");
 	SDL_LoadImage(&icon_settings_dark, "romfs:/res/drawable/ic_material_light_settings_dark.png");
 	SDL_LoadImage(&icon_sd_dark, "romfs:/res/drawable/ic_material_light_sdcard_dark.png");
 	SDL_LoadImage(&icon_secure_dark, "romfs:/res/drawable/ic_material_light_secure_dark.png");
+	SDL_LoadImage(&icon_ftp_dark, "romfs:/res/drawable/ic_material_light_remote_dark.png");
 	SDL_LoadImage(&icon_radio_off, "romfs:/res/drawable/btn_material_light_radio_off_normal.png");
 	SDL_LoadImage(&icon_radio_on, "romfs:/res/drawable/btn_material_light_radio_on_normal.png");
 	SDL_LoadImage(&icon_radio_dark_off, "romfs:/res/drawable/btn_material_light_radio_off_normal_dark.png");
@@ -114,9 +116,11 @@ void Textures_Free(void) {
 	SDL_DestroyTexture(icon_radio_dark_off);
 	SDL_DestroyTexture(icon_radio_on);
 	SDL_DestroyTexture(icon_radio_off);
+	SDL_DestroyTexture(icon_ftp_dark);
 	SDL_DestroyTexture(icon_secure_dark);
 	SDL_DestroyTexture(icon_sd_dark);
 	SDL_DestroyTexture(icon_settings_dark);
+	SDL_DestroyTexture(icon_ftp);
 	SDL_DestroyTexture(icon_secure);
 	SDL_DestroyTexture(icon_sd);
 	SDL_DestroyTexture(icon_settings);

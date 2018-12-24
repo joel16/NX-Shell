@@ -32,9 +32,9 @@ include $(DEVKITPRO)/libnx/switch_rules
 #---------------------------------------------------------------------------------
 TARGET        := $(notdir $(CURDIR))
 BUILD         := build
-SOURCES       := source source/audio source/menus source/minizip source/menus/menu_book_reader
+SOURCES       := source source/audio source/ftp source/menus source/minizip source/menus/menu_book_reader
 DATA          := data
-INCLUDES      := include include/audio include/menus include/minizip mupdf/include mupdf/source/fitz
+INCLUDES      := include include/audio include/ftp include/menus include/minizip mupdf/include mupdf/source/fitz
 EXEFS_SRC     := exefs_src
 ROMFS         := romfs
 

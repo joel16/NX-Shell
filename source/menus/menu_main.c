@@ -6,6 +6,7 @@
 #include "fs.h"
 #include "menu_main.h"
 #include "menu_options.h"
+#include "menu_ftp.h"
 #include "menu_settings.h"
 #include "SDL_helper.h"
 #include "status_bar.h"
@@ -14,7 +15,7 @@
 #include "utils.h"
 
 #define MENUBAR_X_BOUNDARY  0
-static int menubar_selection = 0, menubar_max_items = 4;
+static int menubar_selection = 0, horizantal_selection = 0, menubar_max_items = 4;
 static float menubar_x = -400.0;
 static char multi_select_dir_old[512];
 
@@ -98,34 +99,64 @@ static void Mount_User(void) {
 }
 
 static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
-	if (input & KEY_DUP)
-		menubar_selection--;
-	else if (input & KEY_DDOWN)
-		menubar_selection++;
+	if (input & KEY_DUP) {
+		if (menubar_selection == 0) {
+			horizantal_selection = 1;
+			menubar_selection--;
+		}
+		else if ((menubar_selection == 5) && (horizantal_selection == 1))
+			horizantal_selection = 0;
+		else
+			menubar_selection--;
+	}
+	else if (input & KEY_DDOWN) {
+		if (menubar_selection == 4) {
+			horizantal_selection = 0;
+			menubar_selection++;
+		}
+		else if ((menubar_selection == 5) && (horizantal_selection == 0))
+			horizantal_selection = 1;
+		else
+			menubar_selection++;
+	}
 
 	Utils_SetMax(&menubar_selection, 0, menubar_max_items + 1);
 	Utils_SetMin(&menubar_selection, menubar_max_items + 1, 0);
+	Utils_SetMax(&horizantal_selection, 0, 1);
+	Utils_SetMin(&horizantal_selection, 1, 0);
+
+	if (menubar_selection == 5) {
+		if (input & KEY_DLEFT)
+			horizantal_selection--;
+		else if (input & KEY_DRIGHT)
+			horizantal_selection++;
+	}
 
 	if (input & KEY_A) {
-		switch (menubar_selection) {
-			case 0:
-				Mount_SD();
-				break;
-			case 1:
-				Mount_Prodinfof();
-				break;
-			case 2:
-				Mount_Safe();
-				break;
-			case 3:
-				Mount_System();
-				break;
-			case 4:
-				Mount_User();
-				break;
-			case 5:
+		if (menubar_selection == 5) {
+			if (horizantal_selection == 1)
 				MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
-				break;
+			else
+				MENU_DEFAULT_STATE = MENU_STATE_FTP;
+		}
+		else {
+			switch (menubar_selection) {
+				case 0:
+					Mount_SD();
+					break;
+				case 1:
+					Mount_Prodinfof();
+					break;
+				case 2:
+					Mount_Safe();
+					break;
+				case 3:
+					Mount_System();
+					break;
+				case 4:
+					Mount_User();
+					break;
+			}
 		}
 	}
 
@@ -158,6 +189,8 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 			Mount_User();
 		}
 		else if (tapped_inside(touchInfo, menubar_x + 20, 630, menubar_x + 80, 710))
+			MENU_DEFAULT_STATE = MENU_STATE_FTP;
+		else if (tapped_inside(touchInfo, menubar_x + 120, 630, menubar_x + 180, 710))
 			MENU_DEFAULT_STATE = MENU_STATE_SETTINGS;
 	}
 }
@@ -186,8 +219,12 @@ static void Menu_DisplayMenuBar(void) {
 
 	int printed = 0, selection = 0; 
 
-	if (menubar_selection == menubar_max_items + 1)
-		SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	if (menubar_selection == menubar_max_items + 1) {
+		if (horizantal_selection == 1)
+			SDL_DrawRect(menubar_x + 110, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+		else
+			SDL_DrawRect(menubar_x + 10, 630, 80, 80, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
+	}
 	else
 		selection = menubar_selection;
 
@@ -210,7 +247,8 @@ static void Menu_DisplayMenuBar(void) {
 		}
 	}
 
-	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 20, 640);
+	SDL_DrawImage(config.dark_theme? icon_ftp_dark : icon_ftp, menubar_x + 20, 640);
+	SDL_DrawImage(config.dark_theme? icon_settings_dark : icon_settings, menubar_x + 120, 640);
 }
 
 static void Menu_HandleMultiSelect(int position) {
@@ -390,6 +428,8 @@ void Menu_Main(void) {
 		}
 		else if (MENU_DEFAULT_STATE == MENU_STATE_SETTINGS)
 			Menu_DisplaySettings();
+		else if (MENU_DEFAULT_STATE == MENU_STATE_FTP)
+			Menu_FTP();
 
 		SDL_Renderdisplay();
 
