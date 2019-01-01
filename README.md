@@ -11,7 +11,7 @@ Work in progress port of 3DShell (Multi purpose file manager) to the Nintendo Sw
 - Displays file size. (files only ATM)
 - Image viewer (PNG/JPG/BMP)
 - Render animated GIFs.
-- Extract .ZIP files.
+- Extract .ZIP and .RAR files.
 - Sorting options (Sort by name, date, size).
 - Dark theme toggle.
 - Audio playback. (Following formats are supported: MP3, OGG, WAV and MOD)
