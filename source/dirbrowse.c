@@ -180,7 +180,7 @@ void Dirbrowse_DisplayFiles(void) {
 				SDL_DrawImageScale(config.dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "nro", 3)) || (!strncasecmp(file->ext, "elf", 3)) || (!strncasecmp(file->ext, "bin", 3)))
 				SDL_DrawImageScale(icon_app, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "zip", 3)) || (!strncasecmp(file->ext, "tar", 3)) || (!strncasecmp(file->ext, "lz4", 3)))
+			else if ((!strncasecmp(file->ext, "zip", 3)) || (!strncasecmp(file->ext, "rar", 3)) || (!strncasecmp(file->ext, "lz4", 3)))
 				SDL_DrawImageScale(icon_archive, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "mod", 3))
 					|| (!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "midi", 4)) || (!strncasecmp(file->ext, "mid", 3)))
@@ -267,7 +267,11 @@ void Dirbrowse_OpenFile(void) {
 	else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "gif", 3)))
 		Gallery_DisplayImage(path);
 	else if (!strncasecmp(file->ext, "zip", 3)) {
-		Archive_ExtractZip(path, cwd);
+		Archive_ExtractZIP(path);
+		Dirbrowse_PopulateFiles(true);
+	}
+	else if (!strncasecmp(file->ext, "rar", 3)) {
+		Archive_ExtractRAR(path);
 		Dirbrowse_PopulateFiles(true);
 	}
 	else if ((!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "mod", 3))

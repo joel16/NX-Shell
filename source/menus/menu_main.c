@@ -392,7 +392,7 @@ void Menu_Main(void) {
 
 	while(appletMainLoop()) {
 		last_time = current_time;
-    	current_time = SDL_GetPerformanceCounter();
+		current_time = SDL_GetPerformanceCounter();
 		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
 		//delta_time *= 0.001;
 
