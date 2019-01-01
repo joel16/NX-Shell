@@ -9,7 +9,8 @@ Work in progress port of 3DShell (Multi purpose file manager) to the Nintendo Sw
 - Rename files and folders.
 - Create folders.
 - Displays file size. (files only ATM)
-- Image viewer (PNG/JPG/GIF/BMP)
+- Image viewer (PNG/JPG/BMP)
+- Render animated GIFs.
 - Extract .ZIP files.
 - Sorting options (Sort by name, date, size).
 - Dark theme toggle.
@@ -32,3 +33,4 @@ cd ../ && make
 - **StevenMattera** for the implementing the foundation of all touch-screen code.
 - **rock88** for integrating mupdf, allowing NX-Shell to read pdfs and other epubs.
 - **grimfang4** for the original SDL_FontCache headers and **BernardoGiordano** for the port to switch.
+- **theMealena** for CVE_gif*.
