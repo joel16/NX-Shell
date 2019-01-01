@@ -1,5 +1,4 @@
-#include <dirent.h>
-
+#include "CEV_gif.h"
 #include "common.h"
 #include "fs.h"
 #include "menu_gallery.h"
@@ -89,6 +88,29 @@ static void Gallery_DrawImage(int x, int y, int w, int h, float zoom_factor, SDL
 	}
 
 	SDL_RenderCopyEx(SDL_GetMainRenderer(), image, clip, &position, angle, center, flip);
+}
+
+void Gallery_DisplayGif(char *path) {
+	SDL_RenderClear(SDL_GetMainRenderer());
+	CEV_GifAnim *animation = CEV_gifAnimLoad(path, SDL_GetMainRenderer());
+	SDL_Texture *texture = CEV_gifTexture(animation);
+	CEV_gifLoopMode(animation, GIF_REPEAT_FOR);
+
+	while(appletMainLoop()) {
+		hidScanInput();
+		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+
+		if (CEV_gifAnimAuto(animation)) {
+			SDL_RenderClear(SDL_GetMainRenderer());
+			SDL_RenderCopy(SDL_GetMainRenderer(), texture, NULL, NULL);
+			SDL_RenderPresent(SDL_GetMainRenderer());
+		}
+
+		if (kDown & KEY_B)
+			break;
+	}
+
+	CEV_gifAnimFree(animation);
 }
 
 void Gallery_DisplayImage(char *path) {

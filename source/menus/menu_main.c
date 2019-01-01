@@ -394,7 +394,6 @@ void Menu_Main(void) {
 		last_time = current_time;
 		current_time = SDL_GetPerformanceCounter();
 		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
-		//delta_time *= 0.001;
 
 		SDL_ClearScreen(config.dark_theme? BLACK_BG : WHITE);
 		SDL_DrawRect(0, 0, 1280, 40, config.dark_theme? STATUS_BAR_DARK : STATUS_BAR_LIGHT);	// Status bar

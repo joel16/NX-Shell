@@ -1,6 +1,3 @@
-#include <dirent.h>
-#include <time.h>
-
 #include "common.h"
 #include "dirbrowse.h"
 #include "fs.h"
@@ -201,9 +198,6 @@ void Menu_PlayMusic(char *path) {
 		hidScanInput();
 		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
-
-		if (kDown & KEY_PLUS)
-			longjmp(exitJmp, 1);
 
 		if (!Mix_PlayingMusic()) {
 			wait(1);

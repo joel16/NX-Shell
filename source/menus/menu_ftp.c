@@ -1,10 +1,12 @@
 #include <switch.h>
+#include <unistd.h>
 
 #include "common.h"
 #include "config.h"
 #include "dirbrowse.h"
 #include "ftp.h"
 #include "SDL_helper.h"
+#include "status_bar.h"
 #include "textures.h"
 
 void Menu_FTP(void) {
@@ -15,10 +17,12 @@ void Menu_FTP(void) {
 	int pBar = 400, xlim = 950;
 
 	Result ret = gethostname(hostname, sizeof(hostname));
-	snprintf(hostname, 128, "%s:5000", hostname);
+
+	char *hostname_disp = malloc(138);
+	snprintf(hostname_disp, 138, "%s:5000", hostname);
 
 	u32 ip_width = 0, instruc_width = 0, transfer_width = 0;
-	SDL_GetTextDimensions(25, hostname, &ip_width, NULL);
+	SDL_GetTextDimensions(25, hostname_disp, &ip_width, NULL);
 	SDL_GetTextDimensions(25, "Press B key to exit FTP mode.", &instruc_width, NULL);
 
 	int dialog_width = 0, dialog_height = 0;
@@ -38,7 +42,7 @@ void Menu_FTP(void) {
 		SDL_DrawText(((1280 - (dialog_width)) / 2) + 30, ((720 - (dialog_height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "FTP");
 
 		SDL_DrawText(((1280 - (ip_width)) / 2), ((720 - (dialog_height)) / 2) + 70, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, 
-			R_SUCCEEDED(ret)? hostname : NULL);
+			R_SUCCEEDED(ret)? hostname_disp : NULL);
 		SDL_DrawText(((1280 - (instruc_width)) / 2), ((720 - (dialog_height)) / 2) + 120, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Press B key to exit FTP mode.");
 
 		if (strlen(ftp_file_transfer) != 0) {
@@ -68,6 +72,7 @@ void Menu_FTP(void) {
 			break;
 	}
 
+	free(hostname_disp);
 	ftp_exit();
 	nifmExit();
 	Dirbrowse_PopulateFiles(true);

@@ -6,7 +6,6 @@
 #include "menu_book_reader.h"
 #include "menu_gallery.h"
 #include "menu_music.h"
-#include "menu_videoplayer.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
@@ -264,7 +263,7 @@ void Dirbrowse_OpenFile(void) {
 			Dirbrowse_PopulateFiles(true);
 		}
 	}
-	else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "gif", 3)))
+	else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)))
 		Gallery_DisplayImage(path);
 	else if (!strncasecmp(file->ext, "zip", 3)) {
 		Archive_ExtractZIP(path);
@@ -274,13 +273,13 @@ void Dirbrowse_OpenFile(void) {
 		Archive_ExtractRAR(path);
 		Dirbrowse_PopulateFiles(true);
 	}
+	else if (!strncasecmp(file->ext, "gif", 3))
+		Gallery_DisplayGif(path);
 	else if ((!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "mod", 3))
 			|| (!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "midi", 4)) || (!strncasecmp(file->ext, "mid", 3)))
 		Menu_PlayMusic(path);
 	else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3)) || (!strncasecmp(file->ext, "epub", 4)))
 		Menu_OpenBook(path);
-	else if ((!strncasecmp(file->ext, "avi", 3)) || (!strncasecmp(file->ext, "flv", 3)) || (!strncasecmp(file->ext, "mkv", 3)) || (!strncasecmp(file->ext, "mp4", 3)))
-		Menu_PlayVideo(path);
 }
 
 // Navigate to Folder
