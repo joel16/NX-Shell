@@ -42,17 +42,18 @@ void FileOptions_ResetClipboard(void) {
 }
 
 static Result FileOptions_CreateFolder(void) {
-	OSK_Display("Create Folder", "New Folder");
+	Result ret = 0;
+	char *buf = malloc(256);
+	strcpy(buf, OSK_GetString("Enter folder name", "New folder"));
 
-	if (!strncmp(osk_buffer, "", 1))
+	if (!strncmp(buf, "", 1))
 		return -1;
 
-	char path[500];
+	char path[512];
 	strcpy(path, cwd);
-	strcat(path, osk_buffer);
-	osk_buffer[0] = '\0';
+	strcat(path, buf);
+	free(buf);
 
-	Result ret = 0;
 	if (R_FAILED(ret = FS_MakeDir(path)))
 		return ret;
 
@@ -63,17 +64,18 @@ static Result FileOptions_CreateFolder(void) {
 }
 
 static Result FileOptions_CreateFile(void) {
-	OSK_Display("Create Folder", "New File");
+	Result ret = 0;
+	char *buf = malloc(256);
+	strcpy(buf, OSK_GetString("Enter file name", "New File.txt"));
 
-	if (!strncmp(osk_buffer, "", 1))
+	if (!strncmp(buf, "", 1))
 		return -1;
 
-	char path[500];
+	char path[512];
 	strcpy(path, cwd);
-	strcat(path, osk_buffer);
-	osk_buffer[0] = '\0';
+	strcat(path, buf);
+	free(buf);
 
-	Result ret = 0;
 	if (R_FAILED(ret = FS_CreateFile(path, 0, 0)))
 		return ret;
 	
@@ -94,18 +96,15 @@ static Result FileOptions_Rename(void) {
 		return -2;
 
 	char oldPath[500], newPath[500];
+	char *buf = malloc(256);
 
 	strcpy(oldPath, cwd);
 	strcpy(newPath, cwd);
 	strcat(oldPath, file->name);
 
-	OSK_Display("Rename", file->name);
-
-	if (!strncmp(osk_buffer, "", 1))
-		return -1;
-	
-	strcat(newPath, osk_buffer);
-	osk_buffer[0] = '\0';
+	strcpy(buf, OSK_GetString("Enter name", file->name));
+	strcat(newPath, buf);
+	free(buf);
 
 	if (file->isDir) {
 		if (R_FAILED(ret = FS_RenameDir(oldPath, newPath)))
