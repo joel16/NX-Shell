@@ -7,7 +7,7 @@
 #include "fs.h"
 #include "progress_bar.h"
 #include "menu_options.h"
-#include "osk.h"
+#include "keyboard.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
@@ -44,7 +44,7 @@ void FileOptions_ResetClipboard(void) {
 static Result FileOptions_CreateFolder(void) {
 	Result ret = 0;
 	char *buf = malloc(256);
-	strcpy(buf, OSK_GetString("Enter folder name", "New folder"));
+	strcpy(buf, Keyboard_GetText("Enter folder name", "New folder"));
 
 	if (!strncmp(buf, "", 1))
 		return -1;
@@ -66,7 +66,7 @@ static Result FileOptions_CreateFolder(void) {
 static Result FileOptions_CreateFile(void) {
 	Result ret = 0;
 	char *buf = malloc(256);
-	strcpy(buf, OSK_GetString("Enter file name", "New File.txt"));
+	strcpy(buf, Keyboard_GetText("Enter file name", "New File.txt"));
 
 	if (!strncmp(buf, "", 1))
 		return -1;
@@ -102,7 +102,7 @@ static Result FileOptions_Rename(void) {
 	strcpy(newPath, cwd);
 	strcat(oldPath, file->name);
 
-	strcpy(buf, OSK_GetString("Enter name", file->name));
+	strcpy(buf, Keyboard_GetText("Enter name", file->name));
 	strcat(newPath, buf);
 	free(buf);
 
