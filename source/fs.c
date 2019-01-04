@@ -8,10 +8,10 @@
 #include "fs.h"
 #include "log.h"
 
-bool FS_FileExists(const char *path) {
+bool FS_FileExists(FsFileSystem *fs, const char *path) {
 	FsFile file;
 
-	if (R_SUCCEEDED(fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_READ, &file))) {
+	if (R_SUCCEEDED(fsFsOpenFile(fs, path, FS_OPEN_READ, &file))) {
 		fsFileClose(&file);
 		return true;
 	}
@@ -30,10 +30,10 @@ bool FS_DirExists(const char *path) {
 		return false;
 }
 
-Result FS_MakeDir(const char *path) {
+Result FS_MakeDir(FsFileSystem *fs, const char *path) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsCreateDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, path))) {
+	if (R_FAILED(ret = fsFsCreateDirectory(fs, path))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsCreateDirectory(%s) failed: 0x%lx\n", path, ret);
 
@@ -43,10 +43,10 @@ Result FS_MakeDir(const char *path) {
 	return 0;
 }
 
-Result FS_CreateFile(const char *path, size_t size, int flags) {
+Result FS_CreateFile(FsFileSystem *fs, const char *path, size_t size, int flags) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsCreateFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, size, flags))) {
+	if (R_FAILED(ret = fsFsCreateFile(fs, path, size, flags))) {
 		if (config.dev_options)
 			DEBUG_LOG("FS_CreateFile(%s, %d, %d) failed: 0x%lx\n", path, size, flags, ret);
 
@@ -56,10 +56,10 @@ Result FS_CreateFile(const char *path, size_t size, int flags) {
 	return 0;
 }
 
-Result FS_OpenDirectory(const char *path, int flags, FsDir *dir) {
+Result FS_OpenDirectory(FsFileSystem *fs, const char *path, int flags, FsDir *dir) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsOpenDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, path, flags, dir))) {
+	if (R_FAILED(ret = fsFsOpenDirectory(fs, path, flags, dir))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsOpenDirectory(%s, %d) failed: 0x%lx\n", path, flags, ret);
 
@@ -95,11 +95,11 @@ Result FS_ReadDir(FsDir *dir, u64 inval, size_t *total_entries, size_t max_entri
 	return 0;
 }
 
-Result FS_GetFileSize(const char *path, u64 *size) {
+Result FS_GetFileSize(FsFileSystem *fs, const char *path, u64 *size) {
 	FsFile file;
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_READ, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, path, FS_OPEN_READ, &file))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
@@ -121,10 +121,10 @@ Result FS_GetFileSize(const char *path, u64 *size) {
 	return 0;
 }
 
-Result FS_RemoveFile(const char *path) {
+Result FS_RemoveFile(FsFileSystem *fs, const char *path) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path))) {
+	if (R_FAILED(ret = fsFsDeleteFile(fs, path))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsDeleteFile(%s) failed: 0x%lx\n", path, ret);
 
@@ -134,10 +134,10 @@ Result FS_RemoveFile(const char *path) {
 	return 0;
 }
 
-Result FS_RemoveDir(const char *path) {
+Result FS_RemoveDir(FsFileSystem *fs, const char *path) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsDeleteDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, path))) {
+	if (R_FAILED(ret = fsFsDeleteDirectory(fs, path))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsDeleteDirectory(%s) failed: 0x%lx\n", path, ret);
 
@@ -147,10 +147,10 @@ Result FS_RemoveDir(const char *path) {
 	return 0;
 }
 
-Result FS_RemoveDirRecursive(const char *path) {
+Result FS_RemoveDirRecursive(FsFileSystem *fs, const char *path) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsDeleteDirectoryRecursively(BROWSE_STATE == STATE_SD? fs : &user_fs, path))) {
+	if (R_FAILED(ret = fsFsDeleteDirectoryRecursively(fs, path))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsDeleteDirectoryRecursively(%s) failed: 0x%lx\n", path, ret);
 
@@ -160,10 +160,10 @@ Result FS_RemoveDirRecursive(const char *path) {
 	return 0;
 }
 
-Result FS_RenameFile(const char *old_filename, const char *new_filename) {
+Result FS_RenameFile(FsFileSystem *fs, const char *old_filename, const char *new_filename) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsRenameFile(BROWSE_STATE == STATE_SD? fs : &user_fs, old_filename, new_filename))) {
+	if (R_FAILED(ret = fsFsRenameFile(fs, old_filename, new_filename))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsRenameFile(%s, %s) failed: 0x%lx\n", old_filename, new_filename, ret);
 
@@ -173,10 +173,10 @@ Result FS_RenameFile(const char *old_filename, const char *new_filename) {
 	return 0;
 }
 
-Result FS_RenameDir(const char *old_dirname, const char *new_dirname) {
+Result FS_RenameDir(FsFileSystem *fs, const char *old_dirname, const char *new_dirname) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsRenameDirectory(BROWSE_STATE == STATE_SD? fs : &user_fs, old_dirname, new_dirname))) {
+	if (R_FAILED(ret = fsFsRenameDirectory(fs, old_dirname, new_dirname))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsRenameDirectory(%s, %s) failed: 0x%lx\n", old_dirname, new_dirname, ret);
 
@@ -186,13 +186,13 @@ Result FS_RenameDir(const char *old_dirname, const char *new_dirname) {
 	return 0;
 }
 
-Result FS_Read(const char *path, size_t size, void *buf) {
+Result FS_Read(FsFileSystem *fs, const char *path, size_t size, void *buf) {
 	FsFile file;
 	Result ret = 0;
 
 	size_t out = 0;
 
-	if (R_FAILED(ret = fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_READ, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, path, FS_OPEN_READ, &file))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
@@ -214,7 +214,7 @@ Result FS_Read(const char *path, size_t size, void *buf) {
 	return 0;
 }
 
-Result FS_Write(const char *path, const void *buf) {
+Result FS_Write(FsFileSystem *fs, const char *path, const void *buf) {
 	FsFile file;
 	Result ret = 0;
 	
@@ -223,8 +223,8 @@ Result FS_Write(const char *path, const void *buf) {
 
 	appletLockExit();
 
-	if (FS_FileExists(path)) {
-		if (R_FAILED(ret = fsFsDeleteFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path))) {
+	if (FS_FileExists(fs, path)) {
+		if (R_FAILED(ret = fsFsDeleteFile(fs, path))) {
 			if (config.dev_options)
 				DEBUG_LOG("fsFsDeleteFile(%s) failed: 0x%lx\n", path, ret);
 
@@ -232,14 +232,14 @@ Result FS_Write(const char *path, const void *buf) {
 		}
 	}
 
-	if (R_FAILED(ret = fsFsCreateFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, 0, 0))) {
+	if (R_FAILED(ret = fsFsCreateFile(fs, path, 0, 0))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsCreateFile(%s) failed: 0x%lx\n", path, ret);
 
 		return ret;
 	}
 
-	if (R_FAILED(ret = fsFsOpenFile(BROWSE_STATE == STATE_SD? fs : &user_fs, path, FS_OPEN_WRITE, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, path, FS_OPEN_WRITE, &file))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
@@ -289,10 +289,10 @@ Result FS_Write(const char *path, const void *buf) {
 	return 0;
 }
 
-Result FS_SetArchiveBit(const char *path) {
+Result FS_SetArchiveBit(FsFileSystem *fs, const char *path) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsSetArchiveBit(BROWSE_STATE == STATE_SD? fs : &user_fs, path))) {
+	if (R_FAILED(ret = fsFsSetArchiveBit(fs, path))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsSetArchiveBit(%s) failed: 0x%lx\n", path, ret);
 

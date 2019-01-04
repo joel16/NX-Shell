@@ -15,7 +15,7 @@ extern jmp_buf exitJmp;
 extern int MENU_DEFAULT_STATE;
 extern int BROWSE_STATE;
 extern FsFileSystem *fs;
-extern FsFileSystem user_fs;
+extern FsFileSystem sdmc_fs, prodinfo_fs, safe_fs, system_fs, user_fs;
 extern u64 total_storage, used_storage;
 
 enum MENU_STATES {

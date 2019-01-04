@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 
 #include "archive.h"
+#include "common.h"
 #include "progress_bar.h"
 #include "fs.h"
 #include "utils.h"
@@ -176,7 +177,7 @@ Result Archive_ExtractZIP(const char *src)
 	char *dirname_without_ext = Archive_RemoveFileExt((char *)src);
 
 	snprintf(path, 512, "%s/", dirname_without_ext);
-	FS_MakeDir(path);
+	FS_MakeDir(fs, path);
 	chdir(path);
 
 	unzFile *unzHandle = unzOpen(src); // Open zip file
@@ -198,7 +199,7 @@ Result Archive_ExtractRAR(const char *src) {
 	char *dirname_without_ext = Archive_RemoveFileExt((char *)src);
 
 	snprintf(path, 512, "%s/", dirname_without_ext);
-	FS_MakeDir(path);
+	FS_MakeDir(fs, path);
 	chdir(path);
 
 	dmc_unrar_archive rar_archive;
@@ -230,7 +231,7 @@ Result Archive_ExtractRAR(const char *src) {
 
 		if (!FS_DirExists(unrar_path)) {
 			if ((strcmp(Archive_GetFileExt(unrar_path), "") == 0) || (dmc_unrar_file_is_directory(&rar_archive, i)))
-				FS_MakeDir(unrar_path);
+				FS_MakeDir(fs, unrar_path);
 		}
 		if (filename && !dmc_unrar_file_is_directory(&rar_archive, i)) {
 			dmc_unrar_return supported = dmc_unrar_file_is_supported(&rar_archive, i);

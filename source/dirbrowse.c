@@ -67,7 +67,7 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 	FsDir dir;
 	Result ret = 0;
 
-	if (R_SUCCEEDED(ret = FS_OpenDirectory(cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = FS_OpenDirectory(fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		/* Add fake ".." entry except on root */
 		if (strcmp(cwd, ROOT_PATH)) {
 			files = (File *)malloc(sizeof(File)); // New list
@@ -225,7 +225,7 @@ static Result Dirbrowse_SaveLastDirectory(void) {
 	Result ret = 0;
 
 	if (BROWSE_STATE == STATE_SD) {
-		if (R_FAILED(ret = FS_Write("/switch/NX-Shell/lastdir.txt", cwd)))
+		if (R_FAILED(ret = FS_Write(fs, "/switch/NX-Shell/lastdir.txt", cwd)))
 			return ret;
 	}
 

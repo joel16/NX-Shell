@@ -33,6 +33,21 @@ static u32 delete_cancel_width = 0, delete_cancel_height = 0;
 static u32 properties_ok_width = 0, properties_ok_height = 0;
 static u32 options_cancel_width = 0, options_cancel_height = 0;
 
+static int PREVIOUS_BROWSE_STATE = 0;
+
+static FsFileSystem *FileOptions_GetPreviousMount(void) {
+	if (PREVIOUS_BROWSE_STATE == STATE_PRODINFOF)
+		return &prodinfo_fs;
+	else if (PREVIOUS_BROWSE_STATE == STATE_SAFE)
+		return &safe_fs;
+	else if (PREVIOUS_BROWSE_STATE == STATE_SYSTEM)
+		return &system_fs;
+	else if (PREVIOUS_BROWSE_STATE == STATE_USER)
+		return &user_fs;
+
+	return &sdmc_fs;
+}
+
 void FileOptions_ResetClipboard(void) {
 	multi_select_index = 0;
 	memset(multi_select, 0, sizeof(multi_select));
@@ -54,7 +69,7 @@ static Result FileOptions_CreateFolder(void) {
 	strcat(path, buf);
 	free(buf);
 
-	if (R_FAILED(ret = FS_MakeDir(path)))
+	if (R_FAILED(ret = FS_MakeDir(fs, path)))
 		return ret;
 
 	Dirbrowse_PopulateFiles(true);
@@ -76,7 +91,7 @@ static Result FileOptions_CreateFile(void) {
 	strcat(path, buf);
 	free(buf);
 
-	if (R_FAILED(ret = FS_CreateFile(path, 0, 0)))
+	if (R_FAILED(ret = FS_CreateFile(fs, path, 0, 0)))
 		return ret;
 	
 	Dirbrowse_PopulateFiles(true);
@@ -107,11 +122,11 @@ static Result FileOptions_Rename(void) {
 	free(buf);
 
 	if (file->isDir) {
-		if (R_FAILED(ret = FS_RenameDir(oldPath, newPath)))
+		if (R_FAILED(ret = FS_RenameDir(fs, oldPath, newPath)))
 			return ret;
 	}
 	else {
-		if (R_FAILED(ret = FS_RenameFile(oldPath, newPath)))
+		if (R_FAILED(ret = FS_RenameFile(fs, oldPath, newPath)))
 			return ret;
 	}
 	
@@ -144,13 +159,13 @@ static Result FileOptions_Delete(void) {
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		if (R_FAILED(ret = FS_RemoveDirRecursive(path)))
+		if (R_FAILED(ret = FS_RemoveDirRecursive(fs, path)))
 			return ret;
 	}
 
 	// Delete File
 	else {
-		if (R_FAILED(ret = FS_RemoveFile(path)))
+		if (R_FAILED(ret = FS_RemoveFile(fs, path)))
 			return ret;
 	}
 
@@ -168,10 +183,10 @@ static void HandleDelete(void) {
 						// Add Trailing Slash
 						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
 						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						FS_RemoveDirRecursive(multi_select_paths[i]);
+						FS_RemoveDirRecursive(fs, multi_select_paths[i]);
 					}
-					else if (FS_FileExists(multi_select_paths[i]))
-						 FS_RemoveFile(multi_select_paths[i]);
+					else if (FS_FileExists(fs, multi_select_paths[i]))
+						 FS_RemoveFile(fs, multi_select_paths[i]);
 				}
 			}
 		}
@@ -277,7 +292,7 @@ void Menu_DisplayProperties(void) {
 
 	char utils_size[16];
 	u64 size = 0;
-	FS_GetFileSize(path, &size);
+	FS_GetFileSize(fs, path, &size);
 	Utils_GetSizeString(utils_size, size);
 
 	SDL_DrawTextf(390, 183, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
@@ -295,8 +310,72 @@ void Menu_DisplayProperties(void) {
 }
 
 // Copy file from src to dst
-static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim) {
-	int chunksize = (512 * 1024); // Chunk size
+static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
+	FsFile src_handle, dst_handle;
+	Result ret = 0;
+
+	if (R_FAILED(ret = fsFsOpenFile(FileOptions_GetPreviousMount(), src, FS_OPEN_READ, &src_handle))) {
+		fsFileClose(&src_handle);
+		//Menu_DisplayError("fsFsOpenFile failed:", ret);
+		return ret;
+	}
+
+	if (!FS_FileExists(fs, dst))
+		fsFsCreateFile(fs, dst, 0, 0);
+
+	if (R_FAILED(ret = fsFsOpenFile(fs, dst, FS_OPEN_WRITE, &dst_handle))) {
+		fsFileClose(&src_handle);
+		fsFileClose(&dst_handle);
+		//Menu_DisplayError("fsFsOpenFile failed:", ret);
+		return ret;
+	}
+
+	size_t bytes_read = 0;
+	u64 offset = 0, size = 0;
+	size_t buf_size = 0x10000;
+	u8 *buf = malloc(buf_size); // Chunk size
+
+	fsFileGetSize(&src_handle, &size);
+	fsFileSetSize(&dst_handle, size);
+
+	do {
+		memset(buf, 0, buf_size);
+
+		if (R_FAILED(ret = fsFileRead(&src_handle, offset, buf, buf_size, &bytes_read))) {
+			free(buf);
+			fsFileClose(&src_handle);
+			fsFileClose(&dst_handle);
+			//Menu_DisplayError("fsFileRead failed:", ret);
+			return ret;
+		}
+		if (R_FAILED(ret = fsFileWrite(&dst_handle, offset, buf, bytes_read))) {
+			free(buf);
+			fsFileClose(&src_handle);
+			fsFileClose(&dst_handle);
+			//Menu_DisplayError("fsFileWrite failed:", ret);
+			return ret;
+		}
+		if (R_FAILED(ret = fsFileFlush(&dst_handle))) {
+			free(buf);
+			fsFileClose(&src_handle);
+			fsFileClose(&dst_handle);
+			//Menu_DisplayError("fsFileFlush failed:", ret);
+			return ret;
+		}
+
+		offset += bytes_read;
+
+		if (display_animation)
+			ProgressBar_DisplayProgress(copymode == 1? "Moving" : "Copying", Utils_Basename(src), offset, size);
+	}
+	while(offset < size);
+
+	free(buf);
+	fsFileClose(&src_handle);
+	fsFileClose(&dst_handle);
+	return 0;
+
+	/*int chunksize = (512 * 1024); // Chunk size
 	char *buffer = (char *)malloc(chunksize); // Reading buffer
 
 	u64 totalwrite = 0; // Accumulated writing
@@ -345,15 +424,15 @@ static int FileOptions_CopyFile(char *src, char *dst, bool displayAnim) {
 		result = -1;
 	
 	free(buffer); // Free memory
-	return result; // Return result
+	return result; // Return result*/
 }
 
 static Result FileOptions_CopyDir(char *src, char *dst) {
 	FsDir dir;
 	Result ret = 0;
 	
-	if (R_SUCCEEDED(ret = FS_OpenDirectory(src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
-		FS_MakeDir(dst);
+	if (R_SUCCEEDED(ret = FS_OpenDirectory(FileOptions_GetPreviousMount(), src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+		FS_MakeDir(fs, dst);
 
 		u64 entryCount = 0;
 		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount)))
@@ -477,7 +556,7 @@ static Result FileOptions_Paste(void) {
 			if (!(strcmp(&(copysource[(strlen(copysource)-1)]), "/") == 0))
 				strcat(copysource, "/");
 
-			FS_RemoveDirRecursive(copysource); // Delete dir
+			FS_RemoveDirRecursive(fs, copysource); // Delete dir
 		}
 	}
 
@@ -486,7 +565,7 @@ static Result FileOptions_Paste(void) {
 		ret = FileOptions_CopyFile(copysource, copytarget, true); // Copy file
 		
 		if ((R_SUCCEEDED(ret)) && (copymode & COPY_DELETE_ON_FINISH) == COPY_DELETE_ON_FINISH)
-			FS_RemoveFile(copysource); // Delete file
+			FS_RemoveFile(fs, copysource); // Delete file
 	}
 
 	// Paste success
@@ -506,6 +585,8 @@ static void HandleCopy() {
 		copy_status = true;
 		FileOptions_Copy(COPY_KEEP_ON_FINISH);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
+
+		PREVIOUS_BROWSE_STATE = BROWSE_STATE;
 	}
 	else if (copy_status) {
 		if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
@@ -518,7 +599,7 @@ static void HandleCopy() {
 				
 						if (FS_DirExists(multi_select_paths[i]))
 							FileOptions_CopyDir(multi_select_paths[i], dest);
-						else if (FS_FileExists(multi_select_paths[i]))
+						else if (FS_FileExists(FileOptions_GetPreviousMount(), multi_select_paths[i]))
 							FileOptions_CopyFile(multi_select_paths[i], dest, true);
 					}
 				}
@@ -528,9 +609,13 @@ static void HandleCopy() {
 			copymode = NOTHING_TO_COPY;
 			
 		}
-		else if (R_FAILED(FileOptions_Paste()))
+		else if (R_FAILED(FileOptions_Paste())) {
+			PREVIOUS_BROWSE_STATE = 0;
+			copy_status = false;
 			return;
+		}
 
+		PREVIOUS_BROWSE_STATE = 0;
 		copy_status = false;
 		Dirbrowse_PopulateFiles(true);
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
@@ -557,9 +642,9 @@ static void HandleCut() {
 						snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 					
 						if (FS_DirExists(multi_select_paths[i]))
-							FS_RenameDir(multi_select_paths[i], dest);
-						else if (FS_FileExists(multi_select_paths[i]))
-							FS_RenameFile(multi_select_paths[i], dest);
+							FS_RenameDir(fs, multi_select_paths[i], dest);
+						else if (FS_FileExists(fs, multi_select_paths[i]))
+							FS_RenameFile(fs, multi_select_paths[i], dest);
 					}
 				}
 			}
@@ -570,9 +655,9 @@ static void HandleCut() {
 			snprintf(dest, 512, "%s%s", cwd, Utils_Basename(copysource));
 
 			if (FS_DirExists(copysource))
-				FS_RenameDir(copysource, dest);
-			else if (FS_FileExists(copysource))
-				FS_RenameFile(copysource, dest);
+				FS_RenameDir(fs, copysource, dest);
+			else if (FS_FileExists(fs, copysource))
+				FS_RenameFile(fs, copysource, dest);
 		}
 
 		cut_status = false;
@@ -607,7 +692,7 @@ static Result FileOptions_SetArchiveBit(void) {
 		path[strlen(path)] = '/';
 
 		// Set archive bit to path
-		if (R_FAILED(ret = FS_SetArchiveBit(path)))
+		if (R_FAILED(ret = FS_SetArchiveBit(fs, path)))
 			return ret;
 	}
 
@@ -625,7 +710,7 @@ static void HandleArchiveBit(void) {
 						// Add Trailing Slash
 						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
 						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						FS_SetArchiveBit(multi_select_paths[i]);
+						FS_SetArchiveBit(fs, multi_select_paths[i]);
 					}
 				}
 			}

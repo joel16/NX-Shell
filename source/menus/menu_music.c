@@ -28,7 +28,7 @@ static Result Menu_GetMusicList(void) {
 	FsDir dir;
 	Result ret = 0;
 	
-	if (R_SUCCEEDED(ret = FS_OpenDirectory(cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = FS_OpenDirectory(fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		u64 entryCount = 0;
 
 		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount)))
