@@ -1,6 +1,3 @@
-#include <fcntl.h>
-#include <unistd.h>
-
 #include "common.h"
 #include "config.h"
 #include "dirbrowse.h"
@@ -22,7 +19,7 @@ static int copymode = NOTHING_TO_COPY;
 /*
 *	Copy Move Origin
 */
-static char copysource[512];
+static char copysource[FS_MAX_PATH];
 
 static int delete_dialog_selection = 0, row = 0, column = 0;
 static bool copy_status = false, cut_status = false, options_more = false;
@@ -64,7 +61,7 @@ static Result FileOptions_CreateFolder(void) {
 	if (!strncmp(buf, "", 1))
 		return -1;
 
-	char path[512];
+	char path[FS_MAX_PATH];
 	strcpy(path, cwd);
 	strcat(path, buf);
 	free(buf);
@@ -86,7 +83,7 @@ static Result FileOptions_CreateFile(void) {
 	if (!strncmp(buf, "", 1))
 		return -1;
 
-	char path[512];
+	char path[FS_MAX_PATH];
 	strcpy(path, cwd);
 	strcat(path, buf);
 	free(buf);
@@ -147,7 +144,7 @@ static Result FileOptions_Delete(void) {
 	if (!strcmp(file->name, "..")) 
 		return -2;
 
-	char path[512];
+	char path[FS_MAX_PATH];
 
 	// Puzzle Path
 	strcpy(path, cwd);
@@ -179,7 +176,7 @@ static void HandleDelete(void) {
 		for (int i = 0; i < multi_select_index; i++) {
 			if (strlen(multi_select_paths[i]) != 0) {
 				if (strncmp(multi_select_paths[i], "..", 2) != 0) {
-					if (FS_DirExists(multi_select_paths[i])) {
+					if (FS_DirExists(fs, multi_select_paths[i])) {
 						// Add Trailing Slash
 						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
 						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
@@ -283,7 +280,7 @@ void Menu_DisplayProperties(void) {
 	// Find File
 	File *file = Dirbrowse_GetFileIndex(position);
 
-	char path[512];
+	char path[FS_MAX_PATH];
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
 
@@ -314,16 +311,20 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 	FsFile src_handle, dst_handle;
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsFsOpenFile(FileOptions_GetPreviousMount(), src, FS_OPEN_READ, &src_handle))) {
+	char temp_path_src[FS_MAX_PATH], temp_path_dst[FS_MAX_PATH];
+	snprintf(temp_path_src, FS_MAX_PATH, src);
+	snprintf(temp_path_dst, FS_MAX_PATH, dst);
+
+	if (R_FAILED(ret = fsFsOpenFile(FileOptions_GetPreviousMount(), temp_path_src, FS_OPEN_READ, &src_handle))) {
 		fsFileClose(&src_handle);
 		//Menu_DisplayError("fsFsOpenFile failed:", ret);
 		return ret;
 	}
 
-	if (!FS_FileExists(fs, dst))
-		fsFsCreateFile(fs, dst, 0, 0);
+	if (!FS_FileExists(fs, temp_path_dst))
+		fsFsCreateFile(fs, temp_path_dst, 0, 0);
 
-	if (R_FAILED(ret = fsFsOpenFile(fs, dst, FS_OPEN_WRITE, &dst_handle))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path_dst, FS_OPEN_WRITE, &dst_handle))) {
 		fsFileClose(&src_handle);
 		fsFileClose(&dst_handle);
 		//Menu_DisplayError("fsFsOpenFile failed:", ret);
@@ -366,7 +367,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 		offset += bytes_read;
 
 		if (display_animation)
-			ProgressBar_DisplayProgress(copymode == 1? "Moving" : "Copying", Utils_Basename(src), offset, size);
+			ProgressBar_DisplayProgress(copymode == 1? "Moving" : "Copying", Utils_Basename(temp_path_src), offset, size);
 	}
 	while(offset < size);
 
@@ -374,57 +375,6 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 	fsFileClose(&src_handle);
 	fsFileClose(&dst_handle);
 	return 0;
-
-	/*int chunksize = (512 * 1024); // Chunk size
-	char *buffer = (char *)malloc(chunksize); // Reading buffer
-
-	u64 totalwrite = 0; // Accumulated writing
-	u64 totalread = 0; // Accumulated reading
-
-	int result = 0; // Result
-
-	int in = open(src, O_RDONLY, 0777); // Open file for reading
-	u64 size = 0;
-	FS_GetFileSize(src, &size);
-
-	// Opened file for reading
-	if (in >= 0) {
-		if (FS_FileExists(dst))
-			FS_RemoveFile(dst); // Delete output file (if existing)
-
-		int out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0777); // Open output file for writing
-
-		 // Opened file for writing
-		if (out >= 0) {
-			u64 b_read = 0; // Read byte count
-
-			// Copy loop (512KB at a time)
-			while((b_read = read(in, buffer, chunksize)) > 0) {
-				totalread += b_read; // Accumulate read data
-				totalwrite += write(out, buffer, b_read); // Write data
-
-				if (displayAnim)
-					ProgressBar_DisplayProgress(copymode == 1? "Moving" : "Copying", Utils_Basename(src), totalread, size);
-			}
-
-			close(out); // Close output file
-			
-			if (totalread != totalwrite) // Insufficient copy
-				result = -3;
-		}
-		
-		else // Output open error
-			result = -2;
-			
-		close(in); // Close input file
-	}
-
-	// Input open error
-	else
-		result = -1;
-	
-	free(buffer); // Free memory
-	return result; // Return result*/
 }
 
 static Result FileOptions_CopyDir(char *src, char *dst) {
@@ -590,14 +540,14 @@ static void HandleCopy() {
 	}
 	else if (copy_status) {
 		if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
-			char dest[512];
+			char dest[FS_MAX_PATH];
 			
 			for (int i = 0; i < multi_select_index; i++) {
 				if (strlen(multi_select_paths[i]) != 0) {
 					if (strncmp(multi_select_paths[i], "..", 2) != 0) {
-						snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
+						snprintf(dest, FS_MAX_PATH, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 				
-						if (FS_DirExists(multi_select_paths[i]))
+						if (FS_DirExists(FileOptions_GetPreviousMount(), multi_select_paths[i]))
 							FileOptions_CopyDir(multi_select_paths[i], dest);
 						else if (FS_FileExists(FileOptions_GetPreviousMount(), multi_select_paths[i]))
 							FileOptions_CopyFile(multi_select_paths[i], dest, true);
@@ -633,15 +583,15 @@ static void HandleCut() {
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
 	else if (cut_status) {
-		char dest[512];
+		char dest[FS_MAX_PATH];
 
 		if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
 			for (int i = 0; i < multi_select_index; i++) {
 				if (strlen(multi_select_paths[i]) != 0) {
 					if (strncmp(multi_select_paths[i], "..", 2) != 0) {
-						snprintf(dest, 512, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
+						snprintf(dest, FS_MAX_PATH, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 					
-						if (FS_DirExists(multi_select_paths[i]))
+						if (FS_DirExists(fs, multi_select_paths[i]))
 							FS_RenameDir(fs, multi_select_paths[i], dest);
 						else if (FS_FileExists(fs, multi_select_paths[i]))
 							FS_RenameFile(fs, multi_select_paths[i], dest);
@@ -652,9 +602,9 @@ static void HandleCut() {
 			FileOptions_ResetClipboard();
 		}
 		else {
-			snprintf(dest, 512, "%s%s", cwd, Utils_Basename(copysource));
+			snprintf(dest, FS_MAX_PATH, "%s%s", cwd, Utils_Basename(copysource));
 
-			if (FS_DirExists(copysource))
+			if (FS_DirExists(fs, copysource))
 				FS_RenameDir(fs, copysource, dest);
 			else if (FS_FileExists(fs, copysource))
 				FS_RenameFile(fs, copysource, dest);
@@ -680,7 +630,7 @@ static Result FileOptions_SetArchiveBit(void) {
 	if ((!strcmp(file->name, "..")) || (!strcmp(file->name, "Nintendo"))) 
 		return -2;
 
-	char path[512];
+	char path[FS_MAX_PATH];
 
 	// Puzzle Path
 	strcpy(path, cwd);
@@ -697,34 +647,6 @@ static Result FileOptions_SetArchiveBit(void) {
 	}
 
 	return 0;
-}
-
-static void HandleArchiveBit(void) {
-	appletLockExit();
-
-	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
-		for (int i = 0; i < multi_select_index; i++) {
-			if (strlen(multi_select_paths[i]) != 0) {
-				if ((strncmp(multi_select_paths[i], "..", 2) != 0) && (strncmp(multi_select_paths[i], "/Nintendo", 9) != 0)) {
-					if (FS_DirExists(multi_select_paths[i])) {
-						// Add Trailing Slash
-						multi_select_paths[i][strlen(multi_select_paths[i]) + 1] = 0;
-						multi_select_paths[i][strlen(multi_select_paths[i])] = '/';
-						FS_SetArchiveBit(fs, multi_select_paths[i]);
-					}
-				}
-			}
-		}
-
-		FileOptions_ResetClipboard();
-	}
-	else if (R_FAILED(FileOptions_SetArchiveBit()))
-		return;
-
-	appletUnlockExit();
-	Dirbrowse_PopulateFiles(true);
-	options_more = false;
-	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
 
 void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
@@ -791,7 +713,7 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 		}
 		else if (row == 1 && column == 1) {
 			if (options_more)
-				HandleArchiveBit();
+				FileOptions_SetArchiveBit();
 			else
 				HandleCut();
 		}
@@ -911,7 +833,7 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 			else if (touchInfo.firstTouch.px >= 639 && touchInfo.firstTouch.px <= 924) {
 				if (options_more) {
 					if (config.dev_options)
-						HandleArchiveBit();
+						FileOptions_SetArchiveBit();
 				}
 				else
 					HandleCut();

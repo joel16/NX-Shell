@@ -36,6 +36,6 @@ enum BROWSE_STATES {
     STATE_USER = 4
 };
 
-extern char cwd[512];
+extern char cwd[FS_MAX_PATH];
 
 #endif

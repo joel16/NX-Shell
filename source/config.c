@@ -35,9 +35,9 @@ Result Config_Save(nxshell_config_t config) {
 Result Config_Load(void) {
 	Result ret = 0;
 
-	if (!FS_DirExists("/switch/"))
+	if (!FS_DirExists(fs, "/switch/"))
 		FS_MakeDir(fs, "/switch");
-	if (!FS_DirExists("/switch/NX-Shell/"))
+	if (!FS_DirExists(fs, "/switch/NX-Shell/"))
 		FS_MakeDir(fs, "/switch/NX-Shell");
 
 	if (!FS_FileExists(fs, "/switch/NX-Shell/config.cfg")) {
@@ -94,10 +94,10 @@ Result Config_GetLastDirectory(void) {
 		}
 
 		buf[size] = '\0';
-		char temp_path[513];
+		char temp_path[FS_MAX_PATH];
 		sscanf(buf, "%[^\n]s", temp_path);
 
-		if (FS_DirExists(temp_path)) // Incase a directory previously visited had been deleted, set start path to sdmc:/ to avoid errors.
+		if (FS_DirExists(fs, temp_path)) // Incase a directory previously visited had been deleted, set start path to sdmc:/ to avoid errors.
 			strcpy(cwd, temp_path);
 		else
 			strcpy(cwd, START_PATH);

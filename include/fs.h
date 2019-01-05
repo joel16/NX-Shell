@@ -4,7 +4,7 @@
 #include <switch.h>
 
 bool FS_FileExists(FsFileSystem *fs, const char *path);
-bool FS_DirExists(const char *path);
+bool FS_DirExists(FsFileSystem *fs, const char *path);
 Result FS_MakeDir(FsFileSystem *fs, const char *path);
 Result FS_CreateFile(FsFileSystem *fs, const char *path, size_t size, int flags);
 Result FS_OpenDirectory(FsFileSystem *fs, const char *path, int flags, FsDir *dir);

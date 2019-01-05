@@ -17,15 +17,7 @@
 #define MENUBAR_X_BOUNDARY  0
 static int menubar_selection = 0, horizantal_selection = 0, menubar_max_items = 4;
 static float menubar_x = -400.0;
-static char multi_select_dir_old[512];
-
-static char *user_partitions[] = {
-	"SD",
-	"kPRODINFOF",
-	"kSAFE",
-	"kSYSTEM",
-	"kUSER"
-};
+static char multi_select_dir_old[FS_MAX_PATH];
 
 void AnimateMenuBar(float delta_time) {
 	menubar_x += 1 * delta_time;
@@ -35,9 +27,6 @@ void AnimateMenuBar(float delta_time) {
 }
 
 static void Mount_SD(void) {
-	/*if (BROWSE_STATE != STATE_SD)
-		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);*/
-
 	fs = fsdevGetDefaultFileSystem();
 	BROWSE_STATE = STATE_SD;
 
@@ -49,9 +38,6 @@ static void Mount_SD(void) {
 }
 
 static void Mount_Prodinfof(void) {
-	/*if (BROWSE_STATE != STATE_SD)
-		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);*/
-
 	fs = &prodinfo_fs;
 	BROWSE_STATE = STATE_PRODINFOF;
 
@@ -60,9 +46,6 @@ static void Mount_Prodinfof(void) {
 }
 
 static void Mount_Safe(void) {
-	/*if (BROWSE_STATE != STATE_SD)
-		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);*/
-
 	fs = &safe_fs;
 	BROWSE_STATE = STATE_SAFE;
 
@@ -71,9 +54,6 @@ static void Mount_Safe(void) {
 }
 
 static void Mount_System(void) {
-	/*if (BROWSE_STATE != STATE_SD)
-		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);*/
-
 	fs = &system_fs;
 	BROWSE_STATE = STATE_SYSTEM;
 
@@ -85,9 +65,6 @@ static void Mount_System(void) {
 }
 
 static void Mount_User(void) {
-	/*if (BROWSE_STATE != STATE_SD)
-		fsdevUnmountDevice(user_partitions[BROWSE_STATE]);*/
-	
 	fs = &user_fs;
 	BROWSE_STATE = STATE_USER;
 
@@ -257,7 +234,7 @@ static void Menu_HandleMultiSelect(int position) {
 	if (strcmp(multi_select_dir_old, multi_select_dir) != 0)
 		FileOptions_ResetClipboard();
 
-	char path[512];
+	char path[FS_MAX_PATH];
 	File *file = Dirbrowse_GetFileIndex(position);
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
