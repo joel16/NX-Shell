@@ -30,8 +30,8 @@ static void Mount_SD(void) {
 	fs = fsdevGetDefaultFileSystem();
 	BROWSE_STATE = STATE_SD;
 
-	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
-	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
+	total_storage = Utils_GetTotalStorage(fs);
+	used_storage = Utils_GetUsedStorage(fs);
 
 	Config_GetLastDirectory();
 	Dirbrowse_PopulateFiles(true);
@@ -41,6 +41,9 @@ static void Mount_Prodinfof(void) {
 	fs = &prodinfo_fs;
 	BROWSE_STATE = STATE_PRODINFOF;
 
+	total_storage = Utils_GetTotalStorage(fs);
+	used_storage = Utils_GetUsedStorage(fs);
+
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);
 }
@@ -48,6 +51,9 @@ static void Mount_Prodinfof(void) {
 static void Mount_Safe(void) {
 	fs = &safe_fs;
 	BROWSE_STATE = STATE_SAFE;
+
+	total_storage = Utils_GetTotalStorage(fs);
+	used_storage = Utils_GetUsedStorage(fs);
 
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);
@@ -57,8 +63,8 @@ static void Mount_System(void) {
 	fs = &system_fs;
 	BROWSE_STATE = STATE_SYSTEM;
 
-	total_storage = Utils_GetTotalStorage(FsStorageId_NandSystem);
-	used_storage = Utils_GetUsedStorage(FsStorageId_NandSystem);
+	total_storage = Utils_GetTotalStorage(fs);
+	used_storage = Utils_GetUsedStorage(fs);
 
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);
@@ -68,8 +74,8 @@ static void Mount_User(void) {
 	fs = &user_fs;
 	BROWSE_STATE = STATE_USER;
 
-	total_storage = Utils_GetTotalStorage(FsStorageId_NandUser);
-	used_storage = Utils_GetUsedStorage(FsStorageId_NandUser);
+	total_storage = Utils_GetTotalStorage(fs);
+	used_storage = Utils_GetUsedStorage(fs);
 
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);

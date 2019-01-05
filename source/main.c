@@ -19,12 +19,7 @@ static void Term_Services(void) {
 	fsdevUnmountDevice("NX-Shell_PRODINFOF");
 	
 	Textures_Free();
-
-	#ifdef DEBUG
-		socketExit();
-	#endif
-
-	nsExit();
+	
 	usbCommsExit();
 	SDL_HelperTerm();
 	romfsExit();
@@ -54,14 +49,6 @@ static Result Init_Services(void) {
 	if (R_FAILED(ret = usbCommsInitialize()))
 		return ret;
 
-	if (R_FAILED(ret = nsInitialize()))
-		return ret;
-
-	#ifdef DEBUG
-		socketInitializeDefault();
-		nxlinkStdio();
-	#endif
-
 	Textures_Load();
 
 	BROWSE_STATE = STATE_SD;
@@ -81,8 +68,8 @@ static Result Init_Services(void) {
 
 	fs = &sdmc_fs;
 
-	total_storage = Utils_GetTotalStorage(FsStorageId_SdCard);
-	used_storage = Utils_GetUsedStorage(FsStorageId_SdCard);
+	total_storage = Utils_GetTotalStorage(fs);
+	used_storage = Utils_GetUsedStorage(fs);
 
 	Config_Load();
 	Config_GetLastDirectory();

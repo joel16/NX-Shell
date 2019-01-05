@@ -57,26 +57,26 @@ void Utils_AppendArr(char subject[], const char insert[], int pos) {
 	strcpy(subject, buf);
 }
 
-u64 Utils_GetTotalStorage(FsStorageId storage_id) {
+u64 Utils_GetTotalStorage(FsFileSystem *fs) {
 	Result ret = 0;
 	u64 total = 0;
 
-	if (R_FAILED(ret = nsGetTotalSpaceSize(storage_id, &total)))
-		printf("nsGetFreeSpaceSize() failed: 0x%x.\n\n", ret);
+	if (R_FAILED(ret = fsFsGetTotalSpace(fs, "/", &total)))
+		printf("fsFsGetTotalSpace() failed: 0x%x.\n\n", ret);
 
 	return total;
 }
 
-static u64 Utils_GetFreeStorage(FsStorageId storage_id) {
+static u64 Utils_GetFreeStorage(FsFileSystem *fs) {
 	Result ret = 0;
 	u64 free = 0;
 
-	if (R_FAILED(ret = nsGetFreeSpaceSize(storage_id, &free)))
-		printf("nsGetFreeSpaceSize() failed: 0x%x.\n\n", ret);
+	if (R_FAILED(ret = fsFsGetFreeSpace(fs, "/", &free)))
+		printf("fsFsGetFreeSpace() failed: 0x%x.\n\n", ret);
 
 	return free;
 }
 
-u64 Utils_GetUsedStorage(FsStorageId storage_id) {
-	return (Utils_GetTotalStorage(storage_id) - Utils_GetFreeStorage(storage_id));
+u64 Utils_GetUsedStorage(FsFileSystem *fs) {
+	return (Utils_GetTotalStorage(fs) - Utils_GetFreeStorage(fs));
 }
