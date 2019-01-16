@@ -59,7 +59,7 @@ int SDL_HelperInit(void) {
 void SDL_HelperTerm(void) {
 	FC_FreeFont(Roboto_large);
 	FC_FreeFont(Roboto);
-	FC_FreeFont(Roboto_small);
+	//FC_FreeFont(Roboto_small);
 	TTF_Quit();
 
 	Mix_Quit();
