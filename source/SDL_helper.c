@@ -3,8 +3,7 @@
 
 static SDL_Window *WINDOW;
 static SDL_Renderer *RENDERER;
-static FC_Font *Roboto, *Roboto_large, *Roboto_small, *Roboto_OSK;
-static PlFontData fontData, fontExtData;
+static FC_Font *Roboto, *Roboto_large, *Roboto_small;
 
 SDL_Renderer *SDL_GetMainRenderer(void) {
 	return RENDERER;
@@ -14,58 +13,53 @@ SDL_Window *SDL_GetMainWindow(void) {
 	return WINDOW;
 }
 
-static FC_Font *GetFont(int size) {
+static FC_Font *SDL_GetFont(int size) {
 	if (size == 20)
 		return Roboto_small;
 	else if (size == 25)
 		return Roboto;
 	else if (size == 30)
 		return Roboto_large;
-	else
-		return Roboto_OSK;
-
+	
 	return Roboto;
 }
 
-Result SDL_HelperInit(void) {
-	Result ret = 0;
+int SDL_HelperInit(void) {
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0)
+		return -1;
 
-	SDL_Init(SDL_INIT_EVERYTHING);
 	WINDOW = SDL_CreateWindow("NX-Shell", 0, 0, 1280, 720, SDL_WINDOW_FULLSCREEN);
+	if (WINDOW == NULL)
+		return -1;
+
 	RENDERER = SDL_CreateRenderer(WINDOW, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(RENDERER, SDL_BLENDMODE_BLEND);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
-	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
+	int flags = IMG_INIT_JPG | IMG_INIT_PNG;
+	if ((IMG_Init(flags) & flags) != flags)
+		return -1;
 
-	Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID);
-
-	if (R_FAILED(ret = plGetSharedFontByType(&fontData, PlSharedFontType_Standard)))
-		return ret;
-
-	if (R_FAILED(ret = plGetSharedFontByType(&fontExtData, PlSharedFontType_NintendoExt)))
-		return ret;
-
-	Roboto = FC_CreateFont();
-	FC_LoadFont_RW(Roboto, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 25, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
-
-	Roboto_large = FC_CreateFont();
-	FC_LoadFont_RW(Roboto_large, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 30, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+	flags = MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG;
+	if (Mix_Init(flags) & flags != flags)
+		return -1;
 
 	Roboto_small = FC_CreateFont();
-	FC_LoadFont_RW(Roboto_small, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 20, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+	FC_LoadFont(Roboto_small, RENDERER, "romfs:/res/Roboto-Regular.ttf", 20, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
 
-	Roboto_OSK = FC_CreateFont();
-	FC_LoadFont_RW(Roboto_OSK, RENDERER, SDL_RWFromMem((void*)fontData.address, fontData.size), SDL_RWFromMem((void*)fontExtData.address, fontExtData.size), 1, 50, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+	Roboto = FC_CreateFont();
+	FC_LoadFont(Roboto, RENDERER, "romfs:/res/Roboto-Regular.ttf", 25, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+
+	Roboto_large = FC_CreateFont();
+	FC_LoadFont(Roboto_large, RENDERER, "romfs:/res/Roboto-Regular.ttf", 30, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
 
 	return 0;
 }
 
 void SDL_HelperTerm(void) {
-	FC_FreeFont(Roboto_OSK);
-	FC_FreeFont(Roboto_small);
 	FC_FreeFont(Roboto_large);
 	FC_FreeFont(Roboto);
+	FC_FreeFont(Roboto_small);
 	TTF_Quit();
 
 	Mix_Quit();
@@ -95,7 +89,7 @@ void SDL_DrawCircle(int x, int y, int r, SDL_Color colour) {
 }
 
 void SDL_DrawText(int x, int y, int size, SDL_Color colour, const char *text) {
-	FC_DrawColor(GetFont(size), RENDERER, x, y, colour, text);
+	FC_DrawColor(SDL_GetFont(size), RENDERER, x, y, colour, text);
 }
 
 void SDL_DrawTextf(int x, int y, int size, SDL_Color colour, const char* text, ...) {
@@ -108,7 +102,7 @@ void SDL_DrawTextf(int x, int y, int size, SDL_Color colour, const char* text, .
 }
 
 void SDL_GetTextDimensions(int size, const char *text, u32 *width, u32 *height) {
-	FC_Font *font = GetFont(size);
+	FC_Font *font = SDL_GetFont(size);
 
 	if (width != NULL) 
 		*width = FC_GetWidth(font, text);

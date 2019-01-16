@@ -24,7 +24,6 @@ static void Term_Services(void) {
 	SDL_HelperTerm();
 	romfsExit();
 	psmExit();
-	plExit();
 }
 
 static Result Init_Services(void) {
@@ -32,9 +31,6 @@ static Result Init_Services(void) {
 	void *addr;
 	
 	if (R_FAILED(ret = svcSetHeapSize(&addr, 0x10000000)))
-		return ret;
-
-	if (R_FAILED(ret = plInitialize()))
 		return ret;
 
 	if (R_FAILED(ret = psmInitialize()))
