@@ -1,4 +1,5 @@
 #include "common.h"
+#include "log.h"
 #include "SDL_helper.h"
 
 static SDL_Window *WINDOW;
@@ -118,6 +119,20 @@ void SDL_LoadImage(SDL_Texture **texture, char *path) {
 		SDL_ConvertSurfaceFormat(loaded_surface, SDL_PIXELFORMAT_RGBA8888, 0);
 		*texture = SDL_CreateTextureFromSurface(RENDERER, loaded_surface);
 	}
+
+	SDL_FreeSurface(loaded_surface);
+}
+
+void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {
+	SDL_Surface *loaded_surface = NULL;
+	loaded_surface = IMG_Load_RW(SDL_RWFromMem(data, size), 1);
+
+	if (loaded_surface) {
+		SDL_ConvertSurfaceFormat(loaded_surface, SDL_PIXELFORMAT_RGBA8888, 0);
+		*texture = SDL_CreateTextureFromSurface(RENDERER, loaded_surface);
+	}
+	else
+		DEBUG_LOG("IMG_Load: %s\n", IMG_GetError());
 
 	SDL_FreeSurface(loaded_surface);
 }

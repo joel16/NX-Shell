@@ -34,7 +34,7 @@ void SDL_DrawText(int x, int y, int size, SDL_Color colour, const char *text);
 void SDL_DrawTextf(int x, int y, int size, SDL_Color colour, const char* text, ...);
 void SDL_GetTextDimensions(int size, const char *text, u32 *width, u32 *height);
 void SDL_LoadImage(SDL_Texture **texture, char *path);
-void SDL_LoadImageBuf(SDL_Texture **texture, void *mem, int size);
+void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size);
 void SDL_DrawImage(SDL_Texture *texture, int x, int y);
 void SDL_DrawImageScale(SDL_Texture *texture, int x, int y, int w, int h);
 void SDL_Renderdisplay(void);

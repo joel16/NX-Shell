@@ -1,8 +1,7 @@
 #ifndef NX_SHELL_AUDIO_MP3_H
 #define NX_SHELL_AUDIO_MP3_H
 
-typedef struct 
-{
+typedef struct {
     char title[34];
     char album[34];
     char artist[34];
