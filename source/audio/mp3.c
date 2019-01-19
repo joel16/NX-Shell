@@ -146,12 +146,12 @@ void MP3_Init(char *path) {
 		if (v2 != NULL) {
 			print_v2(&ID3, v2);
 
-			for (int count = 0; count < v2->pictures; count++) {
+			for (size_t count = 0; count < v2->pictures; count++) {
 				mpg123_picture *pic = &v2->picture[count];
 				char *str = pic->mime_type.p;
 
 				if ((pic->type == 3 ) || (pic->type == 0)) {
-					if ((!strcasecmp(str, "image/jpg")) || (strcasecmp(str, "image/jpeg")) || (strcasecmp(str, "image/png"))) {
+					if ((!strcasecmp(str, "image/jpg")) || (!strcasecmp(str, "image/jpeg")) || (!strcasecmp(str, "image/png"))) {
 						SDL_LoadImageMem(&cover_image, pic->data, pic->size);
 						break;
 					}
