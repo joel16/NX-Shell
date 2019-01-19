@@ -39,7 +39,7 @@ EXEFS_SRC     := exefs_src
 ROMFS         := romfs
 
 VERSION_MAJOR := 1
-VERSION_MINOR := 1
+VERSION_MINOR := 2
 VERSION_MICRO := 0
 GITVERSION    := $(shell git log -1 --pretty='%h')
 
