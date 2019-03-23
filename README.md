@@ -16,15 +16,13 @@ Work in progress port of 3DShell (Multi purpose file manager) to the Nintendo Sw
 - Dark theme toggle.
 - Audio playback. (Following formats are supported: MP3, OGG, WAV and MOD)
 - Touch screen.
-- Ebook reader.
 
 # Build instructions
 
 ```bash
 git clone --recursive https://github.com/joel16/NX-Shell.git
-cd NX-Shell/mupdf/
-git checkout 1.14.0 && make generate
-cd ../ && make
+cd NX-Shell
+make
 ```
 
 # Credits:

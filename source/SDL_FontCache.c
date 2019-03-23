@@ -549,10 +549,11 @@ const char* U8_next(const char* string)
 
 int U8_strinsert(char* string, int position, const char* source, int max_bytes)
 {
-    int pos_bytes;
+    int pos_u8char;
     int len;
     int add_len;
     int ulen;
+    const char* string_start = string;
 
     if(string == NULL || source == NULL)
         return 0;
@@ -568,15 +569,15 @@ int U8_strinsert(char* string, int position, const char* source, int max_bytes)
         return 0;
 
     // Move string pointer to the proper position
-    pos_bytes = 0;
-    while(*string != '\0' && pos_bytes < position)
+    pos_u8char = 0;
+    while(*string != '\0' && pos_u8char < position)
     {
         string = (char*)U8_next(string);
-        ++pos_bytes;
+        ++pos_u8char;
     }
 
     // Move the rest of the string out of the way
-    memmove(string + add_len, string, len - pos_bytes + 1);
+    memmove(string + add_len, string, len - (string - string_start) + 1);
 
     // Copy in the new characters
     memcpy(string, source, add_len);
@@ -907,6 +908,46 @@ static Uint8 FC_GrowGlyphCache(FC_Font* font)
         #endif
         return 0;
     }
+    // bug: we do not have the correct color here, this might be the wrong color!
+    //      , most functions use set_color_for_all_caches()
+    //   - for evading this bug, you must use FC_SetDefaultColor(), before using any draw functions
+    set_color(new_level, font->default_color.r, font->default_color.g, font->default_color.b, FC_GET_ALPHA(font->default_color));
+#ifndef FC_USE_SDL_GPU
+    {
+        Uint8 r, g, b, a;
+        SDL_Texture* prev_target = SDL_GetRenderTarget(font->renderer);
+        SDL_Rect prev_clip, prev_viewport;
+        int prev_logicalw, prev_logicalh;
+        Uint8 prev_clip_enabled;
+        float prev_scalex, prev_scaley;
+        // only backup if previous target existed (SDL will preserve them for the default target)
+        if (prev_target) {
+            prev_clip_enabled = has_clip(font->renderer);
+            if (prev_clip_enabled)
+                prev_clip = get_clip(font->renderer);
+            SDL_RenderGetViewport(font->renderer, &prev_viewport);
+            SDL_RenderGetScale(font->renderer, &prev_scalex, &prev_scaley);
+            SDL_RenderGetLogicalSize(font->renderer, &prev_logicalw, &prev_logicalh);
+        }
+        SDL_SetTextureBlendMode(new_level, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderTarget(font->renderer, new_level);
+        SDL_GetRenderDrawColor(font->renderer, &r, &g, &b, &a);
+        SDL_SetRenderDrawColor(font->renderer, 0, 0, 0, 0);
+        SDL_RenderClear(font->renderer);
+        SDL_SetRenderDrawColor(font->renderer, r, g, b, a);
+        SDL_SetRenderTarget(font->renderer, prev_target);
+        if (prev_target) {
+            if (prev_clip_enabled)
+                set_clip(font->renderer, &prev_clip);
+            if (prev_logicalw && prev_logicalh)
+                SDL_RenderSetLogicalSize(font->renderer, prev_logicalw, prev_logicalh);
+            else {
+                SDL_RenderSetViewport(font->renderer, &prev_viewport);
+                SDL_RenderSetScale(font->renderer, prev_scalex, prev_scaley);
+            }
+        }
+    }
+#endif
     return 1;
 }
 
@@ -1160,10 +1201,10 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
         font->last_glyph.rect.w = 0;
         font->last_glyph.rect.h = font->height;
 
-        memset(buff, 0, 5);
         source_string = font->loading_string;
         for(; *source_string != '\0'; source_string = U8_next(source_string))
         {
+            memset(buff, 0, 5);
             if(!U8_charcpy(buff, source_string, 5))
                 continue;
             glyph_surf = TTF_RenderUTF8_Blended(ttf, buff, white);
@@ -1305,6 +1346,35 @@ Uint8 FC_LoadFont_RW(FC_Font* font, FC_Target* renderer, SDL_RWops* file_rwops_t
     return result;
 }
 
+
+#ifndef FC_USE_SDL_GPU
+void FC_ResetFontFromRendererReset(FC_Font* font, SDL_Renderer* renderer, Uint32 evType)
+{
+    TTF_Font* ttf;
+    SDL_Color col;
+    Uint8 owns_ttf;
+    if (font == NULL)
+        return;
+
+    // Destroy glyph cache
+    if (evType == SDL_RENDER_TARGETS_RESET) {
+        int i;
+        for (i = 0; i < font->glyph_cache_count; ++i)
+            SDL_DestroyTexture(font->glyph_cache[i]);
+    }
+    free(font->glyph_cache);
+
+    ttf = font->ttf_source;
+    col = font->default_color;
+    owns_ttf = font->owns_ttf_source;
+    FC_Init(font);
+
+    // Can only reload glyphs if we own the SDL_RWops.
+    if (owns_ttf)
+        FC_LoadFontFromTTF(font, renderer, ttf, col);
+    font->owns_ttf_source = owns_ttf;
+}
+#endif
 
 void FC_ClearFont(FC_Font* font)
 {

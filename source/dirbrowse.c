@@ -3,7 +3,6 @@
 #include "config.h"
 #include "dirbrowse.h"
 #include "fs.h"
-#include "menu_book_reader.h"
 #include "menu_gallery.h"
 #include "menu_music.h"
 #include "SDL_helper.h"
@@ -24,8 +23,8 @@ void Dirbrowse_RecursiveFree(File *node) {
 }
 
 static int cmpstringp(const void *p1, const void *p2) {
-	FsDirectoryEntry* entryA = (FsDirectoryEntry*) p1;
-	FsDirectoryEntry* entryB = (FsDirectoryEntry*) p2;
+	FsDirectoryEntry *entryA = (FsDirectoryEntry *) p1;
+	FsDirectoryEntry *entryB = (FsDirectoryEntry *) p2;
 	u64 sizeA = 0, sizeB = 0;
 	
 	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
@@ -194,9 +193,7 @@ void Dirbrowse_DisplayFiles(void) {
 			else
 				SDL_DrawImageScale(icon_file, 80, 141 + (73 * printed), 72, 72);
 
-			char buf[64], size[16];
-			strncpy(buf, file->name, sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
+			char size[16];
 
 			if (!file->isDir) {
 				Utils_GetSizeString(size, file->size);
@@ -206,12 +203,12 @@ void Dirbrowse_DisplayFiles(void) {
 			}
 
 			u32 height = 0;
-			SDL_GetTextDimensions(25, buf, NULL, &height);
+			SDL_GetTextDimensions(25, file->name, NULL, &height);
 			
 			if (strncmp(file->name, "..", 2) == 0)
-				SDL_DrawText(170, 140 + ((73 - height)/2) + (73 * printed), 25, config.dark_theme? WHITE : BLACK, "Parent folder");
+				SDL_DrawText(170, 140 + ((73 - height) / 2) + (73 * printed), 25, config.dark_theme? WHITE : BLACK, "Parent folder");
 			else 
-				SDL_DrawText(170, 140 + ((73 - height)/2) + (73 * printed), 25, config.dark_theme? WHITE : BLACK, buf);
+				SDL_DrawText(170, 140 + ((73 - height) / 2) + (73 * printed), 25, config.dark_theme? WHITE : BLACK, file->name);
 
 			printed++; // Increase printed counter
 		}
@@ -277,8 +274,6 @@ void Dirbrowse_OpenFile(void) {
 	else if ((!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "mod", 3))
 			|| (!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "midi", 4)) || (!strncasecmp(file->ext, "mid", 3)))
 		Menu_PlayMusic(path);
-	else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3)) || (!strncasecmp(file->ext, "epub", 4)))
-		Menu_OpenBook(path);
 }
 
 // Navigate to Folder

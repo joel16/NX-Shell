@@ -14,25 +14,6 @@ static bool displayAbout;
 static u32 confirm_width = 0, confirm_height = 0;
 static int dialog_width = 0, dialog_height = 0;
 
-static void Save_SortConfig(int selection) {
-	switch (selection) {
-		case 0:
-			config.sort = 0;
-			break;
-		case 1:
-			config.sort = 1;
-			break;
-		case 2:
-			config.sort = 2;
-			break;
-		case 3:
-			config.sort = 3;
-			break;
-	}
-
-	Config_Save(config);
-}
-
 static void Menu_DisplaySortSettings(void) {
 	int selection = 0, max_items = 3;
 	u32 height = 0;
@@ -111,8 +92,10 @@ static void Menu_DisplaySortSettings(void) {
 		Utils_SetMax(&selection, 0, max_items);
 		Utils_SetMin(&selection, max_items, 0);
 
-		if (kDown & KEY_A)
-			Save_SortConfig(selection);
+		if (kDown & KEY_A) {
+			config.sort = selection;
+			Config_Save(config);
+		}
 
 		if (touchInfo.state == TouchStart) {
 			int touch_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
@@ -125,10 +108,12 @@ static void Menu_DisplaySortSettings(void) {
 				break;
 			else if (touchInfo.firstTouch.py >= 140) {
 				int tapped_selection = floor(((double) touchInfo.firstTouch.py - 140) / 73);
-				Save_SortConfig(tapped_selection);
+				config.sort = tapped_selection;
+				Config_Save(config);
 			}
 		}
 	}
+	
 	Dirbrowse_PopulateFiles(true);
 }
 
