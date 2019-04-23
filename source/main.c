@@ -19,8 +19,7 @@ static void Term_Services(void) {
 	fsdevUnmountDevice("NX-Shell_PRODINFOF");
 	
 	Textures_Free();
-	
-	usbCommsExit();
+
 	SDL_HelperTerm();
 	romfsExit();
 	psmExit();
@@ -40,9 +39,6 @@ static Result Init_Services(void) {
 		return ret;
 
 	if (R_FAILED(ret = SDL_HelperInit()))
-		return ret;
-
-	if (R_FAILED(ret = usbCommsInitialize()))
 		return ret;
 
 	Textures_Load();

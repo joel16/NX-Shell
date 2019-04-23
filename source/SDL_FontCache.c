@@ -2648,10 +2648,12 @@ FC_Rect FC_GetBounds(FC_Font* font, float x, float y, FC_AlignEnum align, FC_Sca
     if(formatted_text == NULL)
         return result;
     
-    FC_EXTRACT_VARARGS(fc_buffer, formatted_text);
+    // Create a temp buffer while GetWidth and GetHeight use fc_buffer.
+    char* temp = (char*)malloc(fc_buffer_size);
+    FC_EXTRACT_VARARGS(temp, formatted_text);
     
-    result.w = FC_GetWidth(font, "%s", fc_buffer) * scale.x;
-    result.h = FC_GetHeight(font, "%s", fc_buffer) * scale.y;
+    result.w = FC_GetWidth(font, "%s", temp) * scale.x;
+    result.h = FC_GetHeight(font, "%s", temp) * scale.y;
     
     switch(align)
     {
@@ -2666,6 +2668,8 @@ FC_Rect FC_GetBounds(FC_Font* font, float x, float y, FC_AlignEnum align, FC_Sca
         default:
             break;
     }
+    
+    free(temp);
     
     return result;
 }
