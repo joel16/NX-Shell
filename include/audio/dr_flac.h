@@ -1,5 +1,5 @@
 // FLAC audio decoder. Public domain. See "unlicense" statement at the end of this file.
-// dr_flac - v0.11.2 - 2018-03-10
+// dr_flac - v0.11.5 - 2018-04-19
 //
 // David Reid - mackron@gmail.com
 
@@ -138,14 +138,18 @@ typedef drflac_uint32    drflac_bool32;
 #define DRFLAC_TRUE      1
 #define DRFLAC_FALSE     0
 
-#if defined(_MSC_VER) && _MSC_VER >= 1700 // Visual Studio 2012
-#define DRFLAC_DEPRECATED   __declspec(deprecated)
-#elif (defined(__GNUC__) && __GNUC__ >= 4)
-#define DRFLAC_DEPRECATED   __attribute__((deprecated))
-#elif (defined(__clang__) && __has_feature(attribute_deprecated))
-#define DRFLAC_DEPRECATED   __attribute__((deprecated))
+#if defined(_MSC_VER) && _MSC_VER >= 1700   /* Visual Studio 2012 */
+    #define DRFLAC_DEPRECATED       __declspec(deprecated)
+#elif (defined(__GNUC__) && __GNUC__ >= 4)  /* GCC 4 */
+    #define DRFLAC_DEPRECATED       __attribute__((deprecated))
+#elif defined(__has_feature)                /* Clang */
+    #if defined(__has_feature(attribute_deprecated))
+        #define DRFLAC_DEPRECATED   __attribute__((deprecated))
+    #else
+        #define DRFLAC_DEPRECATED
+    #endif
 #else
-#define DRFLAC_DEPRECATED
+    #define DRFLAC_DEPRECATED
 #endif
 
 // As data is read from the client it is placed into an internal buffer for fast access. This controls the
@@ -778,6 +782,15 @@ DRFLAC_DEPRECATED float* drflac_open_and_decode_memory_f32(const void* data, siz
 //
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DR_FLAC_IMPLEMENTATION
+
+/* Disable some annoying warnings. */
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #if __GNUC__ >= 7
+    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+    #endif
+#endif
+
 #ifdef __linux__
     #ifndef _BSD_SOURCE
         #define _BSD_SOURCE
@@ -1076,6 +1089,8 @@ static DRFLAC_INLINE drflac_bool32 drflac__is_little_endian()
 {
 #if defined(DRFLAC_X86) || defined(DRFLAC_X64)
     return DRFLAC_TRUE;
+#elif defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && __BYTE_ORDER == __LITTLE_ENDIAN
+    return DRFLAC_TRUE;
 #else
     int n = 1;
     return (*(char*)&n) == 1;
@@ -1141,55 +1156,39 @@ static DRFLAC_INLINE drflac_uint64 drflac__swap_endian_uint64(drflac_uint64 n)
 
 static DRFLAC_INLINE drflac_uint16 drflac__be2host_16(drflac_uint16 n)
 {
-#ifdef __linux__
-    return be16toh(n);
-#else
     if (drflac__is_little_endian()) {
         return drflac__swap_endian_uint16(n);
     }
 
     return n;
-#endif
 }
 
 static DRFLAC_INLINE drflac_uint32 drflac__be2host_32(drflac_uint32 n)
 {
-#ifdef __linux__
-    return be32toh(n);
-#else
     if (drflac__is_little_endian()) {
         return drflac__swap_endian_uint32(n);
     }
 
     return n;
-#endif
 }
 
 static DRFLAC_INLINE drflac_uint64 drflac__be2host_64(drflac_uint64 n)
 {
-#ifdef __linux__
-    return be64toh(n);
-#else
     if (drflac__is_little_endian()) {
         return drflac__swap_endian_uint64(n);
     }
 
     return n;
-#endif
 }
 
 
 static DRFLAC_INLINE drflac_uint32 drflac__le2host_32(drflac_uint32 n)
 {
-#ifdef __linux__
-    return le32toh(n);
-#else
     if (!drflac__is_little_endian()) {
         return drflac__swap_endian_uint32(n);
     }
 
     return n;
-#endif
 }
 
 
@@ -7978,10 +7977,23 @@ drflac_bool32 drflac_next_cuesheet_track(drflac_cuesheet_track_iterator* pIter, 
     if (pCuesheetTrack) *pCuesheetTrack = cuesheetTrack;
     return DRFLAC_TRUE;
 }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 #endif  //DR_FLAC_IMPLEMENTATION
 
 
 // REVISION HISTORY
+//
+// v0.11.5 - 2018-04-19
+//   - Fix a compiler error with GCC. 
+//
+// v0.11.4 - 2018-04-17
+//   - Fix some warnings with GCC when compiling with -std=c99.
+//
+// v0.11.3 - 2018-04-07
+//   - Silence warnings with GCC.
 //
 // v0.11.2 - 2018-03-10
 //   - Fix a warning.

@@ -34,7 +34,7 @@ TARGET        := $(notdir $(CURDIR))
 BUILD         := build
 SOURCES       := source source/audio source/ftp source/gif source/menus
 DATA          := data
-INCLUDES      := include include/audio include/ftp include/gif include/menus
+INCLUDES      := include include/audio include/ftp include/gif include/menus libs/include
 EXEFS_SRC     := exefs_src
 ROMFS         := romfs
 
@@ -65,15 +65,15 @@ CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS	 := -g $(ARCH)
 LDFLAGS	 = -specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	 := -lSDL2_ttf -lSDL2_image -lpng -lturbojpeg -lSDL2 -lSDL2_gfx \
-            -lmpg123 `sdl2-config --libs` `freetype-config --libs` \
+LIBS	 := -lSDL2_ttf -lSDL2_image -lpng -lturbojpeg -lSDL2 -lSDL2_gfx `sdl2-config --libs` `freetype-config --libs`\
+            -lxmp-lite -lmpg123 -lopusfile -lopus -logg \
             -lnx -lm -lminizip
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS := $(PORTLIBS) $(LIBNX)
+LIBDIRS := $(PORTLIBS) $(LIBNX) $(CURDIR)/libs
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -107,6 +107,7 @@ export HFILES_BIN := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
 export INCLUDE    := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
                      $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+                     $(foreach dir,$(LIBDIRS),-I$(dir)/include/opus) \
                      -I$(CURDIR)/$(BUILD)
 
 export LIBPATHS   := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)

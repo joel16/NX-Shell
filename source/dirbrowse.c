@@ -180,7 +180,8 @@ void Dirbrowse_DisplayFiles(void) {
 				SDL_DrawImageScale(icon_app, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "zip", 3)) || (!strncasecmp(file->ext, "rar", 3)) || (!strncasecmp(file->ext, "lz4", 3)))
 				SDL_DrawImageScale(icon_archive, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "wav", 3)) 
+			else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "it", 2)) || (!strncasecmp(file->ext, "mod", 3)) || (!strncasecmp(file->ext, "mp3", 3))
+				|| (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4)) || (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3))
 				|| (!strncasecmp(file->ext, "xm", 2)))
 				SDL_DrawImageScale(icon_audio, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "gif", 3)))
@@ -272,8 +273,9 @@ void Dirbrowse_OpenFile(void) {
 	}
 	else if (!strncasecmp(file->ext, "gif", 3))
 		Gallery_DisplayGif(path);
-	else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "wav", 3))
-			|| (!strncasecmp(file->ext, "xm", 2)))
+	else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "it", 2)) || (!strncasecmp(file->ext, "mod", 3)) || (!strncasecmp(file->ext, "mp3", 3))
+		|| (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4)) || (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3))
+		|| (!strncasecmp(file->ext, "xm", 2)))
 		Menu_PlayMusic(path);
 }
 

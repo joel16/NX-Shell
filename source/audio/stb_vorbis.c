@@ -1,3 +1,8 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
+
 // Ogg Vorbis audio decoder - v1.16 - public domain
 // http://nothings.org/stb_vorbis/
 //
@@ -5484,3 +5489,7 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
+
+//In the end of file
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop

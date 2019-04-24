@@ -154,13 +154,13 @@ void Menu_PlayMusic(char *path) {
 
 		SDL_DrawImage(icon_back, 40, 66);
 
-		if ((metadata.has_meta) && (strlen(metadata.album) != 0) && (strlen(metadata.artist) != 0)) {
-			SDL_DrawText(128, 20 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.album));
+		if ((metadata.has_meta) && (metadata.title[0] != '\0') && (metadata.artist[0] != '\0')) {
+			SDL_DrawText(128, 20 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.title));
 			SDL_DrawText(128, 60 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.artist));
 		}
-		else if ((metadata.has_meta) && (strlen(metadata.album) != 0))
-			SDL_DrawText(128, 40 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.album));
-		else if (!metadata.has_meta)
+		else if ((metadata.has_meta) && (metadata.title[0] != '\0'))
+			SDL_DrawText(128, 40 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.title));
+		else
 			SDL_DrawText(128, 40 + ((100 - title_height) / 2), 30, WHITE, strupr(filename));
 
 		SDL_DrawRect(0, 141, 560, 560, MUSIC_GENRE_COLOUR); // Draw album art background
