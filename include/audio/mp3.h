@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NX_SHELL_AUDIO_MP3_H
+#define NX_SHELL_AUDIO_MP3_H
 
 int MP3_Init(const char *path);
 u32 MP3_GetSampleRate(void);
@@ -7,3 +8,5 @@ void MP3_Decode(void *buf, unsigned int length, void *userdata);
 u64 MP3_GetPosition(void);
 u64 MP3_GetLength(void);
 void MP3_Term(void);
+
+#endif
