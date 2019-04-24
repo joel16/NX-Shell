@@ -14,6 +14,8 @@ void ProgressBar_DisplayProgress(char *msg, char *src, u64 offset, u64 size) {
 		
 	StatusBar_DisplayTime();
 	Dirbrowse_DisplayFiles();
+
+	SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 50: 80));
 	
 	u32 text_width = 0;
 	SDL_GetTextDimensions(25, src, &text_width, NULL);
