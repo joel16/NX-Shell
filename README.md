@@ -19,6 +19,23 @@ Work in progress port of 3DShell (Multi purpose file manager) to the Nintendo Sw
 
 # Build instructions
 
+## Dependencies
+
+Use [dkp-pacman](https://devkitpro.org/wiki/devkitPro_pacman) to install the following dependencies:
+
+```bash
+# Build essentials
+sudo dkp-pacman -S devkitA64 libnx switch-tools switch-sdl2
+# SDL sub-libraries
+sudo dkp-pacman -S switch-sdl2_gfx switch-sdl2_image switch-sdl2_ttf switch-sdl2_mixer
+# Opus
+sudo dkp-pacman -S switch-libopus switch-opusfile
+```
+
+**Note:** NX-Shell is based on [libnx](https://github.com/switchbrew/libnx).
+
+## Start building
+
 ```bash
 git clone --recursive https://github.com/joel16/NX-Shell.git
 cd NX-Shell
