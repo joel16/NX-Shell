@@ -37,6 +37,5 @@ make
 
 - **Preetisketch** for some of the assets used as well as the banner.
 - **StevenMattera** for the implementing the foundation of all touch-screen code.
-- **rock88** for integrating mupdf, allowing NX-Shell to read pdfs and other epubs.
-- **grimfang4** for the original SDL_FontCache headers and **BernardoGiordano** for the port to switch.
+- **grimfang4** for the original SDL_FontCache headers.
 - **theMealena** for CVE_gif*.
