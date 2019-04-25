@@ -32,9 +32,9 @@ include $(DEVKITPRO)/libnx/switch_rules
 #---------------------------------------------------------------------------------
 TARGET        := $(notdir $(CURDIR))
 BUILD         := build
-SOURCES       := source source/audio source/ftp source/gif source/menus source/minizip source/menus/menu_book_reader
+SOURCES       := source source/audio source/ftp source/gif source/menus
 DATA          := data
-INCLUDES      := include include/audio include/ftp include/gif include/menus include/minizip mupdf/include mupdf/source/fitz
+INCLUDES      := include include/audio include/ftp include/gif include/menus libs/include
 EXEFS_SRC     := exefs_src
 ROMFS         := romfs
 
@@ -50,34 +50,30 @@ APP_VERSION   := ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH     := -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE
+ARCH	 := -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE
 
-CFLAGS   := -g -O3 -ffunction-sections -Wall -Wno-write-strings `freetype-config --cflags` `sdl2-config --cflags` \
+CFLAGS	 := -g -Wall -O2 -ffunction-sections \
             -DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO) \
             -DAPP_TITLE="\"$(APP_TITLE)\"" \
             -DGITVERSION="\"${GITVERSION}\"" \
             $(ARCH) $(DEFINES)
 
-CFLAGS   += $(INCLUDE) -D__SWITCH__
+CFLAGS	 += -D__SWITCH__ $(INCLUDE) `freetype-config --cflags` `sdl2-config --cflags`
 
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
 
-ASFLAGS  := -g $(ARCH)
-LDFLAGS  = -specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(PWD)/$(BUILD)
+ASFLAGS	 := -g $(ARCH)
+LDFLAGS	 = -specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS     := -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lSDL2 -lSDL2_gfx \
-            -lpng  -ljpeg \
-            -lglad -lEGL -lglapi -ldrm_nouveau \
-            -lmodplug -lmpg123 -lvorbisidec -logg \
-            -lglad -lEGL -lglapi -ldrm_nouveau \
-            -lmupdf_core -lmupdf_thirdparty -lconfig \
-            -lnx -lm -lfreetype -lminizip -lz
+LIBS	 := -lSDL2_ttf -lSDL2_image -lpng -lturbojpeg -lSDL2 -lSDL2_gfx `sdl2-config --libs` `freetype-config --libs`\
+            -lxmp-lite -lmpg123 -lopusfile -lopus -logg \
+            -lnx -lm -lminizip
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS := $(PORTLIBS) $(LIBNX)
+LIBDIRS := $(PORTLIBS) $(LIBNX) $(CURDIR)/libs
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -102,18 +98,19 @@ BINFILES       := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
 #---------------------------------------------------------------------------------
-export LD              := $(CXX)
+export LD := $(CXX)
 
-export OFILES_BIN      := $(addsuffix .o,$(BINFILES))
-export OFILES_SRC      := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
-export OFILES          := $(OFILES_BIN) $(OFILES_SRC)
-export HFILES_BIN      := $(addsuffix .h,$(subst .,_,$(BINFILES)))
+export OFILES_BIN := $(addsuffix .o,$(BINFILES))
+export OFILES_SRC := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+export OFILES     := $(OFILES_BIN) $(OFILES_SRC)
+export HFILES_BIN := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
-export INCLUDE         := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-                          $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-                          -I$(CURDIR)/$(BUILD)
+export INCLUDE    := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+                     $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+                     $(foreach dir,$(LIBDIRS),-I$(dir)/include/opus) \
+                     -I$(CURDIR)/$(BUILD)
 
-export LIBPATHS        := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+export LIBPATHS   := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export BUILD_EXEFS_SRC := $(TOPDIR)/$(EXEFS_SRC)
 
@@ -149,29 +146,17 @@ endif
 .PHONY: $(BUILD) clean all
 
 #---------------------------------------------------------------------------------
-all: generate_fonts build_mupdf $(BUILD) 
-	 @echo "${VERSION_MAJOR}${VERSION_MINOR}${VERSION_MICRO}" > UPDATE_MILESTONE.txt # For nightly builds
-	 @echo "${GITVERSION}" > UPDATE_NIGHTLY.txt # For maintainer builds
-
-generate_fonts:
-	@cd mupdf && make generate
-
-build_mupdf:
-	@make -f Makefile.mupdf
+all: $(BUILD)
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
-clean-nx:
+clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).pfs0 $(TARGET).nso $(TARGET).nro $(TARGET).nacp $(TARGET).elf
 
-clean:
-	@echo clean ...
-	@make -f Makefile.mupdf clean
-	@rm -fr $(BUILD) $(TARGET).pfs0 $(TARGET).nso $(TARGET).nro $(TARGET).nacp $(TARGET).elf
 
 #---------------------------------------------------------------------------------
 else
@@ -182,21 +167,21 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-all	           : $(OUTPUT).pfs0 $(OUTPUT).nro
+all	:	$(OUTPUT).pfs0 $(OUTPUT).nro
 
-$(OUTPUT).pfs0 : $(OUTPUT).nso
+$(OUTPUT).pfs0	:	$(OUTPUT).nso
 
-$(OUTPUT).nso  : $(OUTPUT).elf
+$(OUTPUT).nso	:	$(OUTPUT).elf
 
 ifeq ($(strip $(NO_NACP)),)
-$(OUTPUT).nro  : $(OUTPUT).elf $(OUTPUT).nacp
+$(OUTPUT).nro	:	$(OUTPUT).elf $(OUTPUT).nacp
 else
-$(OUTPUT).nro  : $(OUTPUT).elf
+$(OUTPUT).nro	:	$(OUTPUT).elf
 endif
 
-$(OUTPUT).elf  : $(OFILES)
+$(OUTPUT).elf	:	$(OFILES)
 
-$(OFILES_SRC)  : $(HFILES_BIN)
+$(OFILES_SRC)	: $(HFILES_BIN)
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data

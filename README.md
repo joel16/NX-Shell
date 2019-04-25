@@ -14,17 +14,15 @@ Work in progress port of 3DShell (Multi purpose file manager) to the Nintendo Sw
 - Extract .ZIP and .RAR files.
 - Sorting options (Sort by name, date, size).
 - Dark theme toggle.
-- Audio playback. (Following formats are supported: MP3, OGG, WAV and MOD)
+- Audio playback. (Following formats are supported: FLAC, IT, MOD, MP3, OGG, OPUS, S3M and WAV)
 - Touch screen.
-- Ebook reader.
 
 # Build instructions
 
 ```bash
 git clone --recursive https://github.com/joel16/NX-Shell.git
-cd NX-Shell/mupdf/
-git checkout 1.14.0 && make generate
-cd ../ && make
+cd NX-Shell
+make
 ```
 
 # Credits:

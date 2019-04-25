@@ -1,3 +1,4 @@
+#include "audio.h"
 #include "common.h"
 #include "dirbrowse.h"
 #include "fs.h"
@@ -8,11 +9,8 @@
 #include "touch_helper.h"
 #include "utils.h"
 
-#include "mp3.h"
-
 #define MUSIC_GENRE_COLOUR      FC_MakeColor(97, 97, 97, 255)
 #define MUSIC_STATUS_BG_COLOUR  FC_MakeColor(43, 53, 61, 255)
-#define MUSIC_SEPARATOR_COLOUR  FC_MakeColor(34, 41, 48, 255)
 
 typedef enum {
 	MUSIC_STATE_NONE,   // 0
@@ -22,8 +20,8 @@ typedef enum {
 
 static char playlist[1024][512];
 static int count = 0, selection = 0, state = 0;
-static u32 title_height = 0;
-static Mix_Music *audio;
+static u32 title_height = 0, length_time_width = 0;
+char *position_time = NULL, *length_time = NULL, *filename = NULL;
 
 static Result Menu_GetMusicList(void) {
 	FsDir dir;
@@ -41,8 +39,9 @@ static Result Menu_GetMusicList(void) {
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
 
 			for (u32 i = 0; i < entryCount; i++) {
-				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3)) 
-					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "mod", 3))) {
+				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "flac", 4)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3)) 
+					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3))
+					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "xm", 2))) {
 					strcpy(playlist[count], cwd);
 					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
 					count++;
@@ -72,21 +71,30 @@ static int Music_GetCurrentIndex(char *path) {
 	return 0;
 }
 
+static void Menu_ConvertSecondsToString(char *string, u64 seconds) {
+	int h = 0, m = 0, s = 0;
+	h = (seconds / 3600);
+	m = (seconds - (3600 * h)) / 60;
+	s = (seconds - (3600 * h) - (m * 60));
+
+	if (h > 0)
+		snprintf(string, 35, "%02d:%02d:%02d", h, m, s);
+	else
+		snprintf(string, 35, "%02d:%02d", m, s);
+}
+
 static void Music_Play(char *path) {
-	audio = Mix_LoadMUS(path);
+	Audio_Init(path);
 
-	if (audio == NULL)
-		return;
+	filename = malloc(128);
+	snprintf(filename, 128, Utils_Basename(path));
+	position_time = malloc(35);
+	length_time = malloc(35);
+	length_time_width = 0;
 
-	if (Mix_GetMusicType(audio) == MUS_MP3)
-		MP3_Init(path);
-
-	SDL_GetTextDimensions(30, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : ID3.title, NULL, &title_height);
-
-	Result ret = 0;
-	if (R_FAILED(ret = Mix_PlayMusic(audio, 1)))
-		return;
-
+	Menu_ConvertSecondsToString(length_time, Audio_GetLengthSeconds());
+	SDL_GetTextDimensions(30, length_time, &length_time_width, NULL);
+	SDL_GetTextDimensions(30, strupr(filename), NULL, &title_height);
 	selection = Music_GetCurrentIndex(path);
 }
 
@@ -110,40 +118,22 @@ static void Music_HandleNext(bool forward, int state) {
 	Utils_SetMax(&selection, 0, (count - 1));
 	Utils_SetMin(&selection, (count - 1), 0);
 
-	if (Mix_GetMusicType(audio) == MUS_MP3) {
-		if (cover_image != NULL) {
-			SDL_DestroyTexture(cover_image);
-			cover_image = NULL;
-		}
-		
-		MP3_Exit();
-	}
+	Audio_Stop();
 
-	Mix_HaltMusic();
-	Mix_FreeMusic(audio);
+	free(filename);
+	free(length_time);
+	free(position_time);
 
+	if ((metadata.has_meta) && (metadata.cover_image))
+		SDL_DestroyTexture(metadata.cover_image);
+
+	Audio_Term();
 	Music_Play(playlist[selection]);
 }
 
-static void Music_HandlePause(bool *status) {
-	if (*status) {
-		Mix_PauseMusic();
-		*status = false;
-	}
-	else {
-		Mix_ResumeMusic();
-		*status = true;
-	}
-}
-
 void Menu_PlayMusic(char *path) {
-	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096);
 	Menu_GetMusicList();
 	Music_Play(path);
-
-	SDL_GetTextDimensions(30, strlen(ID3.title) == 0? strupr(Utils_Basename(path)) : ID3.title, NULL, &title_height);
-
-	bool is_playing = true;
 
 	int btn_width = 0, btn_height = 0;
 	SDL_QueryTexture(btn_pause, NULL, NULL, &btn_width, &btn_height);
@@ -158,44 +148,41 @@ void Menu_PlayMusic(char *path) {
 
 		SDL_DrawImage(default_artwork_blur, 0, 0);
 		SDL_DrawRect(0, 0, 1280, 40, MUSIC_GENRE_COLOUR); // Status bar
-		//SDL_DrawRect(0, 140, 1280, 1, MUSIC_SEPARATOR_COLOUR); // Separator
 
 		if (locked)
 			SDL_DrawImage(icon_lock, 5, 3);
 
 		SDL_DrawImage(icon_back, 40, 66);
 
-		if (strlen(ID3.title) != 0)
-			SDL_DrawText(128, 40 + ((100 - title_height) / 2), 30, WHITE, ID3.title);
+		if ((metadata.has_meta) && (metadata.title[0] != '\0') && (metadata.artist[0] != '\0')) {
+			SDL_DrawText(128, 20 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.title));
+			SDL_DrawText(128, 60 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.artist));
+		}
+		else if ((metadata.has_meta) && (metadata.title[0] != '\0'))
+			SDL_DrawText(128, 40 + ((100 - title_height) / 2), 30, WHITE, strupr(metadata.title));
 		else
-			SDL_DrawText(128, 40 + ((100 - title_height) / 2), 30, WHITE, strupr(Utils_Basename(path)));
-
-		if (strlen(ID3.artist) != 0)
-			SDL_DrawText(128, 40 + ((100 - title_height) / 2) + 40, 30, WHITE, ID3.artist); // Artist
+			SDL_DrawText(128, 40 + ((100 - title_height) / 2), 30, WHITE, strupr(filename));
 
 		SDL_DrawRect(0, 141, 560, 560, MUSIC_GENRE_COLOUR); // Draw album art background
 
-		if (cover_image != NULL)
-			SDL_DrawImageScale(cover_image, 0, 141, 560, 560); // Cover art
+		if ((metadata.has_meta) && (metadata.cover_image))
+			SDL_DrawImageScale(metadata.cover_image, 0, 141, 560, 560); // Cover art
 		else
 			SDL_DrawImage(default_artwork, 0, 141); // Default album art
 
 		SDL_DrawRect(570, 141, 710, 559, FC_MakeColor(45, 48, 50, 255)); // Draw info box (outer)
 		SDL_DrawRect(575, 146, 700, 549, FC_MakeColor(46, 49, 51, 255)); // Draw info box (inner)
 
-		if (strlen(ID3.artist) != 0)
-			SDL_DrawText(590, 161, 30, WHITE, ID3.artist);
-		if (strlen(ID3.album) != 0)
-			SDL_DrawText(590, 201, 30, WHITE, ID3.album);
-		if (strlen(ID3.year) != 0)
-			SDL_DrawText(590, 241, 30, WHITE, ID3.year);
-		if (strlen(ID3.genre) != 0)
-			SDL_DrawText(590, 281, 30, WHITE, ID3.genre);
+		Menu_ConvertSecondsToString(position_time, Audio_GetPositionSeconds());
+		SDL_DrawText(605, 615, 30, WHITE, position_time);
+		SDL_DrawText(1245 - length_time_width, 615, 30, WHITE, length_time);
+		SDL_DrawRect(605, 655, 640, 5, FC_MakeColor(97, 97, 97, 150));
+		SDL_DrawRect(605, 655, (((double)Audio_GetPosition()/(double)Audio_GetLength()) * 640.0), 5, WHITE);
 
 		SDL_DrawCircle(615 + ((710 - btn_width) / 2), 186 + ((559 - btn_height) / 2), 80, FC_MakeColor(98, 100, 101, 255)); // Render outer circle
 		SDL_DrawCircle((615 + ((710 - btn_width) / 2)), (186 + ((559 - btn_height) / 2)), 60, FC_MakeColor(46, 49, 51, 255)); // Render inner circle
 
-		if (is_playing)
+		if (!paused)
 			SDL_DrawImage(btn_pause, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2)); // Playing
 		else
 			SDL_DrawImage(btn_play, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2)); // Paused
@@ -212,10 +199,9 @@ void Menu_PlayMusic(char *path) {
 		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
-		if (!Mix_PlayingMusic()) {
+		if (!playing) {
 			if (state == MUSIC_STATE_NONE) {
-				if (count != 0)
-					Music_HandleNext(true, MUSIC_STATE_NONE);
+				Audio_Stop();
 				break;
 			}
 			else if (state == MUSIC_STATE_REPEAT)
@@ -230,12 +216,12 @@ void Menu_PlayMusic(char *path) {
 			locked = !locked;
 
 		if (kDown & KEY_B) {
-			Mix_HaltMusic();
+			Audio_Stop();
 			break;
 		}
 		
 		if (kDown & KEY_A)
-			Music_HandlePause(&is_playing);
+			Audio_Pause();
 
 		if (kDown & KEY_Y) {
 			if (state == MUSIC_STATE_REPEAT)
@@ -263,12 +249,12 @@ void Menu_PlayMusic(char *path) {
 
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 			if (tapped_inside(touchInfo, 40, 66, 108, 114)) {
-				Mix_HaltMusic();
+				Audio_Stop();
 				break;
 			}
 
 			if (tapped_inside(touchInfo, 570 + ((710 - btn_width) / 2), 141 + ((559 - btn_height) / 2), (570 + ((710 - btn_width) / 2)) + btn_width, (141 + ((559 - btn_height) / 2) + btn_height)))
-				Music_HandlePause(&is_playing);
+				Audio_Pause();
 			else if (tapped_inside(touchInfo, (590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, ((590 + ((710 - (btn_width - 10)) / 2)) - ((btn_width - 10) * 2)) + (btn_width - 10), (141 + ((559 - (btn_height - 10)) / 2) + 90) + (btn_height - 10))) {
 				if (state == MUSIC_STATE_SHUFFLE)
 					state = MUSIC_STATE_NONE;
@@ -295,18 +281,15 @@ void Menu_PlayMusic(char *path) {
 		}
 	}
 
-	if (Mix_GetMusicType(audio) == MUS_MP3) {
-		if (cover_image != NULL) {
-			SDL_DestroyTexture(cover_image);
-			cover_image = NULL;
-		}
+	free(filename);
+	free(length_time);
+	free(position_time);
 
-		MP3_Exit();
-	}
+	if ((metadata.has_meta) && (metadata.cover_image))
+		SDL_DestroyTexture(metadata.cover_image);
 
-	Mix_FreeMusic(audio);
+	Audio_Term();
 	memset(playlist, 0, sizeof(playlist[0][0]) * 512 * 512);
 	count = 0;
-	Mix_CloseAudio();
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }

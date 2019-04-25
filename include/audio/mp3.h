@@ -1,19 +1,12 @@
 #ifndef NX_SHELL_AUDIO_MP3_H
 #define NX_SHELL_AUDIO_MP3_H
 
-typedef struct {
-    char title[34];
-    char album[34];
-    char artist[34];
-    char year[0x5];
-    char comment[34];
-    char genre[34];
-} ID3_Tag;
-
-ID3_Tag ID3;
-
-int MP3_GetProgress(void);
-void MP3_Init(char *path);
-void MP3_Exit(void);
+int MP3_Init(const char *path);
+u32 MP3_GetSampleRate(void);
+u8 MP3_GetChannels(void);
+void MP3_Decode(void *buf, unsigned int length, void *userdata);
+u64 MP3_GetPosition(void);
+u64 MP3_GetLength(void);
+void MP3_Term(void);
 
 #endif

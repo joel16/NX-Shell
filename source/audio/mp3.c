@@ -1,39 +1,47 @@
 #include <mpg123.h>
 #include <stdio.h>
 #include <string.h>
-#include <switch.h>
 
-#include "mp3.h"
+#include "audio.h"
 #include "SDL_helper.h"
-#include "textures.h"
 
-static mpg123_handle *mp3_handle;
-static off_t numberOfSamples;
+static mpg123_handle *mp3;
+static u64 frames_read = 0, total_samples = 0;
+static long sample_rate = 0;
+static int channels = 0;
 
-struct genre {
-	int code;
-	char text[112];
+// 147 ID3 tagv1 list
+static char *genre_list[] = {
+	"Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk",
+	"Grunge", "Hip-Hop", "Jazz", "Metal", "New Age", "Oldies",
+	"Other", "Pop", "R&B", "Rap", "Reggae", "Rock",
+	"Techno", "Industrial", "Alternative", "Ska", "Death Metal", "Pranks",
+	"Soundtrack", "Euro-Techno", "Ambient", "Trip-Hop", "Vocal", "Jazz+Funk",
+	"Fusion", "Trance", "Classical", "Instrumental", "Acid", "House",
+	"Game", "Sound Clip", "Gospel", "Noise", "AlternRock", "Bass",
+	"Soul", "Punk", "Space", "Meditative", "Instrumental Pop", "Instrumental Rock",
+	"Ethnic", "Gothic", "Darkwave", "Techno-Industrial", "Electronic", "Pop-Folk",
+	"Eurodance", "Dream", "Southern Rock", "Comedy", "Cult", "Gangsta",
+	"Top 40", "Christian Rap", "Pop/Funk", "Jungle", "Native American", "Cabaret",
+	"New Wave", "Psychadelic", "Rave", "Showtunes", "Trailer", "Lo-Fi",
+	"Tribal", "Acid Punk", "Acid Jazz", "Polka", "Retro", "Musical",
+	"Rock & Roll", "Hard Rock", "Folk", "Folk/Rock", "National Folk", "Swing",
+	"Fast-Fusion", "Bebob", "Latin", "Revival", "Celtic", "Bluegrass", "Avantgarde",
+	"Gothic Rock", "Progressive Rock", "Psychedelic Rock", "Symphonic Rock", "Slow Rock", "Big Band",
+	"Chorus", "Easy Listening", "Acoustic", "Humour", "Speech", "Chanson",
+	"Opera", "Chamber Music", "Sonata", "Symphony", "Booty Bass", "Primus",
+	"Porn Groove", "Satire", "Slow Jam", "Club", "Tango", "Samba",
+	"Folklore", "Ballad", "Power Ballad", "Rhythmic Soul", "Freestyle", "Duet",
+	"Punk Rock", "Drum Solo", "A capella", "Euro-House", "Dance Hall",
+	"Goa", "Drum & Bass", "Club House", "Hardcore", "Terror",
+	"Indie", "BritPop", "NegerPunk", "Polsk Punk", "Beat",
+	"Christian Gangsta", "Heavy Metal", "Black Metal", "Crossover", "Contemporary C",
+	"Christian Rock", "Merengue", "Salsa", "Thrash Metal", "Anime", "JPop",
+	"SynthPop",
 };
 
-struct genre genreList[] = {
-	{0 , "Blues"}, {1 , "Classic Rock"}, {2 , "Country"}, {3 , "Dance"}, {4 , "Disco"}, {5 , "Funk"}, {6 , "Grunge"}, {7 , "Hip-Hop"}, {8 , "Jazz"}, {9 , "Metal"}, {10 , "New Age"},
-	{11 , "Oldies"}, {12 , "Other"}, {13 , "Pop"}, {14 , "R&B"}, {15 , "Rap"}, {16 , "Reggae"}, {17 , "Rock"}, {18 , "Techno"}, {19 , "Industrial"}, {20 , "Alternative"},
-	{21 , "Ska"}, {22 , "Death Metal"}, {23 , "Pranks"}, {24 , "Soundtrack"}, {25 , "Euro-Techno"}, {26 , "Ambient"}, {27 , "Trip-Hop"}, {28 , "Vocal"}, {29 , "Jazz+Funk"}, {30 , "Fusion"},
-	{31 , "Trance"}, {32 , "Classical"}, {33 , "Instrumental"}, {34 , "Acid"}, {35 , "House"}, {36 , "Game"}, {37 , "Sound Clip"}, {38 , "Gospel"}, {39 , "Noise"}, {40 , "Alternative Rock"},
-	{41 , "Bass"}, {42 , "Soul"}, {43 , "Punk"}, {44 , "Space"}, {45 , "Meditative"}, {46 , "Instrumental Pop"}, {47 , "Instrumental Rock"}, {48 , "Ethnic"}, {49 , "Gothic"}, {50 , "Darkwave"},
-	{51 , "Techno-Industrial"}, {52 , "Electronic"}, {53 , "Pop-Folk"}, {54 , "Eurodance"}, {55 , "Dream"}, {56 , "Southern Rock"}, {57 , "Comedy"}, {58 , "Cult"}, {59 , "Gangsta"}, {60 , "Top 40"},
-	{61 , "Christian Rap"}, {62 , "Pop/Funk"}, {63 , "Jungle"}, {64 , "Native US"}, {65 , "Cabaret"}, {66 , "New Wave"}, {67 , "Psychadelic"}, {68 , "Rave"}, {69 , "Showtunes"}, {70 , "Trailer"},
-	{71 , "Lo-Fi"}, {72 , "Tribal"}, {73 , "Acid Punk"}, {74 , "Acid Jazz"}, {75 , "Polka"}, {76 , "Retro"}, {77 , "Musical"}, {78 , "Rock & Roll"}, {79 , "Hard Rock"}, {80 , "Folk"},
-	{81 , "Folk-Rock"}, {82 , "National Folk"}, {83 , "Swing"}, {84 , "Fast Fusion"}, {85 , "Bebob"}, {86 , "Latin"}, {87 , "Revival"}, {88 , "Celtic"}, {89 , "Bluegrass"}, {90 , "Avantgarde"},
-	{91 , "Gothic Rock"}, {92 , "Progressive Rock"}, {93 , "Psychedelic Rock"}, {94 , "Symphonic Rock"}, {95 , "Slow Rock"}, {96 , "Big Band"}, {97 , "Chorus"}, {98 , "Easy Listening"}, {99 , "Acoustic"},
-	{100 , "Humour"}, {101 , "Speech"}, {102 , "Chanson"}, {103 , "Opera"}, {104 , "Chamber Music"}, {105 , "Sonata"}, {106 , "Symphony"}, {107 , "Booty Bass"}, {108 , "Primus"}, {109 , "Porn Groove"},
-	{110 , "Satire"}, {111 , "Slow Jam"}, {112 , "Club"}, {113 , "Tango"}, {114 , "Samba"}, {115 , "Folklore"}, {116 , "Ballad"}, {117 , "Power Ballad"}, {118 , "Rhytmic Soul"}, {119 , "Freestyle"}, {120 , "Duet"},
-	{121 , "Punk Rock"}, {122 , "Drum Solo"}, {123 , "A capella"}, {124 , "Euro-House"}, {125 , "Dance Hall"}, {126 , "Goa"}, {127 , "Drum & Bass"}, {128 , "Club-House"}, {129 , "Hardcore"}, {130 , "Terror"},
-	{131 , "Indie"}, {132 , "BritPop"}, {133 , "Negerpunk"}, {134 , "Polsk Punk"}, {135 , "Beat"}, {136 , "Christian Gangsta"}, {137 , "Heavy Metal"}, {138 , "Black Metal"}, {139 , "Crossover"}, {140 , "Contemporary C"},
-	{141 , "Christian Rock"}, {142 , "Merengue"}, {143 , "Salsa"}, {144 , "Thrash Metal"}, {145 , "Anime"}, {146 , "JPop"}, {147 , "SynthPop"}
-};
-
-/* Helper for v1 printing, get these strings their zero byte. */
+// For MP3 ID3 tags
+// Helper for v1 printing, get these strings their zero byte.
 static void safe_print(char *tag, char *name, char *data, size_t size) {
 	char safe[31];
 	if (size > 30) 
@@ -44,18 +52,20 @@ static void safe_print(char *tag, char *name, char *data, size_t size) {
 }
 
 
-/* Print out ID3v1 info. */
-static void print_v1(ID3_Tag *ID3tag, mpg123_id3v1 *v1) {
+// For MP3 ID3 tags
+// Print out ID3v1 info.
+static void print_v1(Audio_Metadata *ID3tag, mpg123_id3v1 *v1) {
 	safe_print(ID3tag->title, "",   v1->title,   sizeof(v1->title));
 	safe_print(ID3tag->artist, "",  v1->artist,  sizeof(v1->artist));
 	safe_print(ID3tag->album, "",   v1->album,   sizeof(v1->album));
 	safe_print(ID3tag->year, "",    v1->year,    sizeof(v1->year));
 	safe_print(ID3tag->comment, "", v1->comment, sizeof(v1->comment));
-	safe_print(ID3tag->genre, "", genreList[v1->genre].text, sizeof(genreList[v1->genre].text));
+	safe_print(ID3tag->genre, "", genre_list[v1->genre], sizeof(genre_list[v1->genre]));
 }
 
-/* Split up a number of lines separated by \n, \r, both or just zero byte
-   and print out each line with specified prefix. */
+// For MP3 ID3 tags
+// Split up a number of lines separated by \n, \r, both or just zero byte
+// and print out each line with specified prefix.
 static void print_lines(char *data, const char *prefix, mpg123_string *inlines) {
 	size_t i;
 	int hadcr = 0, hadlf = 0;
@@ -99,8 +109,9 @@ static void print_lines(char *data, const char *prefix, mpg123_string *inlines) 
 	}
 }
 
-/* Print out the named ID3v2  fields. */
-static void print_v2(ID3_Tag *ID3tag, mpg123_id3v2 *v2) {
+// For MP3 ID3 tags
+// Print out the named ID3v2  fields.
+static void print_v2(Audio_Metadata *ID3tag, mpg123_id3v2 *v2) {
 	print_lines(ID3tag->title, "", v2->title);
 	print_lines(ID3tag->artist, "", v2->artist);
 	print_lines(ID3tag->album, "", v2->album);
@@ -109,42 +120,37 @@ static void print_v2(ID3_Tag *ID3tag, mpg123_id3v2 *v2) {
 	print_lines(ID3tag->genre, "",   v2->genre);
 }
 
-int MP3_GetProgress(void) {
-	return (mpg123_tell(mp3_handle) / (numberOfSamples / 100.0));
-}
+int MP3_Init(const char *path) {
+	int error = 0;
 
-void MP3_Init(char *path) {
-	int err = 0, meta = 0;
+	error = mpg123_init();
+	if (error != MPG123_OK)
+		return error;
 
-	err = mpg123_init();
-	if (err != MPG123_OK)
-		return;
+	mp3 = mpg123_new(NULL, &error);
+	if (error != MPG123_OK)
+		return error;
 
-	mp3_handle = mpg123_new(NULL, &err);
-	if (err != MPG123_OK)
-		return;
+	error = mpg123_param(mp3, MPG123_ADD_FLAGS, MPG123_PICTURE, 0.0);
+	if (error != MPG123_OK)
+		return error;
 
-	err = mpg123_param(mp3_handle, MPG123_ADD_FLAGS, MPG123_PICTURE, 0.0);
-	if (err != MPG123_OK)
-		return;
+	error = mpg123_open(mp3, path);
+	if (error != MPG123_OK)
+		return error;
 
-	err = mpg123_open(mp3_handle, path);
-	if (err != MPG123_OK)
-		return;
-
-	numberOfSamples = mpg123_length(mp3_handle);
-
+	static const Audio_Metadata empty;
+	metadata = empty;
 	mpg123_id3v1 *v1;
 	mpg123_id3v2 *v2;
-			
-	mpg123_seek(mp3_handle, 0, SEEK_SET);
-	meta = mpg123_meta_check(mp3_handle);
 
-	if (meta & MPG123_ID3 && mpg123_id3(mp3_handle, &v1, &v2) == MPG123_OK) {
+	mpg123_seek(mp3, 0, SEEK_SET);
+	metadata.has_meta = mpg123_meta_check(mp3);
+	if (metadata.has_meta & MPG123_ID3 && mpg123_id3(mp3, &v1, &v2) == MPG123_OK) {
 		if (v1 != NULL)
-			print_v1(&ID3, v1);
+			print_v1(&metadata, v1);
 		if (v2 != NULL) {
-			print_v2(&ID3, v2);
+			print_v2(&metadata, v2);
 
 			for (size_t count = 0; count < v2->pictures; count++) {
 				mpg123_picture *pic = &v2->picture[count];
@@ -152,24 +158,57 @@ void MP3_Init(char *path) {
 
 				if ((pic->type == 3 ) || (pic->type == 0)) {
 					if ((!strcasecmp(str, "image/jpg")) || (!strcasecmp(str, "image/jpeg")) || (!strcasecmp(str, "image/png"))) {
-						SDL_LoadImageMem(&cover_image, pic->data, pic->size);
+						SDL_LoadImageMem(&metadata.cover_image, pic->data, pic->size);
 						break;
 					}
 				}
 			}
 		}
 	}
+
+	total_samples = mpg123_length(mp3);
+	mpg123_getformat(mp3, &sample_rate, &channels, NULL);
+	mpg123_format_none(mp3);
+	mpg123_format(mp3, sample_rate, channels, MPG123_ENC_SIGNED_16);
+	return 0;
 }
 
-void MP3_Exit(void) {
-	mpg123_close(mp3_handle);
-	mpg123_delete(mp3_handle);
-	mpg123_exit();
+u32 MP3_GetSampleRate(void) {
+	return sample_rate;
+}
+
+u8 MP3_GetChannels(void) {
+	return channels;
+}
+
+void MP3_Decode(void *buf, unsigned int length, void *userdata) {
+	size_t done = 0;
+	mpg123_read(mp3, buf, length, &done);
+	frames_read += (done  / (sizeof(s16) * channels));
+
+	if (frames_read == total_samples)
+		playing = false;
+}
+
+u64 MP3_GetPosition(void) {
+	return frames_read;
+}
+
+u64 MP3_GetLength(void) {
+	return total_samples;
+}
+
+void MP3_Term(void) {
+	frames_read = 0;
 	
-	// Clear ID3 data
-	memset(ID3.artist, 0, 30);
-	memset(ID3.title, 0, 30);
-	memset(ID3.album, 0, 30);
-	memset(ID3.year, 0, 4);
-	memset(ID3.genre, 0, 30);
+	if (metadata.has_meta) {
+		metadata.has_meta = false;
+
+		if (metadata.cover_image)
+			SDL_DestroyTexture(metadata.cover_image);
+	}
+
+	mpg123_close(mp3);
+	mpg123_delete(mp3);
+	mpg123_exit();
 }

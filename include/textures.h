@@ -12,8 +12,7 @@ SDL_Texture *icon_app, *icon_archive, *icon_audio, *icon_dir, *icon_file, *icon_
 	*icon_accept, *icon_accept_dark, *icon_remove, *icon_remove_dark, \
 	*battery_20, *battery_20_charging, *battery_30, *battery_30_charging, *battery_50, *battery_50_charging, \
 	*battery_60, *battery_60_charging, *battery_80, *battery_80_charging, *battery_90, *battery_90_charging, \
-	*battery_full, *battery_full_charging, *battery_low, *battery_unknown, \
-	*cover_image;
+	*battery_full, *battery_full_charging, *battery_low, *battery_unknown;
 
 void Textures_Load(void);
 void Textures_Free(void);

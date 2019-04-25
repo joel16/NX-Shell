@@ -196,7 +196,7 @@ static void Menu_DisplayMenuBar(void) {
 	};
 
 	SDL_DrawRect(menubar_x, 0, 400, 720, config.dark_theme? BLACK_BG : WHITE);
-	SDL_DrawRect(menubar_x + 400, 0, 1, 720, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT);
+	SDL_DrawRect(menubar_x + 400, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 50: 80));
 	SDL_DrawImage(bg_header, menubar_x, 0);
 	SDL_DrawText(menubar_x + 15, 164, 30, WHITE, "NX Shell");
 

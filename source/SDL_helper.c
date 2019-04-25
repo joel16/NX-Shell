@@ -41,10 +41,6 @@ int SDL_HelperInit(void) {
 	if ((IMG_Init(flags) & flags) != flags)
 		return -1;
 
-	flags = MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG;
-	if (Mix_Init(flags) & flags != flags)
-		return -1;
-
 	Roboto_small = FC_CreateFont();
 	FC_LoadFont(Roboto_small, RENDERER, "romfs:/res/Roboto-Regular.ttf", 20, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
 
@@ -62,8 +58,6 @@ void SDL_HelperTerm(void) {
 	FC_FreeFont(Roboto);
 	//FC_FreeFont(Roboto_small);
 	TTF_Quit();
-
-	Mix_Quit();
 
 	IMG_Quit();
 
