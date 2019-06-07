@@ -184,7 +184,8 @@ void Dirbrowse_DisplayFiles(void) {
 				|| (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4)) || (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3))
 				|| (!strncasecmp(file->ext, "xm", 2)))
 				SDL_DrawImageScale(icon_audio, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "gif", 3)))
+			else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "gif", 3))
+				|| (!strncasecmp(file->ext, "webp", 4)))
 				SDL_DrawImageScale(icon_image, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "txt", 3)) || (!strncasecmp(file->ext, "lua", 3)) || (!strncasecmp(file->ext, "cfg", 3)))
 				SDL_DrawImageScale(icon_text, 80, 141 + (73 * printed), 72, 72);
@@ -261,7 +262,7 @@ void Dirbrowse_OpenFile(void) {
 			Dirbrowse_PopulateFiles(true);
 		}
 	}
-	else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)))
+	else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "webp", 4)))
 		Gallery_DisplayImage(path);
 	else if (!strncasecmp(file->ext, "zip", 3)) {
 		Archive_ExtractZIP(path);

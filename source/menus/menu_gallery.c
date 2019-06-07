@@ -23,14 +23,15 @@ static Result Gallery_GetImageList(void) {
 		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount)))
 			return ret;
 		
-		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		FsDirectoryEntry *entries = (FsDirectoryEntry *)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
 		
 		if (R_SUCCEEDED(ret = FS_ReadDir(&dir, 0, NULL, entryCount, entries))) {
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
 
 			for (u32 i = 0; i < entryCount; i++) {
 				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "png", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "jpg", 3)) || 
-					(!strncasecmp(FS_GetFileExt(entries[i].name), "bmp", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "gif", 3))) {
+					(!strncasecmp(FS_GetFileExt(entries[i].name), "bmp", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "gif", 3)) ||
+					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "webp", 4))) {
 					strcpy(album[count], cwd);
 					strcpy(album[count] + strlen(album[count]), entries[i].name);
 					count++;
