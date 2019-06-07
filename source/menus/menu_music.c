@@ -33,7 +33,7 @@ static Result Menu_GetMusicList(void) {
 		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount)))
 			return ret;
 		
-		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
+		FsDirectoryEntry *entries = (FsDirectoryEntry *)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
 		
 		if (R_SUCCEEDED(ret = FS_ReadDir(&dir, 0, NULL, entryCount, entries))) {
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);

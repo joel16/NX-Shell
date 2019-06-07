@@ -7,13 +7,13 @@
 extern bool playing, paused;
 
 typedef struct {
-	bool has_meta;
-    char title[31];
-    char album[31];
-    char artist[31];
-    char year[5];
-    char comment[31];
-    char genre[31];
+    bool has_meta;
+    char title[64];
+    char album[64];
+    char artist[64];
+    char year[64];
+    char comment[64];
+    char genre[64];
     SDL_Texture *cover_image;
 } Audio_Metadata;
 

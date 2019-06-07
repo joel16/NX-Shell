@@ -14,7 +14,8 @@
 #include "xm.h"
 
 bool playing = true, paused = false;
-Audio_Metadata metadata;
+Audio_Metadata metadata = {0};
+static Audio_Metadata empty = {0};
 
 enum Audio_FileType {
 	FILE_TYPE_NONE = 0,
@@ -140,9 +141,7 @@ int Audio_Init(const char *path) {
 	SDL_AudioSpec want, have;
 	SDL_memset(&want, 0, sizeof(want));
 
-	// Clear struct
-	static const Audio_Metadata empty;
-	metadata = empty;
+	want.samples = 4096;
 
 	if (!strncasecmp(FS_GetFileExt(path), "flac", 4))
 		file_type = FILE_TYPE_FLAC;
@@ -177,6 +176,7 @@ int Audio_Init(const char *path) {
 		case FILE_TYPE_OPUS:
 			OPUS_Init(path);
 			want.format = AUDIO_S16;
+			want.samples = 960;
 			break;
 
 		case FILE_TYPE_WAV:
@@ -196,11 +196,6 @@ int Audio_Init(const char *path) {
 	want.freq = Audio_GetSampleRate();
 	want.channels = Audio_GetChannels();
 	want.userdata = NULL;
-	
-	if (file_type == FILE_TYPE_OPUS)
-		want.samples = 960;
-	else
-		want.samples = 4096;
 
 	want.callback = Audio_Callback;
 	audio_device = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
@@ -332,6 +327,10 @@ void Audio_Term(void) {
 
 	playing = true;
 	paused = false;
+
+	// Clear metadata struct
+	metadata = empty;
+	
 	SDL_PauseAudioDevice(audio_device, 1);
 	SDL_CloseAudioDevice(audio_device);
 }

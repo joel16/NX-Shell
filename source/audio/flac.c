@@ -1,3 +1,5 @@
+#include <FLAC/metadata.h>
+
 #include "audio.h"
 #define DR_FLAC_IMPLEMENTATION
 #include "dr_flac.h"
@@ -6,22 +8,70 @@
 static drflac *flac;
 static drflac_uint64 frames_read = 0;
 
-static void FLAC_MetaCallback(void *pUserData, drflac_metadata *pMetadata) {
-	if (pMetadata->type == DRFLAC_METADATA_BLOCK_TYPE_PICTURE) {
-		if (pMetadata->data.picture.type == DRFLAC_PICTURE_TYPE_COVER_FRONT) {
-			metadata.has_meta = true;
-
-			if ((!strcasecmp(pMetadata->data.picture.mime, "image/jpg")) || (!strcasecmp(pMetadata->data.picture.mime, "image/jpeg"))
-				|| (!strcasecmp(pMetadata->data.picture.mime, "image/png")))
-				SDL_LoadImageMem(&metadata.cover_image, (drflac_uint8 *)pMetadata->data.picture.pPictureData, pMetadata->data.picture.pictureDataSize);
-		}
-	}
-}
-
 int FLAC_Init(const char *path) {
-	flac = drflac_open_file_with_metadata(path, FLAC_MetaCallback, NULL);
+	flac = drflac_open_file(path);
 	if (flac == NULL)
 		return -1;
+
+	FLAC__StreamMetadata *tags;
+	if (FLAC__metadata_get_tags(path, &tags)) {
+		for (int i = 0; i < tags->data.vorbis_comment.num_comments; i++)  {
+			char *tag = (char *)tags->data.vorbis_comment.comments[i].entry;
+
+			if (!strncasecmp("TITLE=", tag, 6)) {
+				metadata.has_meta = true;
+				snprintf(metadata.title, 31, "%s\n", tag + 6);
+			}
+
+			if (!strncasecmp("ALBUM=", tag, 6)) {
+				metadata.has_meta = true;
+				snprintf(metadata.album, 31, "%s\n", tag + 6);
+			}
+
+			if (!strncasecmp("ARTIST=", tag, 7)) {
+				metadata.has_meta = true;
+				snprintf(metadata.artist, 31, "%s\n", tag + 7);
+			}
+
+			if (!strncasecmp("DATE=", tag, 5)) {
+				metadata.has_meta = true;
+				snprintf(metadata.year, 31, "%d\n", atoi(tag + 5));
+			}
+
+			if (!strncasecmp("COMMENT=", tag, 8)) {
+				metadata.has_meta = true;
+				snprintf(metadata.comment, 31, "%s\n", tag + 8);
+			}
+
+			if (!strncasecmp("GENRE=", tag, 6)) {
+				metadata.has_meta = true;
+				snprintf(metadata.genre, 31, "%s\n", tag + 6);
+			}
+		}
+	}
+
+	if (tags)
+		FLAC__metadata_object_delete(tags);
+
+	FLAC__StreamMetadata *picture;
+	if (FLAC__metadata_get_picture(path, &picture, FLAC__STREAM_METADATA_PICTURE_TYPE_FRONT_COVER, "image/jpg", NULL, (unsigned)(-1), (unsigned)(-1),
+		(unsigned)(-1), (unsigned)(-1))) {
+		metadata.has_meta = true;
+		SDL_LoadImageMem(&metadata.cover_image, picture->data.picture.data, picture->length);
+		FLAC__metadata_object_delete(picture);
+	}
+	else if (FLAC__metadata_get_picture(path, &picture, FLAC__STREAM_METADATA_PICTURE_TYPE_FRONT_COVER, "image/jpeg", NULL, (unsigned)(-1), (unsigned)(-1),
+		(unsigned)(-1), (unsigned)(-1))) {
+		metadata.has_meta = true;
+		SDL_LoadImageMem(&metadata.cover_image, picture->data.picture.data, picture->length);
+		FLAC__metadata_object_delete(picture);
+	}
+	else if (FLAC__metadata_get_picture(path, &picture, FLAC__STREAM_METADATA_PICTURE_TYPE_FRONT_COVER, "image/png", NULL, (unsigned)(-1), (unsigned)(-1),
+		(unsigned)(-1), (unsigned)(-1))) {
+		metadata.has_meta = true;
+		SDL_LoadImageMem(&metadata.cover_image, picture->data.picture.data, picture->length);
+		FLAC__metadata_object_delete(picture);
+	}
 
 	return 0;
 }

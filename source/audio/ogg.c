@@ -21,28 +21,29 @@ int OGG_Init(const char *path) {
 
 	max_lenth = ov_pcm_total(&ogg, -1);
 
-	char *value = NULL;
 	vorbis_comment *comment = ov_comment(&ogg, -1);
 	if (comment != NULL) {
 		metadata.has_meta = true;
 
+		char *value = NULL;
+
 		if ((value = vorbis_comment_query(comment, "title", 0)) != NULL)
-			strcpy(metadata.title, value);
+			snprintf(metadata.title, 31, "%s\n", value);
 
 		if ((value = vorbis_comment_query(comment, "album", 0)) != NULL)
-			strcpy(metadata.album, value);
+			snprintf(metadata.album, 31, "%s\n", value);
 
 		if ((value = vorbis_comment_query(comment, "artist", 0)) != NULL)
-			strcpy(metadata.artist, value);
+			snprintf(metadata.artist, 31, "%s\n", value);
 
 		if ((value = vorbis_comment_query(comment, "year", 0)) != NULL)
-			strcpy(metadata.year, value);
+			snprintf(metadata.year, 5, "%s\n", value);
 
 		if ((value = vorbis_comment_query(comment, "comment", 0)) != NULL)
-			strcpy(metadata.comment, value);
+			snprintf(metadata.comment, 31, "%s\n", value);
 
 		if ((value = vorbis_comment_query(comment, "genre", 0)) != NULL)
-			strcpy(metadata.genre, value);
+			snprintf(metadata.genre, 31, "%s\n", value);
 	}
 
 	return 0;
