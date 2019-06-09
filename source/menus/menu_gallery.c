@@ -31,7 +31,7 @@ static Result Gallery_GetImageList(void) {
 			for (u32 i = 0; i < entryCount; i++) {
 				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "png", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "jpg", 3)) || 
 					(!strncasecmp(FS_GetFileExt(entries[i].name), "bmp", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "gif", 3)) ||
-					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "webp", 4))) {
+					(!strncasecmp(FS_GetFileExt(entries[i].name), "webp", 4))) {
 					strcpy(album[count], cwd);
 					strcpy(album[count] + strlen(album[count]), entries[i].name);
 					count++;
