@@ -27,11 +27,11 @@ static void Dialog_DisplayBoxAndMsg(const char *title, const char *msg_1, const 
     SDL_DrawText(((1280 - (width)) / 2) + 30, ((720 - (height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, title);
 
     if (msg_1 && msg_2) {
-        SDL_DrawText(((1280 - (msg_1_width)) / 2), ((720 - (height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, msg_1);
-        SDL_DrawText(((1280 - (msg_2_width)) / 2), ((720 - (height)) / 2) + 130, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, msg_2);
+        SDL_DrawText(((1280 - (msg_1_width)) / 2), ((720 - (height)) / 2) + 100, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, msg_1);
+        SDL_DrawText(((1280 - (msg_2_width)) / 2), ((720 - (height)) / 2) + 135, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, msg_2);
     }
     else if (msg_1 && !msg_2)
-        SDL_DrawText(((1280 - (msg_1_width)) / 2), ((720 - (height)) / 2) + 111, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, msg_1);
+        SDL_DrawText(((1280 - (msg_1_width)) / 2), ((720 - (height)) / 2) + 120, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, msg_1);
 }
 
 void Dialog_DisplayMessage(const char *title, const char *msg_1, const char *msg_2) {
@@ -67,9 +67,9 @@ void Dialog_DisplayPrompt(const char *title, const char *msg_1, const char *msg_
     
     SDL_GetTextDimensions(25, "YES", &confirm_width, &confirm_height);
     SDL_GetTextDimensions(25, "NO", &cancel_width, &cancel_height);
-
+    
     if (*selection == 0)
-		SDL_DrawRect((1030 - (confirm_width)) - 20, (((720 - (height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, 
+        SDL_DrawRect((1030 - (confirm_width)) - 20, (((720 - (height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, 
             config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
     else if (*selection == 1)
         SDL_DrawRect((915 - (confirm_width)) - 20, (((720 - (height)) / 2) + 245) - 20, confirm_width + 40, cancel_height + 40, 

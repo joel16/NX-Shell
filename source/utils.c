@@ -34,8 +34,8 @@ void Utils_SetMin(int *set, int value, int min) {
 }
 
 int Utils_Alphasort(const void *p1, const void *p2) {
-	FsDirectoryEntry* entryA = (FsDirectoryEntry*) p1;
-	FsDirectoryEntry* entryB = (FsDirectoryEntry*) p2;
+	FsDirectoryEntry *entryA = (FsDirectoryEntry *)p1;
+	FsDirectoryEntry *entryB = (FsDirectoryEntry *)p2;
 	
 	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
 		return -1;

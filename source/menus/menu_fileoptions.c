@@ -20,7 +20,7 @@
 static int copymode = NOTHING_TO_COPY;
 static char copysource[FS_MAX_PATH];
 
-static int delete_dialog_selection = 0, row = 0, column = 0;
+static int delete_dialog_selection = 1, row = 0, column = 0;
 static bool copy_status = false, cut_status = false, options_more = false;
 
 static int delete_width = 0, delete_height = 0;
@@ -207,7 +207,7 @@ void Menu_ControlDeleteDialog(u64 input, TouchInfo touchInfo) {
 	Utils_SetMin(&delete_dialog_selection, 1, 0);
 
 	if (input & KEY_B) {
-		delete_dialog_selection = 0;
+		delete_dialog_selection = 1;
 		MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 	}
 
@@ -217,7 +217,7 @@ void Menu_ControlDeleteDialog(u64 input, TouchInfo touchInfo) {
 		else
 			MENU_DEFAULT_STATE = MENU_STATE_OPTIONS;
 
-		delete_dialog_selection = 0;
+		delete_dialog_selection = 1;
 	}
 
 	if (touchInfo.state == TouchStart) {
