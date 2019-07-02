@@ -4,9 +4,8 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-#include "archive.h"
 #include "common.h"
-#include "progress_bar.h"
+#include "dialog.h"
 #include "fs.h"
 #include "utils.h"
 
@@ -155,7 +154,7 @@ static Result unzExtractAll(const char *src, unzFile *unzHandle) {
 	}
 
 	for (unsigned int i = 0; i < global_info.number_entry; i++) {
-		ProgressBar_DisplayProgress("Extracting", filename, i, global_info.number_entry);
+		Dialog_DisplayProgress("Extracting", filename, i, global_info.number_entry);
 
 		if ((res = unzExtractCurrentFile(unzHandle, &path)) != UNZ_OK)
 			break;
@@ -227,7 +226,7 @@ Result Archive_ExtractRAR(const char *src) {
 		char unrar_path[512];
 		snprintf(unrar_path, 512, "%s%s", path, Archive_GetDirPath(filename));
 
-		ProgressBar_DisplayProgress("Extracting", Utils_Basename(filename), i, count);
+		Dialog_DisplayProgress("Extracting", Utils_Basename(filename), i, count);
 
 		if (!FS_DirExists(fs, unrar_path)) {
 			if ((strcmp(Archive_GetFileExt(unrar_path), "") == 0) || (dmc_unrar_file_is_directory(&rar_archive, i)))

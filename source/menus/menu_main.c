@@ -5,7 +5,7 @@
 #include "dirbrowse.h"
 #include "fs.h"
 #include "menu_main.h"
-#include "menu_options.h"
+#include "menu_fileoptions.h"
 #include "menu_ftp.h"
 #include "menu_settings.h"
 #include "SDL_helper.h"

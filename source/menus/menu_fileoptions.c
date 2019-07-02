@@ -1,24 +1,23 @@
 #include "common.h"
 #include "config.h"
+#include "dialog.h"
 #include "dirbrowse.h"
 #include "fs.h"
-#include "progress_bar.h"
-#include "menu_options.h"
+#include "menu_fileoptions.h"
 #include "keyboard.h"
 #include "SDL_helper.h"
 #include "textures.h"
 #include "utils.h"
 
 /*
-*	Copy Mode
-*	-1 : Nothing
-*	0  : Copy
-*	1  : Move
+*	Copy Flags
 */
+#define COPY_FOLDER_RECURSIVE 2
+#define COPY_DELETE_ON_FINISH 1
+#define COPY_KEEP_ON_FINISH   0
+#define NOTHING_TO_COPY      -1
+
 static int copymode = NOTHING_TO_COPY;
-/*
-*	Copy Move Origin
-*/
 static char copysource[FS_MAX_PATH];
 
 static int delete_dialog_selection = 0, row = 0, column = 0;
@@ -243,25 +242,10 @@ void Menu_ControlDeleteDialog(u64 input, TouchInfo touchInfo) {
 }
 
 void Menu_DisplayDeleteDialog(void) {
-	u32 text_width = 0;
-	SDL_GetTextDimensions(25, "Do you want to continue?", &text_width, NULL);
 	SDL_GetTextDimensions(25, "YES", &delete_confirm_width, &delete_confirm_height);
 	SDL_GetTextDimensions(25, "NO", &delete_cancel_width, &delete_cancel_height);
-
 	SDL_QueryTexture(dialog, NULL, NULL, &delete_width, &delete_height);
-
-	SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 50: 80));
-	SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (delete_width)) / 2), ((720 - (delete_height)) / 2));
-	SDL_DrawText(((1280 - (delete_width)) / 2) + 30, ((720 - (delete_height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Confirm deletion");
-	SDL_DrawText(((1280 - (text_width)) / 2), ((720 - (delete_height)) / 2) + 130, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Do you wish to continue?");
-
-	if (delete_dialog_selection == 0)
-		SDL_DrawRect((1030 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_confirm_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-	else if (delete_dialog_selection == 1)
-		SDL_DrawRect((915 - (delete_confirm_width)) - 20, (((720 - (delete_height)) / 2) + 245) - 20, delete_confirm_width + 40, delete_cancel_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
-
-	SDL_DrawText(1030 - (delete_confirm_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "YES");
-	SDL_DrawText(910 - (delete_cancel_width), ((720 - (delete_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
+	Dialog_DisplayPrompt("Confirm deletion", "Do you wish to continue?", NULL, &delete_dialog_selection, false);
 }
 
 void Menu_ControlProperties(u64 input, TouchInfo touchInfo) {
@@ -369,7 +353,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 		offset += bytes_read;
 
 		if (display_animation)
-			ProgressBar_DisplayProgress(copymode == 1? "Moving" : "Copying", Utils_Basename(temp_path_src), offset, size);
+			Dialog_DisplayProgress(copymode == 1? "Moving" : "Copying", Utils_Basename(temp_path_src), offset, size);
 	}
 	while(offset < size);
 
@@ -530,7 +514,7 @@ static Result FileOptions_Paste(void) {
 	return ret; // Return result
 }
 
-static void HandleCopy() {
+static void HandleCopy(void) {
 	appletLockExit();
 
 	if ((!copy_status) && (!cut_status )) {
@@ -576,7 +560,7 @@ static void HandleCopy() {
 	appletUnlockExit();
 }
 
-static void HandleCut() {
+static void HandleCut(void) {
 	appletLockExit();
 
 	if ((!cut_status ) && (!copy_status)) {
