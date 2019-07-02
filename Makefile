@@ -52,7 +52,7 @@ APP_VERSION   := ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
 #---------------------------------------------------------------------------------
 ARCH	 := -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE
 
-CFLAGS	 := -g -Wall -O2 -ffunction-sections \
+CFLAGS	 := -g -Wall -O3 -ffunction-sections \
             -DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO) \
             -DAPP_TITLE="\"$(APP_TITLE)\"" \
             -DGITVERSION="\"${GITVERSION}\"" \
@@ -66,8 +66,8 @@ ASFLAGS	 := -g $(ARCH)
 LDFLAGS	 = -specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 LIBS	 := -lSDL2_ttf -lSDL2_image -lwebp -lpng -lturbojpeg -lSDL2 -lSDL2_gfx `sdl2-config --libs` `freetype-config --libs`\
-            -lxmp-lite -lmpg123 -lFLAC -lopusfile -lopus -lvorbisidec -logg \
-            -lnx -lm -lminizip
+        	-larchive -lbz2 -llzma -lz -lxmp-lite -lmpg123 -lFLAC -lopusfile -lopus -lvorbisidec -logg \
+            -lnx -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

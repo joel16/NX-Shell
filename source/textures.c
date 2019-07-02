@@ -12,7 +12,6 @@ void Textures_Load(void) {
 	SDL_LoadImage(&icon_file, "romfs:/res/drawable/ic_fso_default.png");
 	SDL_LoadImage(&icon_image, "romfs:/res/drawable/ic_fso_type_image.png");
 	SDL_LoadImage(&icon_text, "romfs:/res/drawable/ic_fso_type_text.png");
-	SDL_LoadImage(&icon_video, "romfs:/res/drawable/ic_fso_type_video.png");
 	SDL_LoadImage(&icon_check, "romfs:/res/drawable/btn_material_light_check_on_normal.png");
 	SDL_LoadImage(&icon_check_dark, "romfs:/res/drawable/btn_material_light_check_on_normal_dark.png");
 	SDL_LoadImage(&icon_uncheck, "romfs:/res/drawable/btn_material_light_check_off_normal.png");
@@ -135,7 +134,6 @@ void Textures_Free(void) {
 	SDL_DestroyTexture(icon_uncheck);
 	SDL_DestroyTexture(icon_check_dark);
 	SDL_DestroyTexture(icon_check);
-	SDL_DestroyTexture(icon_video);
 	SDL_DestroyTexture(icon_text);
 	SDL_DestroyTexture(icon_image);
 	SDL_DestroyTexture(icon_file);

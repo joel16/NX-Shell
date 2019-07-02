@@ -23,8 +23,8 @@ void Dirbrowse_RecursiveFree(File *node) {
 }
 
 static int cmpstringp(const void *p1, const void *p2) {
-	FsDirectoryEntry *entryA = (FsDirectoryEntry *) p1;
-	FsDirectoryEntry *entryB = (FsDirectoryEntry *) p2;
+	FsDirectoryEntry *entryA = (FsDirectoryEntry *)p1;
+	FsDirectoryEntry *entryB = (FsDirectoryEntry *)p2;
 	u64 sizeA = 0, sizeB = 0;
 	
 	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
@@ -178,21 +178,28 @@ void Dirbrowse_DisplayFiles(void) {
 				SDL_DrawImageScale(config.dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "nro", 3)) || (!strncasecmp(file->ext, "elf", 3)) || (!strncasecmp(file->ext, "bin", 3)))
 				SDL_DrawImageScale(icon_app, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "zip", 3)) || (!strncasecmp(file->ext, "rar", 3)) || (!strncasecmp(file->ext, "lz4", 3)))
+			else if ((!strncasecmp(file->ext, "7z", 2)) || (!strncasecmp(file->ext, "ar", 2)) || (!strncasecmp(file->ext, "cpio", 4))
+				|| (!strncasecmp(file->ext, "grz", 3)) || (!strncasecmp(file->ext, "iso", 3)) || (!strncasecmp(file->ext, "lrz", 3))
+				|| (!strncasecmp(file->ext, "mtree", 5)) || (!strncasecmp(file->ext, "rar", 3)) || (!strncasecmp(file->ext, "shar", 4))
+				|| (!strncasecmp(file->ext, "tar", 3)) || (!strncasecmp(file->ext, "taz", 3)) || (!strncasecmp(file->ext, "tbz", 3))
+				|| (!strncasecmp(file->ext, "tgz", 3)) || (!strncasecmp(file->ext, "tlz", 3)) || (!strncasecmp(file->ext, "txz", 3))
+				|| (!strncasecmp(file->ext, "tz", 2)) || (!strncasecmp(file->ext, "tz2", 3)) || (!strncasecmp(file->ext, "tzma", 4))
+				|| (!strncasecmp(file->ext, "tzo", 3)) || (!strncasecmp(file->ext, "tzst", 4)) || (!strncasecmp(file->ext, "uu", 2))
+				|| (!strncasecmp(file->ext, "war", 3)) || (!strncasecmp(file->ext, "xar", 3)) || (!strncasecmp(file->ext, "zip", 3))
+				|| (!strncasecmp(file->ext, "zst", 3)))
 				SDL_DrawImageScale(icon_archive, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "it", 2)) || (!strncasecmp(file->ext, "mod", 3)) || (!strncasecmp(file->ext, "mp3", 3))
-				|| (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4)) || (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3))
-				|| (!strncasecmp(file->ext, "xm", 2)))
+			else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "it", 2)) || (!strncasecmp(file->ext, "mod", 3))
+				|| (!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4))
+				|| (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "xm", 2)))
 				SDL_DrawImageScale(icon_audio, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "gif", 3))
-				|| (!strncasecmp(file->ext, "webp", 4)))
+			else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3))
+				|| (!strncasecmp(file->ext, "gif", 3)) || (!strncasecmp(file->ext, "webp", 4)))
 				SDL_DrawImageScale(icon_image, 80, 141 + (73 * printed), 72, 72);
 			else if ((!strncasecmp(file->ext, "txt", 3)) || (!strncasecmp(file->ext, "lua", 3)) || (!strncasecmp(file->ext, "cfg", 3)))
 				SDL_DrawImageScale(icon_text, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3)) || (!strncasecmp(file->ext, "epub", 4)))
+			else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3))
+				|| (!strncasecmp(file->ext, "epub", 4)))
 				SDL_DrawImageScale(icon_doc, 80, 141 + (73 * printed), 72, 72);
-			else if ((!strncasecmp(file->ext, "avi", 3)) || (!strncasecmp(file->ext, "flv", 3)) || (!strncasecmp(file->ext, "mkv", 3)) || (!strncasecmp(file->ext, "mp4", 3)))
-				SDL_DrawImageScale(icon_video, 80, 141 + (73 * printed), 72, 72);
 			else
 				SDL_DrawImageScale(icon_file, 80, 141 + (73 * printed), 72, 72);
 
@@ -262,21 +269,26 @@ void Dirbrowse_OpenFile(void) {
 			Dirbrowse_PopulateFiles(true);
 		}
 	}
-	else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3)) || (!strncasecmp(file->ext, "webp", 4)))
+	else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3))
+		|| (!strncasecmp(file->ext, "webp", 4)))
 		Gallery_DisplayImage(path);
-	else if (!strncasecmp(file->ext, "zip", 3)) {
-		Archive_ExtractZIP(path);
-		Dirbrowse_PopulateFiles(true);
-	}
-	else if (!strncasecmp(file->ext, "rar", 3)) {
-		Archive_ExtractRAR(path);
-		Dirbrowse_PopulateFiles(true);
+	else if ((!strncasecmp(file->ext, "7z", 2)) || (!strncasecmp(file->ext, "ar", 2)) || (!strncasecmp(file->ext, "cpio", 4))
+		|| (!strncasecmp(file->ext, "grz", 3)) || (!strncasecmp(file->ext, "iso", 3)) || (!strncasecmp(file->ext, "lrz", 3))
+		|| (!strncasecmp(file->ext, "mtree", 5)) || (!strncasecmp(file->ext, "rar", 3)) || (!strncasecmp(file->ext, "shar", 4))
+		|| (!strncasecmp(file->ext, "tar", 3)) || (!strncasecmp(file->ext, "taz", 3)) || (!strncasecmp(file->ext, "tbz", 3))
+		|| (!strncasecmp(file->ext, "tgz", 3)) || (!strncasecmp(file->ext, "tlz", 3)) || (!strncasecmp(file->ext, "txz", 3))
+		|| (!strncasecmp(file->ext, "tz", 2)) || (!strncasecmp(file->ext, "tz2", 3)) || (!strncasecmp(file->ext, "tzma", 4))
+		|| (!strncasecmp(file->ext, "tzo", 3)) || (!strncasecmp(file->ext, "tzst", 4)) || (!strncasecmp(file->ext, "uu", 2))
+		|| (!strncasecmp(file->ext, "war", 3)) || (!strncasecmp(file->ext, "xar", 3)) || (!strncasecmp(file->ext, "zip", 3))
+		|| (!strncasecmp(file->ext, "zst", 3))) {
+		if (R_SUCCEEDED(Archive_ExtractFile(path)))
+			Dirbrowse_PopulateFiles(true);
 	}
 	else if (!strncasecmp(file->ext, "gif", 3))
 		Gallery_DisplayGif(path);
-	else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "it", 2)) || (!strncasecmp(file->ext, "mod", 3)) || (!strncasecmp(file->ext, "mp3", 3))
-		|| (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4)) || (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3))
-		|| (!strncasecmp(file->ext, "xm", 2)))
+	else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "it", 2)) || (!strncasecmp(file->ext, "mod", 3))
+		|| (!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4))
+		|| (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "xm", 2)))
 		Menu_PlayMusic(path);
 }
 
