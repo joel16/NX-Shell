@@ -22,13 +22,13 @@ Work in progress port of 3DShell (Multi purpose file manager) to the Nintendo Sw
 Ensure that you have the following dependencies installed via [dkp-pacman](https://github.com/devkitPro/pacman):
 ```bash
 sudo dkp-pacman -Syu switch-dev
-sudo dkp-pacman -S switch-sdl2 switch-sdl2_gfx switch-sdl2_image switch-sdl2_mixer switch-sdl2_ttf
-sudo dkp-pacman -S switch-opusfile
+sudo dkp-pacman -S switch-sdl2 switch-sdl2_gfx switch-sdl2_image switch-sdl2_ttf
+sudo dkp-pacman -S switch-opusfile switch-liblzma
 ```
 
 Clone and compile the program:
 ```bash
-git clone --recursive https://github.com/joel16/NX-Shell.git
+git clone https://github.com/joel16/NX-Shell.git
 cd NX-Shell
 make
 ```
