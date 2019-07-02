@@ -175,9 +175,8 @@ int Archive_ExtractFile(const char *path) {
 			break;
 		
 		if (kDown & KEY_A) {
-			if (dialog_selection == 0) {
+			if (dialog_selection == 0)
 				return Archive_ExtractArchive(path);
-			}
 			else
 				break;
 		}

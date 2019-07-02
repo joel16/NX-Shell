@@ -12,6 +12,8 @@
 #include "textures.h"
 #include "utils.h"
 
+static void *addr;
+
 static void Term_Services(void) {
 	fsdevUnmountDevice("NX-Shell_USER");
 	fsdevUnmountDevice("NX-Shell_SYSTEM");
@@ -23,14 +25,18 @@ static void Term_Services(void) {
 	SDL_HelperTerm();
 	romfsExit();
 	psmExit();
+	
+	svcSetHeapSize(&addr, ((u8 *)envGetHeapOverrideAddr() + envGetHeapOverrideSize()) - (u8 *)addr);
 }
 
 static Result Init_Services(void) {
 	Result ret = 0;
-	void *addr;
 	
 	if (R_FAILED(ret = svcSetHeapSize(&addr, 0x10000000)))
 		return ret;
+
+	extern char *fake_heap_end;
+	fake_heap_end = (char *) addr + 0x10000000;
 
 	if (R_FAILED(ret = psmInitialize()))
 		return ret;
