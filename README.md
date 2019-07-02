@@ -1,21 +1,21 @@
 # NX-Shell
 
-Work in progress port of 3DShell (Multi purpose file manager) to the Nintendo Switch.
+NX Shell is a multi-purpose file manager for the Nintendo Switch that aims towards handling media files. NX Shell leans towards more of the file management features such as opening and managing various files types and includes the basic necessity of a standard file manager. This program's design elements are clearly inspired by CyanogenMod/LineageOS's built in file manager, and so all credits towards the design go to the CyanogenMod/LineageOS contributors.
 
 # Features:
 
 - Delete files and folders.
 - Copy/Move files and folders.
-- Rename files and folders.
-- Create folders.
-- Displays file size. (files only ATM)
-- Image viewer (PNG/JPG/BMP)
-- Render animated GIFs.
-- Extract .ZIP and .RAR files.
+- Rename files and folders (standard switch keyboard).
+- Create files and folders (standard switch keyboard).
+- Displays file size
+- Image viewer (GIF, JPG, PNG, WEBP)
+- Display animated GIFs.
+- Extract various archives such as ZIP, RAR, 7Z, ISO 9660, AR, XAR and others supported by libarchive. 
 - Sorting options (Sort by name, date, size).
 - Dark theme toggle.
 - Audio playback. (Following formats are supported: FLAC, IT, MOD, MP3, OGG, OPUS, S3M and WAV)
-- Touch screen.
+- Touch screen in most cases.
 
 # Build instructions
 
