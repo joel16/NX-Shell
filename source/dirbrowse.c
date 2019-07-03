@@ -3,6 +3,7 @@
 #include "dirbrowse.h"
 #include "fs.h"
 #include "menu_archive.h"
+#include "menu_error.h"
 #include "menu_gallery.h"
 #include "menu_music.h"
 #include "SDL_helper.h"

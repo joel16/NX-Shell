@@ -95,6 +95,19 @@ u64 OPUS_GetLength(void) {
 	return max_samples;
 }
 
+u64 OPUS_Seek(u64 index) {
+	if (op_seekable(opus) >= 0) {
+		ogg_int64_t seek_sample = (max_samples * (index / 640.0));
+		
+		if (op_pcm_seek(opus, seek_sample) >= 0) {
+			samples_read = seek_sample;
+			return samples_read;
+		}
+	}
+	
+	return -1;
+}
+
 void OPUS_Term(void) {
 	samples_read = 0;
 	op_free(opus);

@@ -7,6 +7,7 @@ u8 OPUS_GetChannels(void);
 void OPUS_Decode(void *buf, unsigned int length, void *userdata);
 u64 OPUS_GetPosition(void);
 u64 OPUS_GetLength(void);
+u64 OPUS_Seek(u64 index);
 void OPUS_Term(void);
 
 #endif

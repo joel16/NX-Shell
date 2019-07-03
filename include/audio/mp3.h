@@ -7,6 +7,7 @@ u8 MP3_GetChannels(void);
 void MP3_Decode(void *buf, unsigned int length, void *userdata);
 u64 MP3_GetPosition(void);
 u64 MP3_GetLength(void);
+u64 MP3_Seek(u64 index);
 void MP3_Term(void);
 
 #endif

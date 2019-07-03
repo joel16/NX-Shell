@@ -295,6 +295,37 @@ u64 Audio_GetLengthSeconds(void) {
 	return (Audio_GetLength()/Audio_GetSampleRate());
 }
 
+void Audio_Seek(u64 index) {
+	switch(file_type) {
+		case FILE_TYPE_FLAC:
+			FLAC_Seek(index);
+			break;
+
+		case FILE_TYPE_MP3:
+			MP3_Seek(index);
+			break;
+
+		case FILE_TYPE_OGG:
+			OGG_Seek(index);
+			break;
+
+		case FILE_TYPE_OPUS:
+			OPUS_Seek(index);
+			break;
+
+		case FILE_TYPE_WAV:
+			WAV_Seek(index);
+			break;
+
+		case FILE_TYPE_XM:
+			XM_Seek(index);
+			break;
+
+		default:
+			break;
+	}
+}
+
 void Audio_Term(void) {
 	switch(file_type) {
 		case FILE_TYPE_FLAC:

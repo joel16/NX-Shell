@@ -247,7 +247,16 @@ void Menu_PlayMusic(char *path) {
 			}
 		}
 
-		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+		if (touchInfo.state == TouchMoving && touchInfo.tapType == TapNone && tapped_inside(touchInfo, 605, 635, 1245, 680)) {
+			if (!paused)
+				Audio_Pause();
+
+			Audio_Seek(touchInfo.prevTouch.px - 605);
+
+			if (paused)
+				Audio_Pause();
+		}
+		else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 			if (tapped_inside(touchInfo, 40, 66, 108, 114)) {
 				Audio_Stop();
 				break;

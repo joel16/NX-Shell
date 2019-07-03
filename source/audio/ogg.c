@@ -94,6 +94,17 @@ u64 OGG_GetLength(void) {
 	return max_lenth;
 }
 
+u64 OGG_Seek(u64 index) {
+	ogg_int64_t seek_sample = (max_lenth * (index / 640.0));
+	
+	if (ov_pcm_seek(&ogg, seek_sample) >= 0) {
+		samples_read = seek_sample;
+		return samples_read;
+	}
+	
+	return -1;
+}
+
 void OGG_Term(void) {
 	samples_read = 0;
 
