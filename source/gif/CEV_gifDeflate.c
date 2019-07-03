@@ -173,7 +173,7 @@ int L_gifExtFillRW(L_GifFile *gif, SDL_RWops* file)
     {/*switch file extension type*/
 
         case 0xf9 : /*Graphics Control Extension*/
-            L_gifGceFillRW(&gif->gce, file);/*vérifié*/
+            L_gifGceFillRW(&gif->gce, file);/*vï¿½rifiï¿½*/
         break;
 
         /* TODO (cedric#1#): eventually to be taken into consideration but why ? */
@@ -430,7 +430,7 @@ int L_gifComExtFillRW(L_GifComExt *ext, SDL_RWops* file)
 
         CEV_gifReadWriteErr++;
 
-    /*debug supprimé ici*/
+    /*debug supprimï¿½ ici*/
     /*ext->text[temp-1]='\0';*/
 
     if(CEV_gifReadWriteErr)
@@ -614,7 +614,7 @@ void L_gifLzw(void *codeStream, L_GifFile *gif, unsigned int lzwMinCode)
             EOICode         = resetCode + 1;
 
     L_GifDico codeTable;
-    L_GifDicoEntry prevString;
+    L_GifDicoEntry prevString = {0};
 
     /*** PRL ***/
 
