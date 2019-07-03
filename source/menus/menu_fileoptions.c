@@ -3,6 +3,7 @@
 #include "dialog.h"
 #include "dirbrowse.h"
 #include "fs.h"
+#include "menu_error.h"
 #include "menu_fileoptions.h"
 #include "keyboard.h"
 #include "SDL_helper.h"
@@ -65,8 +66,10 @@ static Result FileOptions_CreateFolder(void) {
 	strcat(path, buf);
 	free(buf);
 
-	if (R_FAILED(ret = FS_MakeDir(fs, path)))
+	if (R_FAILED(ret = FS_MakeDir(fs, path))) {
+		Menu_DisplayError("FS_MakeDir() failed!", ret);
 		return ret;
+	}
 
 	Dirbrowse_PopulateFiles(true);
 	options_more = false;
@@ -87,8 +90,10 @@ static Result FileOptions_CreateFile(void) {
 	strcat(path, buf);
 	free(buf);
 
-	if (R_FAILED(ret = FS_CreateFile(fs, path, 0, 0)))
+	if (R_FAILED(ret = FS_CreateFile(fs, path, 0, 0))) {
+		Menu_DisplayError("FS_CreateFile() failed!", ret);
 		return ret;
+	}
 	
 	Dirbrowse_PopulateFiles(true);
 	options_more = false;
@@ -118,12 +123,16 @@ static Result FileOptions_Rename(void) {
 	free(buf);
 
 	if (file->isDir) {
-		if (R_FAILED(ret = FS_RenameDir(fs, oldPath, newPath)))
+		if (R_FAILED(ret = FS_RenameDir(fs, oldPath, newPath))) {
+			Menu_DisplayError("FS_RenameDir() failed!", ret);
 			return ret;
+		}
 	}
 	else {
-		if (R_FAILED(ret = FS_RenameFile(fs, oldPath, newPath)))
+		if (R_FAILED(ret = FS_RenameFile(fs, oldPath, newPath))) {
+			Menu_DisplayError("FS_RenameFile() failed!", ret);
 			return ret;
+		}
 	}
 	
 	Dirbrowse_PopulateFiles(true);
@@ -155,14 +164,18 @@ static Result FileOptions_Delete(void) {
 		path[strlen(path)] = '/';
 
 		// Delete Folder
-		if (R_FAILED(ret = FS_RemoveDirRecursive(fs, path)))
+		if (R_FAILED(ret = FS_RemoveDirRecursive(fs, path))) {
+			Menu_DisplayError("FS_RenameFile() failed!", ret);
 			return ret;
+		}
 	}
 
 	// Delete File
 	else {
-		if (R_FAILED(ret = FS_RemoveFile(fs, path)))
+		if (R_FAILED(ret = FS_RemoveFile(fs, path))) {
+			Menu_DisplayError("FS_RemoveFile() failed!", ret);
 			return ret;
+		}
 	}
 
 	return 0;
@@ -269,7 +282,7 @@ void Menu_DisplayProperties(void) {
 	strcpy(path, cwd);
 	strcpy(path + strlen(path), file->name);
 
-	SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 50: 80));
+	SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 55 : 80));
 	SDL_DrawImage(config.dark_theme? properties_dialog_dark : properties_dialog, 350, 85);
 	SDL_DrawText(380, 115, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Properties");
 
@@ -303,7 +316,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 
 	if (R_FAILED(ret = fsFsOpenFile(FileOptions_GetPreviousMount(), temp_path_src, FS_OPEN_READ, &src_handle))) {
 		fsFileClose(&src_handle);
-		//Menu_DisplayError("fsFsOpenFile failed:", ret);
+		Menu_DisplayError("fsFsOpenFile() failed:", ret);
 		return ret;
 	}
 
@@ -313,7 +326,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path_dst, FS_OPEN_WRITE, &dst_handle))) {
 		fsFileClose(&src_handle);
 		fsFileClose(&dst_handle);
-		//Menu_DisplayError("fsFsOpenFile failed:", ret);
+		Menu_DisplayError("fsFsOpenFile() failed:", ret);
 		return ret;
 	}
 
@@ -332,21 +345,21 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 			free(buf);
 			fsFileClose(&src_handle);
 			fsFileClose(&dst_handle);
-			//Menu_DisplayError("fsFileRead failed:", ret);
+			Menu_DisplayError("fsFileRead() failed:", ret);
 			return ret;
 		}
 		if (R_FAILED(ret = fsFileWrite(&dst_handle, offset, buf, bytes_read))) {
 			free(buf);
 			fsFileClose(&src_handle);
 			fsFileClose(&dst_handle);
-			//Menu_DisplayError("fsFileWrite failed:", ret);
+			Menu_DisplayError("fsFileWrite() failed:", ret);
 			return ret;
 		}
 		if (R_FAILED(ret = fsFileFlush(&dst_handle))) {
 			free(buf);
 			fsFileClose(&src_handle);
 			fsFileClose(&dst_handle);
-			//Menu_DisplayError("fsFileFlush failed:", ret);
+			Menu_DisplayError("fsFileFlush() failed:", ret);
 			return ret;
 		}
 
@@ -371,8 +384,10 @@ static Result FileOptions_CopyDir(char *src, char *dst) {
 		FS_MakeDir(fs, dst);
 
 		u64 entryCount = 0;
-		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount)))
+		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount))) {
+			Menu_DisplayError("FS_GetDirEntryCount() failed!", ret);
 			return ret;
+		}
 		
 		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
 
@@ -628,8 +643,10 @@ static Result FileOptions_SetArchiveBit(void) {
 		path[strlen(path)] = '/';
 
 		// Set archive bit to path
-		if (R_FAILED(ret = FS_SetArchiveBit(fs, path)))
+		if (R_FAILED(ret = FS_SetArchiveBit(fs, path))) {
+			Menu_DisplayError("FS_SetArchiveBit() failed!", ret);
 			return ret;
+		}
 	}
 
 	return 0;
@@ -844,7 +861,7 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 }
 
 void Menu_DisplayOptions(void) {
-	SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 50: 80));
+	SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 55 : 80));
 	SDL_DrawImage(config.dark_theme? options_dialog_dark : options_dialog, 350, 85);
 	SDL_DrawText(380, 115, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "Actions");
 

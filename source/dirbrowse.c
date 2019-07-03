@@ -77,8 +77,10 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 		}
 		
 		u64 entryCount = 0;
-		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount)))
+		if (R_FAILED(ret = FS_GetDirEntryCount(&dir, &entryCount))) {
+			Menu_DisplayError("FS_GetDirEntryCount() failed:", ret);
 			return ret;
+		}
 		
 		FsDirectoryEntry *entries = (FsDirectoryEntry*)calloc(entryCount + 1, sizeof(FsDirectoryEntry));
 
@@ -231,8 +233,10 @@ static Result Dirbrowse_SaveLastDirectory(void) {
 	Result ret = 0;
 
 	if (BROWSE_STATE == STATE_SD) {
-		if (R_FAILED(ret = FS_Write(fs, "/switch/NX-Shell/lastdir.txt", cwd)))
+		if (R_FAILED(ret = FS_Write(fs, "/switch/NX-Shell/lastdir.txt", cwd))) {
+			Menu_DisplayError("FS_Write(NX-Shell/lastdir.txt) failed:", ret);
 			return ret;
+		}
 	}
 
 	return 0;
