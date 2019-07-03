@@ -3,11 +3,13 @@
 
 #include "common.h"
 #include "config.h"
+#include "dialog.h"
 #include "dirbrowse.h"
 #include "ftp.h"
 #include "SDL_helper.h"
 #include "status_bar.h"
 #include "textures.h"
+#include "touch_helper.h"
 
 void Menu_FTP(void) {
 	nifmInitialize();
@@ -19,14 +21,19 @@ void Menu_FTP(void) {
 	Result ret = gethostname(hostname, sizeof(hostname));
 
 	char *hostname_disp = malloc(138);
-	snprintf(hostname_disp, 138, "%s:5000", hostname);
+	snprintf(hostname_disp, 138, "IP: %s:5000", hostname);
 
 	u32 ip_width = 0, instruc_width = 0, transfer_width = 0;
 	SDL_GetTextDimensions(25, hostname_disp, &ip_width, NULL);
 	SDL_GetTextDimensions(25, "Press B key to exit FTP mode.", &instruc_width, NULL);
-
+	
 	int dialog_width = 0, dialog_height = 0;
+	u32 confirm_width = 0, confirm_height = 0;
+	SDL_GetTextDimensions(25, "OK", &confirm_width, &confirm_height);
 	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
+	
+	TouchInfo touchInfo;
+	Touch_Init(&touchInfo);
 
 	while(appletMainLoop()) {
 		ftp_loop();
@@ -38,13 +45,8 @@ void Menu_FTP(void) {
 		StatusBar_DisplayTime();
 		Dirbrowse_DisplayFiles();
 
-		SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (dialog_width)) / 2), ((720 - (dialog_height)) / 2));
-		SDL_DrawText(((1280 - (dialog_width)) / 2) + 30, ((720 - (dialog_height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "FTP");
-
-		SDL_DrawText(((1280 - (ip_width)) / 2), ((720 - (dialog_height)) / 2) + 70, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, 
-			R_SUCCEEDED(ret)? hostname_disp : NULL);
-		SDL_DrawText(((1280 - (instruc_width)) / 2), ((720 - (dialog_height)) / 2) + 120, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Press B key to exit FTP mode.");
-
+		Dialog_DisplayMessage("FTP", R_SUCCEEDED(ret)? hostname_disp : NULL, "Press B key or tap \"OK\" to exit FTP mode.", false);
+		
 		if (strlen(ftp_file_transfer) != 0) {
 			SDL_GetTextDimensions(25, ftp_file_transfer, &transfer_width, NULL);
 			SDL_DrawText(((1280 - (transfer_width)) / 2), ((720 - (dialog_height)) / 2) + 170, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, ftp_file_transfer);
@@ -66,10 +68,17 @@ void Menu_FTP(void) {
 		SDL_Renderdisplay();
 
 		hidScanInput();
+		Touch_Process(&touchInfo);
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
 		if (kDown & KEY_B)
 			break;
+		
+		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
+            // Confirm Button
+            if (tapped_inside(touchInfo, 1010 - confirm_width, (720 - dialog_height) / 2 + 225, 1050 + confirm_width, (720 - dialog_height) / 2 + 265 + confirm_height))
+                break;
+        }
 	}
 
 	free(hostname_disp);

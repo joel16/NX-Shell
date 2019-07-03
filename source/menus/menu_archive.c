@@ -156,7 +156,7 @@ int Archive_ExtractFile(const char *path) {
 	SDL_GetTextDimensions(25, "NO", &cancel_width, &cancel_height);
 	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
 
-	while (1) {
+	while(appletMainLoop()) {
 		Dialog_DisplayPrompt("Extract file", "This may take a few minutes.", "Do you want to continue?", &dialog_selection, true);
 
 		hidScanInput();

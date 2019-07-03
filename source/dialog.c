@@ -22,7 +22,7 @@ static void Dialog_DisplayBoxAndMsg(const char *title, const char *msg_1, const 
 
     SDL_QueryTexture(config.dark_theme? dialog_dark : dialog, NULL, NULL, &width, &height);
     
-    SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 50: 80));
+    SDL_DrawRect(0, 40, 1280, 680, FC_MakeColor(0, 0, 0, config.dark_theme? 55 : 80));
     SDL_DrawImage(config.dark_theme? dialog_dark : dialog, ((1280 - (width)) / 2), ((720 - (height)) / 2));
     SDL_DrawText(((1280 - (width)) / 2) + 30, ((720 - (height)) / 2) + 30, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, title);
 
@@ -34,7 +34,7 @@ static void Dialog_DisplayBoxAndMsg(const char *title, const char *msg_1, const 
         SDL_DrawText(((1280 - (msg_1_width)) / 2), ((720 - (height)) / 2) + 120, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, msg_1);
 }
 
-void Dialog_DisplayMessage(const char *title, const char *msg_1, const char *msg_2) {
+void Dialog_DisplayMessage(const char *title, const char *msg_1, const char *msg_2, bool with_bg) {
     u32 text_width1 = 0, text_width2 = 0, confirm_width = 0, confirm_height = 0;
     
     if (msg_1)
@@ -43,7 +43,7 @@ void Dialog_DisplayMessage(const char *title, const char *msg_1, const char *msg
     if (msg_2)
         SDL_GetTextDimensions(25, msg_2, &text_width2, NULL);
     
-    Dialog_DisplayBoxAndMsg(title, msg_1, msg_2, text_width1, text_width2, true);
+    Dialog_DisplayBoxAndMsg(title, msg_1, msg_2, text_width1, text_width2, with_bg);
 
     SDL_GetTextDimensions(25, "OK", &confirm_width, &confirm_height);
 
@@ -51,7 +51,8 @@ void Dialog_DisplayMessage(const char *title, const char *msg_1, const char *msg
         config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
     SDL_DrawText(1030 - (confirm_width), ((720 - (height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
 
-    SDL_Renderdisplay();
+    if (with_bg)
+        SDL_Renderdisplay();
 }
 
 void Dialog_DisplayPrompt(const char *title, const char *msg_1, const char *msg_2, int *selection, bool with_bg) {

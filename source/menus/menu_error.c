@@ -20,8 +20,8 @@ void Menu_DisplayError(const char *msg, int ret) {
     SDL_GetTextDimensions(25, "OK", &confirm_width, &confirm_height);
     SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
     
-    while (1) {
-        Dialog_DisplayMessage("Error", msg, result);
+    while(appletMainLoop()) {
+        Dialog_DisplayMessage("Error", msg, result, true);
         
         hidScanInput();
         Touch_Process(&touchInfo);
