@@ -137,7 +137,6 @@ static void Menu_DisplayAboutDialog(void) {
 	SDL_GetTextDimensions(20, "Author: Joel16", &text2_width, NULL);
 	SDL_GetTextDimensions(20, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors", &text3_width, NULL);
 	SDL_GetTextDimensions(20, "Touch screen: StevenMattera", &text4_width, NULL);
-	SDL_GetTextDimensions(20, "E-Book Reader: rock88", &text5_width, NULL);
 	SDL_GetTextDimensions(25, "OK", &confirm_width, &confirm_height);
 
 	SDL_QueryTexture(dialog, NULL, NULL, &dialog_width, &dialog_height);
@@ -149,7 +148,6 @@ static void Menu_DisplayAboutDialog(void) {
 	SDL_DrawText(((1280 - (text2_width)) / 2), ((720 - (dialog_height)) / 2) + 100, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Author: Joel16");
 	SDL_DrawText(((1280 - (text3_width)) / 2), ((720 - (dialog_height)) / 2) + 130, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors");
 	SDL_DrawText(((1280 - (text4_width)) / 2), ((720 - (dialog_height)) / 2) + 160, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Touch screen: StevenMattera");
-	SDL_DrawText(((1280 - (text5_width)) / 2), ((720 - (dialog_height)) / 2) + 190, 20, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "E-Book Reader: rock88");
 
 	SDL_DrawRect((1030 - (confirm_width)) - 20, (((720 - (dialog_height)) / 2) + 245) - 20, confirm_width + 40, confirm_height + 40, config.dark_theme? SELECTOR_COLOUR_DARK : SELECTOR_COLOUR_LIGHT);
 	SDL_DrawText(1030 - (confirm_width), ((720 - (dialog_height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");

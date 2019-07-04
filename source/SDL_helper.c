@@ -34,7 +34,6 @@ int SDL_HelperInit(void) {
 		return -1;
 
 	RENDERER = SDL_CreateRenderer(WINDOW, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	SDL_SetRenderDrawBlendMode(RENDERER, SDL_BLENDMODE_BLEND);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
 	int flags = IMG_INIT_JPG | IMG_INIT_PNG;
@@ -74,6 +73,7 @@ void SDL_ClearScreen(SDL_Color colour) {
 void SDL_DrawRect(int x, int y, int w, int h, SDL_Color colour) {
 	SDL_Rect rect;
 	rect.x = x; rect.y = y; rect.w = w; rect.h = h;
+	SDL_SetRenderDrawBlendMode(RENDERER, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(RENDERER, colour.r, colour.g, colour.b, colour.a);
 	SDL_RenderFillRect(RENDERER, &rect);
 }
