@@ -110,5 +110,13 @@ u64 OPUS_Seek(u64 index) {
 
 void OPUS_Term(void) {
 	samples_read = 0;
+
+	if (metadata.has_meta) {
+		metadata.has_meta = false;
+
+		if (metadata.cover_image)
+			SDL_DestroyTexture(metadata.cover_image);
+	}
+	
 	op_free(opus);
 }
