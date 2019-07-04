@@ -124,9 +124,6 @@ static void Music_HandleNext(bool forward, int state) {
 	free(length_time);
 	free(position_time);
 
-	if ((metadata.has_meta) && (metadata.cover_image))
-		SDL_DestroyTexture(metadata.cover_image);
-
 	Audio_Term();
 	Music_Play(playlist[selection]);
 }
@@ -165,13 +162,24 @@ void Menu_PlayMusic(char *path) {
 
 		SDL_DrawRect(0, 141, 560, 560, MUSIC_GENRE_COLOUR); // Draw album art background
 
+		SDL_DrawRect(570, 141, 710, 559, FC_MakeColor(45, 48, 50, 255)); // Draw info box (outer)
+		SDL_DrawRect(575, 146, 700, 549, FC_MakeColor(46, 49, 51, 255)); // Draw info box (inner)
+
+		if (metadata.has_meta) {
+			if (metadata.album[0] != '\0')
+				SDL_DrawTextf(590, 156, 30, WHITE, "Album: %.50s", metadata.album);
+
+			if (metadata.year[0] != '\0')
+				SDL_DrawTextf(590, 196, 30, WHITE, "Year: %.50s", metadata.year);
+			
+			if (metadata.genre[0] != '\0')
+				SDL_DrawTextf(590, 236, 30, WHITE, "Genre: %.50s", metadata.genre);
+		}
+
 		if ((metadata.has_meta) && (metadata.cover_image))
 			SDL_DrawImageScale(metadata.cover_image, 0, 141, 560, 560); // Cover art
 		else
 			SDL_DrawImage(default_artwork, 0, 141); // Default album art
-
-		SDL_DrawRect(570, 141, 710, 559, FC_MakeColor(45, 48, 50, 255)); // Draw info box (outer)
-		SDL_DrawRect(575, 146, 700, 549, FC_MakeColor(46, 49, 51, 255)); // Draw info box (inner)
 
 		Menu_ConvertSecondsToString(position_time, Audio_GetPositionSeconds());
 		SDL_DrawText(605, 615, 30, WHITE, position_time);
@@ -293,9 +301,6 @@ void Menu_PlayMusic(char *path) {
 	free(filename);
 	free(length_time);
 	free(position_time);
-
-	if ((metadata.has_meta) && (metadata.cover_image))
-		SDL_DestroyTexture(metadata.cover_image);
 
 	Audio_Term();
 	memset(playlist, 0, sizeof(playlist[0][0]) * 512 * 512);
