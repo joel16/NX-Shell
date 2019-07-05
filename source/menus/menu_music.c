@@ -39,9 +39,11 @@ static Result Menu_GetMusicList(void) {
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
 
 			for (u32 i = 0; i < entryCount; i++) {
-				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "flac", 4)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "mp3", 3)) 
-					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "ogg", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "wav", 3))
-					|| (!strncasecmp(FS_GetFileExt(entries[i].name), "xm", 2))) {
+				const char *ext = FS_GetFileExt(entries[i].name);
+				
+				if ((!strncasecmp(ext, "flac", 4)) || (!strncasecmp(ext, "it", 2)) || (!strncasecmp(ext, "mod", 3))
+					|| (!strncasecmp(ext, "mp3", 3)) || (!strncasecmp(ext, "ogg", 3)) || (!strncasecmp(ext, "opus", 4))
+					|| (!strncasecmp(ext, "s3m", 3)) || (!strncasecmp(ext, "wav", 3)) || (!strncasecmp(ext, "xm", 2))) {
 					strcpy(playlist[count], cwd);
 					strcpy(playlist[count] + strlen(playlist[count]), entries[i].name);
 					count++;

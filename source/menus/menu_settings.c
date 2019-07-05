@@ -132,7 +132,7 @@ static void Menu_ControlAboutDialog(u64 input, TouchInfo touchInfo) {
 }
 
 static void Menu_DisplayAboutDialog(void) {
-	u32 text1_width = 0, text2_width = 0, text3_width = 0, text4_width = 0, text5_width = 0;
+	u32 text1_width = 0, text2_width = 0, text3_width = 0, text4_width = 0;
 	SDL_GetTextDimensions(20, "NX Shell vX.X.X", &text1_width, NULL);
 	SDL_GetTextDimensions(20, "Author: Joel16", &text2_width, NULL);
 	SDL_GetTextDimensions(20, "Graphics: Preetisketch and CyanogenMod/LineageOS contributors", &text3_width, NULL);

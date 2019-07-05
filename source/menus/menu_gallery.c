@@ -29,9 +29,10 @@ static Result Gallery_GetImageList(void) {
 			qsort(entries, entryCount, sizeof(FsDirectoryEntry), Utils_Alphasort);
 
 			for (u32 i = 0; i < entryCount; i++) {
-				if ((!strncasecmp(FS_GetFileExt(entries[i].name), "png", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "jpg", 3)) || 
-					(!strncasecmp(FS_GetFileExt(entries[i].name), "bmp", 3)) || (!strncasecmp(FS_GetFileExt(entries[i].name), "gif", 3)) ||
-					(!strncasecmp(FS_GetFileExt(entries[i].name), "webp", 4))) {
+				const char *ext = FS_GetFileExt(entries[i].name);
+				
+				if ((!strncasecmp(ext, "png", 3)) || (!strncasecmp(ext, "jpg", 3)) || (!strncasecmp(ext, "bmp", 3))
+					|| (!strncasecmp(ext, "gif", 3)) || (!strncasecmp(ext, "webp", 4))) {
 					strcpy(album[count], cwd);
 					strcpy(album[count] + strlen(album[count]), entries[i].name);
 					count++;

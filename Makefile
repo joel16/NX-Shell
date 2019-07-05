@@ -38,8 +38,8 @@ INCLUDES      := include include/audio include/ftp include/gif include/menus lib
 EXEFS_SRC     := exefs_src
 ROMFS         := romfs
 
-VERSION_MAJOR := 1
-VERSION_MINOR := 2
+VERSION_MAJOR := 2
+VERSION_MINOR := 0
 VERSION_MICRO := 0
 GITVERSION    := $(shell git log -1 --pretty='%h')
 
