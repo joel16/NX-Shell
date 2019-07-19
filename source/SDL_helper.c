@@ -2,6 +2,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 #include "common.h"
+#include "config.h"
 #include "log.h"
 #include "SDL_helper.h"
 
@@ -37,7 +38,9 @@ int SDL_HelperInit(void) {
 
 	int flags = IMG_INIT_JPG | IMG_INIT_PNG;
 	if ((IMG_Init(flags) & flags) != flags) {
-		DEBUG_LOG("IMG_Init failed: %s", IMG_GetError());
+		if (config.dev_options)
+			DEBUG_LOG("IMG_Init failed: %s", IMG_GetError());
+		
 		return -1;
 	}
 
@@ -111,7 +114,9 @@ void SDL_LoadImage(SDL_Texture **texture, char *path) {
 
 	image = IMG_Load(path);
 	if (!image) {
-		DEBUG_LOG("IMG_Load failed: %s", IMG_GetError());
+		if (config.dev_options)
+			DEBUG_LOG("IMG_Load failed: %s", IMG_GetError());
+		
 		return;
 	}
 	
@@ -125,7 +130,9 @@ void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {
 
 	image = IMG_Load_RW(SDL_RWFromMem(data, size), 1);
 	if (!image) {
-		DEBUG_LOG("IMG_Load_RW failed: %s", IMG_GetError());
+		if (config.dev_options)
+			DEBUG_LOG("IMG_Load_RW failed: %s", IMG_GetError());
+		
 		return;
 	}
 	
