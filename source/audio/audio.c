@@ -43,7 +43,7 @@ static SDL_AudioDeviceID audio_device;
 
 static void Audio_Callback(void *userdata, Uint8 *stream, int length) {
 	if (playing == false || paused == true)
-		memset(stream, 0, (length / (sizeof(s16) * (* decoder.channels)())));
+		memset(stream, 0, length);
 	else
 		(* decoder.decode)(stream, length, userdata);
 }

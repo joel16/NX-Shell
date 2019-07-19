@@ -15,6 +15,7 @@
 #include "utils.h"
 
 #define MENUBAR_X_BOUNDARY  0
+int initial_position = 0;
 static int menubar_selection = 0, horizantal_selection = 0, menubar_max_items = 4;
 static float menubar_x = -400.0;
 static char multi_select_dir_old[FS_MAX_PATH];
@@ -272,7 +273,7 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 		}
 	}
 
-	if (fileCount >= 0) {
+	if (file_count >= 0) {
 		if (input & KEY_DUP)
 			position--;
 		else if (input & KEY_DDOWN)
@@ -287,13 +288,13 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 			position++;
 		}
 
-		Utils_SetMax(&position, 0, (fileCount - 1));
-		Utils_SetMin(&position, (fileCount - 1), 0);
+		Utils_SetMax(&position, 0, (file_count - 1));
+		Utils_SetMin(&position, (file_count - 1), 0);
 
 		if (input & KEY_LEFT)
 			position = 0;
 		else if (input & KEY_RIGHT)
-			position = (fileCount - 1);
+			position = (file_count - 1);
 
 		// Open options
 		if (input & KEY_X) {
@@ -318,12 +319,12 @@ static void Menu_ControlHome(u64 input, TouchInfo touchInfo) {
 	}
 
 	if (touchInfo.state == TouchStart && tapped_inside(touchInfo, 0, 140, 1280, 720))
-		initialPosition = (position == 0) ? 7 : position;
+		initial_position = (position == 0) ? 7 : position;
 	else if (touchInfo.state == TouchMoving && touchInfo.tapType == TapNone && tapped_inside(touchInfo, 0, 140, 1280, 720)) {
-		int lastPosition = position = fileCount - 1;
+		int lastPosition = position = file_count - 1;
 		if (lastPosition < 8)
 			return;
-		position = initialPosition + floor(((double) touchInfo.firstTouch.py - (double) touchInfo.prevTouch.py) / 73);
+		position = initial_position + floor(((double) touchInfo.firstTouch.py - (double) touchInfo.prevTouch.py) / 73);
 		
 		if (position < 7)
 			position = 7;
@@ -413,7 +414,7 @@ void Menu_Main(void) {
 		else if (MENU_DEFAULT_STATE == MENU_STATE_FTP)
 			Menu_FTP();
 
-		SDL_Renderdisplay();
+		SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 
 		if (kDown & KEY_PLUS)
 			longjmp(exitJmp, 1);

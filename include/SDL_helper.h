@@ -3,9 +3,7 @@
 
 #include <switch.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h> 
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
+
 #include "SDL_FontCache.h"
 
 #define WHITE                 FC_MakeColor(255, 255, 255, 255)
@@ -23,8 +21,7 @@
 #define TEXT_MIN_COLOUR_DARK  FC_MakeColor(185, 185, 185, 255)
 #define BAR_COLOUR            FC_MakeColor(200, 200, 200, 255)
 
-SDL_Renderer *SDL_GetMainRenderer(void);
-SDL_Window *SDL_GetMainWindow(void);
+SDL_Window *SDL_GetWindow(void);
 int SDL_HelperInit(void);
 void SDL_HelperTerm(void);
 void SDL_ClearScreen(SDL_Color colour);
@@ -37,6 +34,5 @@ void SDL_LoadImage(SDL_Texture **texture, char *path);
 void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size);
 void SDL_DrawImage(SDL_Texture *texture, int x, int y);
 void SDL_DrawImageScale(SDL_Texture *texture, int x, int y, int w, int h);
-void SDL_Renderdisplay(void);
 
 #endif

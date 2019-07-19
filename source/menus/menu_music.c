@@ -203,7 +203,7 @@ void Menu_PlayMusic(char *path) {
 		SDL_DrawImageScale(state == MUSIC_STATE_REPEAT? btn_repeat_overlay : btn_repeat, (550 + ((710 - (btn_width - 10)) / 2)) + ((btn_width - 10) * 2), 141 + ((559 - (btn_height - 10)) / 2) + 90, (btn_width - 10), (btn_height - 10)); // Repeat
 		StatusBar_DisplayTime();
 
-		SDL_Renderdisplay();
+		SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 
 		hidScanInput();
 		Touch_Process(&touchInfo);

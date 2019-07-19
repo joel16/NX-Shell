@@ -15,9 +15,9 @@ typedef struct File {
 
 extern File *files;
 
-extern int initialPosition;
+extern int initial_position;
 extern int position;
-extern int fileCount;
+extern int file_count;
 
 int multi_select_index;           // Multi-select index.
 bool multi_select[256];           // Array of indices selected.

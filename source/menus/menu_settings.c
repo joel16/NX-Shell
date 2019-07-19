@@ -72,7 +72,7 @@ static void Menu_DisplaySortSettings(void) {
 		config.sort == 3? SDL_DrawImage(config.dark_theme? icon_radio_dark_on : icon_radio_on, (1170 - radio_button_width), 371) : 
 			SDL_DrawImage(config.dark_theme? icon_radio_dark_off : icon_radio_off, (1170 - radio_button_width), 371);
 		
-		SDL_Renderdisplay();
+		SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 
 		hidScanInput();
 		Touch_Process(&touchInfo);
@@ -214,7 +214,7 @@ void Menu_DisplaySettings(void) {
 		if (displayAbout)
 			Menu_DisplayAboutDialog();
 
-		SDL_Renderdisplay();
+		SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 
 		hidScanInput();
 		Touch_Process(&touchInfo);

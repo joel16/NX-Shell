@@ -65,7 +65,7 @@ void Menu_FTP(void) {
 				pBar = 400;
 		}
 
-		SDL_Renderdisplay();
+		SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 
 		hidScanInput();
 		Touch_Process(&touchInfo);

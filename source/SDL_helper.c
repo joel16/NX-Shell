@@ -1,3 +1,6 @@
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
+
 #include "common.h"
 #include "log.h"
 #include "SDL_helper.h"
@@ -6,11 +9,7 @@ static SDL_Window *WINDOW;
 static SDL_Renderer *RENDERER;
 static FC_Font *Roboto, *Roboto_large, *Roboto_small;
 
-SDL_Renderer *SDL_GetMainRenderer(void) {
-	return RENDERER;
-}
-
-SDL_Window *SDL_GetMainWindow(void) {
+SDL_Window *SDL_GetWindow(void) {
 	return WINDOW;
 }
 
@@ -37,8 +36,10 @@ int SDL_HelperInit(void) {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
 	int flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	if ((IMG_Init(flags) & flags) != flags)
+	if ((IMG_Init(flags) & flags) != flags) {
+		DEBUG_LOG("IMG_Init failed: %s", IMG_GetError());
 		return -1;
+	}
 
 	Roboto_small = FC_CreateFont();
 	FC_LoadFont(Roboto_small, RENDERER, "romfs:/res/Roboto-Regular.ttf", 20, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
@@ -106,29 +107,31 @@ void SDL_GetTextDimensions(int size, const char *text, u32 *width, u32 *height) 
 }
 
 void SDL_LoadImage(SDL_Texture **texture, char *path) {
-	SDL_Surface *loaded_surface = NULL;
-	loaded_surface = IMG_Load(path);
+	SDL_Surface *image = NULL;
 
-	if (loaded_surface) {
-		SDL_ConvertSurfaceFormat(loaded_surface, SDL_PIXELFORMAT_RGBA8888, 0);
-		*texture = SDL_CreateTextureFromSurface(RENDERER, loaded_surface);
+	image = IMG_Load(path);
+	if (!image) {
+		DEBUG_LOG("IMG_Load failed: %s", IMG_GetError());
+		return;
 	}
-
-	SDL_FreeSurface(loaded_surface);
+	
+	SDL_ConvertSurfaceFormat(image, SDL_PIXELFORMAT_RGBA8888, 0);
+	*texture = SDL_CreateTextureFromSurface(RENDERER, image);
+	SDL_FreeSurface(image);
 }
 
 void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {
-	SDL_Surface *loaded_surface = NULL;
-	loaded_surface = IMG_Load_RW(SDL_RWFromMem(data, size), 1);
+	SDL_Surface *image = NULL;
 
-	if (loaded_surface) {
-		SDL_ConvertSurfaceFormat(loaded_surface, SDL_PIXELFORMAT_RGBA8888, 0);
-		*texture = SDL_CreateTextureFromSurface(RENDERER, loaded_surface);
+	image = IMG_Load_RW(SDL_RWFromMem(data, size), 1);
+	if (!image) {
+		DEBUG_LOG("IMG_Load_RW failed: %s", IMG_GetError());
+		return;
 	}
-	else
-		DEBUG_LOG("IMG_Load: %s\n", IMG_GetError());
-
-	SDL_FreeSurface(loaded_surface);
+	
+	SDL_ConvertSurfaceFormat(image, SDL_PIXELFORMAT_RGBA8888, 0);
+	*texture = SDL_CreateTextureFromSurface(RENDERER, image);
+	SDL_FreeSurface(image);
 }
 
 void SDL_DrawImage(SDL_Texture *texture, int x, int y) {
@@ -142,8 +145,4 @@ void SDL_DrawImageScale(SDL_Texture *texture, int x, int y, int w, int h) {
 	SDL_Rect position;
 	position.x = x; position.y = y; position.w = w; position.h = h;
 	SDL_RenderCopy(RENDERER, texture, NULL, &position);
-}
-
-void SDL_Renderdisplay(void) {
-	SDL_RenderPresent(RENDERER);
 }

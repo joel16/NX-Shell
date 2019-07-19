@@ -10,9 +10,8 @@
 #include "textures.h"
 #include "utils.h"
 
-int initialPosition = 0;
 int position = 0; // menu position
-int fileCount = 0; // file count
+int file_count = 0; // file count
 File *files = NULL; // file list
 
 void Dirbrowse_RecursiveFree(File *node) {
@@ -62,7 +61,7 @@ static int cmpstringp(const void *p1, const void *p2) {
 Result Dirbrowse_PopulateFiles(bool clear) {
 	Dirbrowse_RecursiveFree(files);
 	files = NULL;
-	fileCount = 0;
+	file_count = 0;
 	
 	FsDir dir;
 	Result ret = 0;
@@ -74,7 +73,7 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 			memset(files, 0, sizeof(File)); // Clear memory
 			strcpy(files->name, ".."); // Copy file Name
 			files->isDir = 1; // Set folder flag
-			fileCount++;
+			file_count++;
 		}
 		
 		u64 entryCount = 0;
@@ -117,7 +116,7 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 					list->next = item; // Link item
 				}
 				
-				fileCount++; // Increment file count
+				file_count++; // Increment file count
 			}
 
 			free(entries);
@@ -133,8 +132,8 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 		
 	// Attempt to keep index
 	if (!clear) {
-		if (position >= fileCount)
-			position = fileCount - 1; // Fix position
+		if (position >= file_count)
+			position = file_count - 1; // Fix position
 	}
 	else
 		position = 0; // Reset position

@@ -75,6 +75,7 @@ static void Gallery_HandleNext(bool forward) {
 	Utils_SetMin(&selection, (count - 1), 0);
 
 	SDL_DestroyTexture(image);
+	image = NULL;
 	selection = Gallery_GetCurrentIndex(album[selection]);
 
 	SDL_LoadImage(&image, album[selection]);
@@ -89,12 +90,12 @@ static void Gallery_DrawImage(int x, int y, int w, int h, float zoom_factor, SDL
 		position.h = clip->h;
 	}
 
-	SDL_RenderCopyEx(SDL_GetMainRenderer(), image, clip, &position, angle, center, flip);
+	SDL_RenderCopyEx(SDL_GetRenderer(SDL_GetWindow()), image, clip, &position, angle, center, flip);
 }
 
 void Gallery_DisplayGif(char *path) {
-	SDL_RenderClear(SDL_GetMainRenderer());
-	CEV_GifAnim *animation = CEV_gifAnimLoad(path, SDL_GetMainRenderer());
+	SDL_RenderClear(SDL_GetRenderer(SDL_GetWindow()));
+	CEV_GifAnim *animation = CEV_gifAnimLoad(path, SDL_GetRenderer(SDL_GetWindow()));
 	SDL_Texture *texture = CEV_gifTexture(animation);
 	CEV_gifLoopMode(animation, GIF_REPEAT_FOR);
 
@@ -103,9 +104,9 @@ void Gallery_DisplayGif(char *path) {
 		u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
 		if (CEV_gifAnimAuto(animation)) {
-			SDL_RenderClear(SDL_GetMainRenderer());
-			SDL_RenderCopy(SDL_GetMainRenderer(), texture, NULL, NULL);
-			SDL_RenderPresent(SDL_GetMainRenderer());
+			SDL_RenderClear(SDL_GetRenderer(SDL_GetWindow()));
+			SDL_RenderCopy(SDL_GetRenderer(SDL_GetWindow()), texture, NULL, NULL);
+			SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 		}
 
 		if (kDown & KEY_B)
@@ -149,8 +150,6 @@ void Gallery_DisplayImage(char *path) {
 			Gallery_DrawImage((float)((1280.0f - (width * zoom_factor)) / 2.0f), 
 			(float)((720.0f - (height * zoom_factor)) / 2.0f), (float)width, (float)height, zoom_factor, NULL, degrees, NULL, flip_type);
 		}
-
-		//SDL_DrawTextf(0, 0, 30, WHITE, "x: %d, y: %d, zoom: %lf, degrees: %lf", pos_x, pos_y, zoom_factor, degrees);
 
 		hidScanInput();
 		Touch_Process(&touchInfo);
@@ -250,7 +249,7 @@ void Gallery_DisplayImage(char *path) {
 			}
 		}
 
-		SDL_Renderdisplay();
+		SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 		
 		if (kDown & KEY_B)
 			break;
@@ -260,6 +259,7 @@ void Gallery_DisplayImage(char *path) {
 	}
 
 	SDL_DestroyTexture(image);
+	image = NULL;
 	memset(album, 0, sizeof(album[0][0]) * 512 * 512);
 	count = 0;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;

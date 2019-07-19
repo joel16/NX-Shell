@@ -52,7 +52,7 @@ void Dialog_DisplayMessage(const char *title, const char *msg_1, const char *msg
     SDL_DrawText(1030 - (confirm_width), ((720 - (height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "OK");
 
     if (with_bg)
-        SDL_Renderdisplay();
+        SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 }
 
 void Dialog_DisplayPrompt(const char *title, const char *msg_1, const char *msg_2, int *selection, bool with_bg) {
@@ -80,7 +80,7 @@ void Dialog_DisplayPrompt(const char *title, const char *msg_1, const char *msg_
     SDL_DrawText(910 - (cancel_width), ((720 - (height)) / 2) + 245, 25, config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR, "NO");
     
     if (with_bg)
-        SDL_Renderdisplay();
+        SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 }
 
 void Dialog_DisplayProgress(const char *title, const char *message, u32 offset, u32 size) {
@@ -95,5 +95,5 @@ void Dialog_DisplayProgress(const char *title, const char *message, u32 offset, 
     SDL_DrawRect(((1280 - (width)) / 2) + 80, ((720 - (height)) / 2) + 178, (double)offset / (double)size * 720.0, 12, 
         config.dark_theme? TITLE_COLOUR_DARK : TITLE_COLOUR);
         
-    SDL_Renderdisplay();
+    SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 }
