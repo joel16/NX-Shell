@@ -316,50 +316,46 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 
 	if (R_FAILED(ret = fsFsOpenFile(FileOptions_GetPreviousMount(), temp_path_src, FS_OPEN_READ, &src_handle))) {
 		fsFileClose(&src_handle);
-		Menu_DisplayError("fsFsOpenFile() failed:", ret);
+		Menu_DisplayError("fsFsOpenFile(src_handle) failed:", ret);
+		return ret;
+	}
+
+	u64 size = 0;
+	if (R_FAILED(ret = fsFileGetSize(&src_handle, &size))) {
+		Menu_DisplayError("fsFileGetSize(src_handle) failed:", ret);
 		return ret;
 	}
 
 	if (!FS_FileExists(fs, temp_path_dst))
-		fsFsCreateFile(fs, temp_path_dst, 0, 0);
+		fsFsCreateFile(fs, temp_path_dst, size, 0);
 
 	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path_dst, FS_OPEN_WRITE, &dst_handle))) {
 		fsFileClose(&src_handle);
 		fsFileClose(&dst_handle);
-		Menu_DisplayError("fsFsOpenFile() failed:", ret);
+		Menu_DisplayError("fsFsOpenFile(dst_handle) failed:", ret);
 		return ret;
 	}
 
 	size_t bytes_read = 0;
-	u64 offset = 0, size = 0;
+	u64 offset = 0;
 	size_t buf_size = 0x10000;
 	u8 *buf = malloc(buf_size); // Chunk size
-
-	fsFileGetSize(&src_handle, &size);
-	fsFileSetSize(&dst_handle, size);
 
 	do {
 		memset(buf, 0, buf_size);
 
-		if (R_FAILED(ret = fsFileRead(&src_handle, offset, buf, buf_size, &bytes_read))) {
+		if (R_FAILED(ret = fsFileRead(&src_handle, offset, buf, buf_size, FS_READOPTION_NONE, &bytes_read))) {
 			free(buf);
 			fsFileClose(&src_handle);
 			fsFileClose(&dst_handle);
 			Menu_DisplayError("fsFileRead() failed:", ret);
 			return ret;
 		}
-		if (R_FAILED(ret = fsFileWrite(&dst_handle, offset, buf, bytes_read))) {
+		if (R_FAILED(ret = fsFileWrite(&dst_handle, offset, buf, bytes_read, FS_WRITEOPTION_FLUSH))) {
 			free(buf);
 			fsFileClose(&src_handle);
 			fsFileClose(&dst_handle);
 			Menu_DisplayError("fsFileWrite() failed:", ret);
-			return ret;
-		}
-		if (R_FAILED(ret = fsFileFlush(&dst_handle))) {
-			free(buf);
-			fsFileClose(&src_handle);
-			fsFileClose(&dst_handle);
-			Menu_DisplayError("fsFileFlush() failed:", ret);
 			return ret;
 		}
 
@@ -367,8 +363,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 
 		if (display_animation)
 			Dialog_DisplayProgress(copymode == 1? "Moving" : "Copying", Utils_Basename(temp_path_src), offset, size);
-	}
-	while(offset < size);
+	} while(offset < size);
 
 	free(buf);
 	fsFileClose(&src_handle);

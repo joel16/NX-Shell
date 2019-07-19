@@ -60,7 +60,7 @@ Result FS_CreateFile(FsFileSystem *fs, const char *path, size_t size, int flags)
 
 	if (R_FAILED(ret = fsFsCreateFile(fs, temp_path, size, flags))) {
 		if (config.dev_options)
-			DEBUG_LOG("FS_CreateFile(%s, %d, %d) failed: 0x%lx\n", temp_path, size, flags, ret);
+			DEBUG_LOG("fsFsCreateFile(%s, %d, %d) failed: 0x%lx\n", temp_path, size, flags, ret);
 
 		return ret;
 	}
@@ -221,7 +221,7 @@ Result FS_RenameDir(FsFileSystem *fs, const char *old_dirname, const char *new_d
 	return 0;
 }
 
-Result FS_Read(FsFileSystem *fs, const char *path, size_t size, void *buf) {
+Result FS_ReadFile(FsFileSystem *fs, const char *path, size_t size, void *buf) {
 	FsFile file;
 	Result ret = 0;
 	size_t out = 0;
@@ -238,7 +238,7 @@ Result FS_Read(FsFileSystem *fs, const char *path, size_t size, void *buf) {
 		return ret;
 	}
 	
-	if (R_FAILED(ret = fsFileRead(&file, 0, buf, size, &out))) {
+	if (R_FAILED(ret = fsFileRead(&file, 0, buf, size, FS_READOPTION_NONE, &out))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
@@ -251,7 +251,7 @@ Result FS_Read(FsFileSystem *fs, const char *path, size_t size, void *buf) {
 	return 0;
 }
 
-Result FS_Write(FsFileSystem *fs, const char *path, const void *buf) {
+Result FS_WriteFile(FsFileSystem *fs, const char *path, const void *buf, bool flush) {
 	FsFile file;
 	Result ret = 0;
 	u64 size = 0;
@@ -271,7 +271,7 @@ Result FS_Write(FsFileSystem *fs, const char *path, const void *buf) {
 		}
 	}
 
-	if (R_FAILED(ret = fsFsCreateFile(fs, temp_path, 0, 0))) {
+	if (R_FAILED(ret = fsFsCreateFile(fs, temp_path, size + len, 0))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsFsCreateFile(%s) failed: 0x%lx\n", temp_path, ret);
 
@@ -287,25 +287,7 @@ Result FS_Write(FsFileSystem *fs, const char *path, const void *buf) {
 		return ret;
 	}
 
-	if (R_FAILED(ret = fsFileGetSize(&file, &size))) {
-		fsFileClose(&file);
-
-		if (config.dev_options)
-			DEBUG_LOG("fsFileGetSize(%s, %llu) failed: 0x%lx\n", temp_path, size, ret);
-
-		return ret;
-	}
-
-	if (R_FAILED(ret = fsFileSetSize(&file, size + len))) {
-		fsFileClose(&file);
-
-		if (config.dev_options)
-			DEBUG_LOG("fsFileSetSize(%s, %llu) failed: 0x%lx\n", temp_path, size + len, ret);
-
-		return ret;
-	}
-
-	if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size + len))) {
+	if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size + len, flush? FS_WRITEOPTION_FLUSH : FS_WRITEOPTION_NONE))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)

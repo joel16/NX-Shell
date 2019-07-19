@@ -177,9 +177,9 @@ void Dirbrowse_DisplayFiles(void) {
 			strcpy(path + strlen(path), file->name);
 
 			if (file->isDir)
-				SDL_DrawImageScale(config.dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(config.dark_theme? icon_dir_dark : icon_dir, 80, 141 + (73 * printed));
 			else if ((!strncasecmp(file->ext, "nro", 3)) || (!strncasecmp(file->ext, "elf", 3)) || (!strncasecmp(file->ext, "bin", 3)))
-				SDL_DrawImageScale(icon_app, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(icon_app, 80, 141 + (73 * printed));
 			else if ((!strncasecmp(file->ext, "7z", 2)) || (!strncasecmp(file->ext, "ar", 2)) || (!strncasecmp(file->ext, "cpio", 4))
 				|| (!strncasecmp(file->ext, "grz", 3)) || (!strncasecmp(file->ext, "iso", 3)) || (!strncasecmp(file->ext, "lrz", 3))
 				|| (!strncasecmp(file->ext, "mtree", 5)) || (!strncasecmp(file->ext, "rar", 3)) || (!strncasecmp(file->ext, "shar", 4))
@@ -189,21 +189,21 @@ void Dirbrowse_DisplayFiles(void) {
 				|| (!strncasecmp(file->ext, "tzo", 3)) || (!strncasecmp(file->ext, "tzst", 4)) || (!strncasecmp(file->ext, "uu", 2))
 				|| (!strncasecmp(file->ext, "war", 3)) || (!strncasecmp(file->ext, "xar", 3)) || (!strncasecmp(file->ext, "zip", 3))
 				|| (!strncasecmp(file->ext, "zst", 3)))
-				SDL_DrawImageScale(icon_archive, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(icon_archive, 80, 141 + (73 * printed));
 			else if ((!strncasecmp(file->ext, "flac", 4)) || (!strncasecmp(file->ext, "it", 2)) || (!strncasecmp(file->ext, "mod", 3))
 				|| (!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4))
 				|| (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "xm", 2)))
-				SDL_DrawImageScale(icon_audio, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(icon_audio, 80, 141 + (73 * printed));
 			else if ((!strncasecmp(file->ext, "png", 3)) || (!strncasecmp(file->ext, "jpg", 3)) || (!strncasecmp(file->ext, "bmp", 3))
 				|| (!strncasecmp(file->ext, "gif", 3)) || (!strncasecmp(file->ext, "webp", 4)))
-				SDL_DrawImageScale(icon_image, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(icon_image, 80, 141 + (73 * printed));
 			else if ((!strncasecmp(file->ext, "txt", 3)) || (!strncasecmp(file->ext, "lua", 3)) || (!strncasecmp(file->ext, "cfg", 3)))
-				SDL_DrawImageScale(icon_text, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(icon_text, 80, 141 + (73 * printed));
 			else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3))
 				|| (!strncasecmp(file->ext, "epub", 4)))
-				SDL_DrawImageScale(icon_doc, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(icon_doc, 80, 141 + (73 * printed));
 			else
-				SDL_DrawImageScale(icon_file, 80, 141 + (73 * printed), 72, 72);
+				SDL_DrawImage(icon_file, 80, 141 + (73 * printed));
 
 			char size[16];
 
@@ -233,7 +233,7 @@ static Result Dirbrowse_SaveLastDirectory(void) {
 	Result ret = 0;
 
 	if (BROWSE_STATE == STATE_SD) {
-		if (R_FAILED(ret = FS_Write(fs, "/switch/NX-Shell/lastdir.txt", cwd))) {
+		if (R_FAILED(ret = FS_WriteFile(fs, "/switch/NX-Shell/lastdir.txt", cwd, true))) {
 			Menu_DisplayError("FS_Write(NX-Shell/lastdir.txt) failed:", ret);
 			return ret;
 		}
