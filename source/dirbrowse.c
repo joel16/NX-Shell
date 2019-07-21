@@ -199,9 +199,6 @@ void Dirbrowse_DisplayFiles(void) {
 				SDL_DrawImage(icon_image, 80, 141 + (73 * printed));
 			else if ((!strncasecmp(file->ext, "txt", 3)) || (!strncasecmp(file->ext, "lua", 3)) || (!strncasecmp(file->ext, "cfg", 3)))
 				SDL_DrawImage(icon_text, 80, 141 + (73 * printed));
-			else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3))
-				|| (!strncasecmp(file->ext, "epub", 4)))
-				SDL_DrawImage(icon_doc, 80, 141 + (73 * printed));
 			else
 				SDL_DrawImage(icon_file, 80, 141 + (73 * printed));
 
