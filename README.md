@@ -1,6 +1,12 @@
-# NX-Shell
+# NX-Shell [![Build Status](https://travis-ci.org/joel16/NX-Shell.svg?branch=master)](https://travis-ci.org/joel16/NX-Shell) ![Github latest downloads](https://img.shields.io/github/downloads/joel16/NX-Shell/total.svg)
 
 NX Shell is a multi-purpose file manager for the Nintendo Switch that aims towards handling media files. NX Shell leans towards more of the file management features such as opening and managing various files types and includes the basic necessity of a standard file manager. This program's design elements are clearly inspired by CyanogenMod/LineageOS's built in file manager, and so all credits towards the design go to the CyanogenMod/LineageOS contributors.
+
+
+<p align="center">
+  <img src="https://i.imgur.com/cvpisEv.jpg" alt="NX-Shell Screenshot"/>
+</p>
+
 
 # Features:
 
