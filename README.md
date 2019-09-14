@@ -30,6 +30,8 @@ Ensure that you have the following dependencies installed via [dkp-pacman](https
 sudo dkp-pacman -Syu switch-dev
 sudo dkp-pacman -S switch-sdl2 switch-sdl2_gfx switch-sdl2_image switch-sdl2_ttf
 sudo dkp-pacman -S switch-opusfile switch-liblzma
+sudo dkp-pacman -S switch-libvorbisidec switch-mpg123 switch-flac
+
 ```
 
 Clone and compile the program:
