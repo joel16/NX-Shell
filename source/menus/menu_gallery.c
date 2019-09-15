@@ -114,10 +114,13 @@ void Gallery_DisplayGif(char *path) {
 	}
 
 	CEV_gifAnimFree(animation);
+
+	SDL_DestroyTexture(texture);
+	texture = NULL;
 }
 
 void Gallery_DisplayImage(char *path) {
-	Gallery_GetImageList();
+	Gallery_GetImageList();	
 	selection = Gallery_GetCurrentIndex(path);
 	SDL_LoadImage(&image, path);
 	SDL_QueryTexture(image, NULL, NULL, &width, &height);
@@ -157,13 +160,9 @@ void Gallery_DisplayImage(char *path) {
 		u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
 
 		if ((kDown & KEY_DLEFT) || (kDown & KEY_L)) {
-			degrees = 0;
-			flip_type = SDL_FLIP_NONE;
 			Gallery_HandleNext(false);
 		}
 		else if ((kDown & KEY_DRIGHT) || (kDown & KEY_R)) {
-			degrees = 0;
-			flip_type = SDL_FLIP_NONE;
 			Gallery_HandleNext(true);
 		}
 
@@ -238,13 +237,9 @@ void Gallery_DisplayImage(char *path) {
 		
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 			if (tapped_inside(touchInfo, 0, 0, 120, 720)) {
-				degrees = 0;
-				flip_type = SDL_FLIP_NONE;
 				Gallery_HandleNext(false);
 			}
 			else if (tapped_inside(touchInfo, 1160, 0, 1280, 720)) {
-				degrees = 0;
-				flip_type = SDL_FLIP_NONE;
 				Gallery_HandleNext(true);
 			}
 		}
@@ -260,7 +255,8 @@ void Gallery_DisplayImage(char *path) {
 
 	SDL_DestroyTexture(image);
 	image = NULL;
-	memset(album, 0, sizeof(album[0][0]) * 512 * 512);
+	memset(album, 0, sizeof(album));
 	count = 0;
+	selection = 0;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }

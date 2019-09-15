@@ -314,7 +314,7 @@ void Menu_PlayMusic(char *path) {
 	free(position_time);
 
 	Audio_Term();
-	memset(playlist, 0, sizeof(playlist[0][0]) * 512 * 512);
+	memset(playlist, 0, sizeof(playlist));
 	count = 0;
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
 }
