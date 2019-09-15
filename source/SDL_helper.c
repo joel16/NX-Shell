@@ -39,7 +39,7 @@ int SDL_HelperInit(void) {
 	int flags = IMG_INIT_JPG | IMG_INIT_PNG;
 	if ((IMG_Init(flags) & flags) != flags) {
 		if (config.dev_options)
-			DEBUG_LOG("IMG_Init failed: %s", IMG_GetError());
+			DEBUG_LOG("IMG_Init failed: %s\n", IMG_GetError());
 		
 		return -1;
 	}
@@ -115,7 +115,7 @@ void SDL_LoadImage(SDL_Texture **texture, char *path) {
 	image = IMG_Load(path);
 	if (!image) {
 		if (config.dev_options)
-			DEBUG_LOG("IMG_Load failed: %s", IMG_GetError());
+			DEBUG_LOG("IMG_Load failed: %s\n", IMG_GetError());
 		
 		return;
 	}
@@ -123,6 +123,7 @@ void SDL_LoadImage(SDL_Texture **texture, char *path) {
 	SDL_ConvertSurfaceFormat(image, SDL_PIXELFORMAT_RGBA8888, 0);
 	*texture = SDL_CreateTextureFromSurface(RENDERER, image);
 	SDL_FreeSurface(image);
+	image = NULL;
 }
 
 void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {
@@ -131,7 +132,7 @@ void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {
 	image = IMG_Load_RW(SDL_RWFromMem(data, size), 1);
 	if (!image) {
 		if (config.dev_options)
-			DEBUG_LOG("IMG_Load_RW failed: %s", IMG_GetError());
+			DEBUG_LOG("IMG_Load_RW failed: %s\n", IMG_GetError());
 		
 		return;
 	}
@@ -139,6 +140,7 @@ void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {
 	SDL_ConvertSurfaceFormat(image, SDL_PIXELFORMAT_RGBA8888, 0);
 	*texture = SDL_CreateTextureFromSurface(RENDERER, image);
 	SDL_FreeSurface(image);
+	image = NULL;
 }
 
 void SDL_DrawImage(SDL_Texture *texture, int x, int y) {
