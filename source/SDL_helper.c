@@ -110,20 +110,13 @@ void SDL_GetTextDimensions(int size, const char *text, u32 *width, u32 *height) 
 }
 
 void SDL_LoadImage(SDL_Texture **texture, char *path) {
-	SDL_Surface *image = NULL;
-
-	image = IMG_Load(path);
-	if (!image) {
-		if (config.dev_options)
+	*texture = IMG_LoadTexture(RENDERER, path);
+		if (texture == NULL) {
+			if (config.dev_options)
 			DEBUG_LOG("IMG_Load failed: %s\n", IMG_GetError());
 		
 		return;
-	}
-	
-	SDL_ConvertSurfaceFormat(image, SDL_PIXELFORMAT_RGBA8888, 0);
-	*texture = SDL_CreateTextureFromSurface(RENDERER, image);
-	SDL_FreeSurface(image);
-	image = NULL;
+		}
 }
 
 void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {

@@ -45,7 +45,7 @@ static Result Gallery_GetImageList(void) {
 		}
 
 		free(entries);
-		fsDirClose(&dir); // Close directory
+		fsDirClose(&dir);
 	}
 	else
 		return ret;
@@ -90,7 +90,7 @@ static void Gallery_DrawImage(int x, int y, int w, int h, float zoom_factor, SDL
 		position.h = clip->h;
 	}
 
-	SDL_RenderCopyEx(SDL_GetRenderer(SDL_GetWindow()), image, clip, &position, angle, center, flip);
+		SDL_RenderCopyEx(SDL_GetRenderer(SDL_GetWindow()), image, clip, &position, angle, center, flip);
 }
 
 void Gallery_DisplayGif(char *path) {
@@ -119,7 +119,7 @@ void Gallery_DisplayGif(char *path) {
 	texture = NULL;
 }
 
-void Gallery_DisplayImage(char *path) {
+void Gallery_DisplayImage(char *path) {	
 	Gallery_GetImageList();	
 	selection = Gallery_GetCurrentIndex(path);
 	SDL_LoadImage(&image, path);
@@ -131,6 +131,9 @@ void Gallery_DisplayImage(char *path) {
 	u64 current_time = SDL_GetPerformanceCounter(), last_time = 0;
 	float zoom_factor = 1.0f;
 	double degrees = 0;
+	float fullscreen_width = 1280.0f;
+	float fullscreen_height = 720.0f;
+
 	SDL_RendererFlip flip_type = SDL_FLIP_NONE;
 
 	pos_x = 0;
@@ -142,7 +145,7 @@ void Gallery_DisplayImage(char *path) {
 		last_time = current_time;
     	current_time = SDL_GetPerformanceCounter();
 		double delta_time = (double)((current_time - last_time) * 1000 / SDL_GetPerformanceFrequency());
-
+		
 		if (height <= 720)
 			Gallery_DrawImage((1280 - (width * zoom_factor)) / 2, (720 - (height * zoom_factor)) / 2, 
 			width, height, zoom_factor, NULL, degrees, NULL, flip_type);
@@ -166,11 +169,16 @@ void Gallery_DisplayImage(char *path) {
 			Gallery_HandleNext(true);
 		}
 
-		if ((kHeld & KEY_DUP) || (kHeld & KEY_RSTICK_UP)) {
-			zoom_factor += 0.5f * (delta_time * 0.001);
+		//MAXIMIZE IMAGE
+		if (kDown & KEY_RSTICK) {
+				zoom_factor = (fullscreen_height / (float)height);
+				if (zoom_factor * (float)width > fullscreen_width)
+					zoom_factor = (fullscreen_width / (float)width);
+		}
 
-			if (zoom_factor > 2.0f)
-				zoom_factor = 2.0f;
+		if ((kHeld & KEY_DUP) || (kHeld & KEY_RSTICK_UP)) {
+			if (((width * zoom_factor) < fullscreen_width) && ((height * zoom_factor) < fullscreen_height))
+				zoom_factor += 0.5f * (delta_time * 0.001);
 		}
 		else if ((kHeld & KEY_DDOWN) || (kHeld & KEY_RSTICK_DOWN)) {
 			zoom_factor -= 0.5f * (delta_time * 0.001);
@@ -185,15 +193,15 @@ void Gallery_DisplayImage(char *path) {
 		}
 
 		if ((height * zoom_factor > 720) || (width * zoom_factor > 1280)) {
-			double velocity = 2 / zoom_factor;
+			double velocity = 2;
 			if (kHeld & KEY_LSTICK_UP)
-				pos_y -= ((velocity * zoom_factor) * delta_time);
+				pos_y += (velocity * delta_time);
 			else if (kHeld & KEY_LSTICK_DOWN)
-				pos_y += ((velocity * zoom_factor) * delta_time);
+				pos_y -= (velocity * delta_time);
 			else if (kHeld & KEY_LSTICK_LEFT)
-				pos_x -= ((velocity * zoom_factor) * delta_time);
+				pos_x += (velocity * delta_time);
 			else if (kHeld & KEY_LSTICK_RIGHT)
-				pos_x += ((velocity * zoom_factor) * delta_time);
+				pos_x -= (velocity * delta_time);
 		}
 
 		if ((degrees == 0) || (degrees == 180)) {
@@ -201,12 +209,18 @@ void Gallery_DisplayImage(char *path) {
 			Utils_SetMin(&pos_x, -width, -width);
 			Utils_SetMax(&pos_y, height, height);
 			Utils_SetMin(&pos_y, -height, -height);
+
+			fullscreen_width = 1280.0f;
+			fullscreen_height = 720.0f;
 		}
 		else {
 			Utils_SetMax(&pos_x, height, height);
 			Utils_SetMin(&pos_x, -height, -height);
 			Utils_SetMax(&pos_y, width, width);
 			Utils_SetMin(&pos_y, -width, -width);
+
+			fullscreen_width = 720.0f;
+			fullscreen_height = 1280.0f;
 		}
 
 		if (kDown & KEY_Y) {
@@ -227,14 +241,18 @@ void Gallery_DisplayImage(char *path) {
 
 			if (degrees < 0)
 				degrees = 270;
+
+			zoom_factor = 1.0f;
 		}
 		else if (kDown & KEY_ZR) {
 			degrees += 90;
 
 			if (degrees > 270)
 				degrees = 0;
+
+			zoom_factor = 1.0f;
 		}
-		
+
 		if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 			if (tapped_inside(touchInfo, 0, 0, 120, 720)) {
 				Gallery_HandleNext(false);
@@ -243,7 +261,7 @@ void Gallery_DisplayImage(char *path) {
 				Gallery_HandleNext(true);
 			}
 		}
-
+		
 		SDL_RenderPresent(SDL_GetRenderer(SDL_GetWindow()));
 		
 		if (kDown & KEY_B)
