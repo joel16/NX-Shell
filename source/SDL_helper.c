@@ -113,7 +113,7 @@ void SDL_LoadImage(SDL_Texture **texture, char *path) {
 	*texture = IMG_LoadTexture(RENDERER, path);
 		if (texture == NULL) {
 			if (config.dev_options)
-			DEBUG_LOG("IMG_Load failed: %s\n", IMG_GetError());
+			DEBUG_LOG("IMG_LoadTexture failed: %s\n", IMG_GetError());
 		
 		return;
 		}
@@ -134,7 +134,7 @@ void SDL_LoadImageMem(SDL_Texture **texture, void *data, int size) {
 	*texture = SDL_CreateTextureFromSurface(RENDERER, image);
 	SDL_FreeSurface(image);
 	image = NULL;
-}
+	}
 
 void SDL_DrawImage(SDL_Texture *texture, int x, int y) {
 	SDL_Rect position;
