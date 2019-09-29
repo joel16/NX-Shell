@@ -142,6 +142,8 @@ void Menu_PlayMusic(char *path) {
 
 	bool locked = false;
 
+	appletSetMediaPlaybackState(true);
+
 	while(appletMainLoop()) {
 		SDL_ClearScreen(MUSIC_STATUS_BG_COLOUR);
 
@@ -308,6 +310,8 @@ void Menu_PlayMusic(char *path) {
 			}
 		}
 	}
+
+	appletSetMediaPlaybackState(false);
 
 	free(filename);
 	free(length_time);

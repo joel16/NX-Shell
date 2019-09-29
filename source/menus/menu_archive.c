@@ -136,6 +136,8 @@ int Archive_ExtractArchive(const char *path) {
 		ret = archive_write_finish_entry(dst);
 		count++;
 	}
+
+	appletSetMediaPlaybackState(false);
 	
 	ret = archive_write_free(dst);
 	ret = archive_read_free(handle);
@@ -175,8 +177,10 @@ int Archive_ExtractFile(const char *path) {
 			break;
 		
 		if (kDown & KEY_A) {
-			if (dialog_selection == 0)
+			if (dialog_selection == 0) {
+				appletSetMediaPlaybackState(true);
 				return Archive_ExtractArchive(path);
+			}
 			else
 				break;
 		}

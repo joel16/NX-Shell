@@ -34,6 +34,8 @@ void Menu_FTP(void) {
 	
 	TouchInfo touchInfo;
 	Touch_Init(&touchInfo);
+	
+	appletSetMediaPlaybackState(true);
 
 	while(appletMainLoop()) {
 		ftp_loop();
@@ -80,6 +82,8 @@ void Menu_FTP(void) {
                 break;
         }
 	}
+
+	appletSetMediaPlaybackState(false);
 
 	free(hostname_disp);
 	ftp_exit();

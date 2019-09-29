@@ -169,6 +169,7 @@ static Result FileOptions_Delete(void) {
 }
 
 static void HandleDelete(void) {
+	appletSetMediaPlaybackState(true);
 	appletLockExit();
 
 	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
@@ -192,6 +193,7 @@ static void HandleDelete(void) {
 	else if (R_FAILED(FileOptions_Delete()))
 		return;
 
+	appletSetMediaPlaybackState(false);
 	appletUnlockExit();
 	Dirbrowse_PopulateFiles(true);
 	MENU_DEFAULT_STATE = MENU_STATE_HOME;
@@ -512,6 +514,7 @@ static Result FileOptions_Paste(void) {
 }
 
 static void HandleCopy(void) {
+	appletSetMediaPlaybackState(true);
 	appletLockExit();
 
 	if ((!copy_status) && (!cut_status )) {
@@ -554,10 +557,12 @@ static void HandleCopy(void) {
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
 
+	appletSetMediaPlaybackState(false);
 	appletUnlockExit();
 }
 
 static void HandleCut(void) {
+	appletSetMediaPlaybackState(true);
 	appletLockExit();
 
 	if ((!cut_status ) && (!copy_status)) {
@@ -599,6 +604,7 @@ static void HandleCut(void) {
 		MENU_DEFAULT_STATE = MENU_STATE_HOME;
 	}
 
+	appletSetMediaPlaybackState(false);
 	appletUnlockExit();
 }
 
