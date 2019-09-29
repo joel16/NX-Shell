@@ -787,8 +787,12 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 	}
 	else if (touchInfo.state == TouchEnded && touchInfo.tapType != TapNone) {
 		// Touched outside
-		if (tapped_outside(touchInfo, 350, 85, 930, 635))
+		if (tapped_outside(touchInfo, 350, 85, 930, 635)) {
+			row = 0;
+			column = 0;
+			options_more = false;
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		}
 		// Column 0
 		else if (touchInfo.firstTouch.py >= 188 && touchInfo.firstTouch.py <= 289) {
 			// Row 0
@@ -843,8 +847,12 @@ void Menu_ControlOptions(u64 input, TouchInfo touchInfo) {
 			}
 		}
 		// Cancel Button
-		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height))
+		else if (tapped_inside(touchInfo, 880 - options_cancel_width, 585 - options_cancel_height, 920 + options_cancel_width, 625 + options_cancel_height)) {
+			row = 0;
+			column = 0;
+			options_more = false;
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
+		}
 	}
 }
 
