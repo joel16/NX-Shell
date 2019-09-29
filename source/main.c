@@ -15,10 +15,17 @@
 static void *addr;
 
 static void Term_Services(void) {
-	fsdevUnmountDevice("NX-Shell_USER");
-	fsdevUnmountDevice("NX-Shell_SYSTEM");
-	fsdevUnmountDevice("NX-Shell_SAFE");
-	fsdevUnmountDevice("NX-Shell_PRODINFOF");
+	if (fsdevGetDeviceFileSystem("DEV_USER"))
+		fsdevUnmountDevice("DEV_USER");
+
+	if (fsdevGetDeviceFileSystem("DEV_SYSTEM"))
+		fsdevUnmountDevice("DEV_SYSTEM");
+
+	if (fsdevGetDeviceFileSystem("DEV_SAFE"))
+		fsdevUnmountDevice("DEV_SAFE");
+
+	if (fsdevGetDeviceFileSystem("DEV_PRODINFOF"))
+		fsdevUnmountDevice("DEV_PRODINFOF");
 	
 	Textures_Free();
 
@@ -36,7 +43,7 @@ static Result Init_Services(void) {
 		return ret;
 
 	extern char *fake_heap_end;
-	fake_heap_end = (char *) addr + 0x10000000;
+	fake_heap_end = (char *)addr + 0x10000000;
 
 	if (R_FAILED(ret = psmInitialize()))
 		return ret;
@@ -50,21 +57,8 @@ static Result Init_Services(void) {
 	Textures_Load();
 
 	BROWSE_STATE = STATE_SD;
-	sdmc_fs = *fsdevGetDefaultFileSystem();
-
-	FS_OpenBisFileSystem(&prodinfo_fs, 28, "");
-	fsdevMountDevice("NX-Shell_PRODINFOF", prodinfo_fs);
-
-	FS_OpenBisFileSystem(&safe_fs, 29, "");
-	fsdevMountDevice("NX-Shell_SAFE", safe_fs);
-
-	FS_OpenBisFileSystem(&system_fs, 31, "");
-	fsdevMountDevice("NX-Shell_SYSTEM", system_fs);
-
-	FS_OpenBisFileSystem(&user_fs, 30, "");
-	fsdevMountDevice("NX-Shell_USER", user_fs);
-
-	fs = &sdmc_fs;
+	devices[0] = *fsdevGetDefaultFileSystem();
+	fs = &devices[0];
 
 	total_storage = Utils_GetTotalStorage(fs);
 	used_storage = Utils_GetUsedStorage(fs);

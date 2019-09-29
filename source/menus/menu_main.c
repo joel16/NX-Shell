@@ -20,6 +20,14 @@ static int menubar_selection = 0, horizantal_selection = 0, menubar_max_items = 
 static float menubar_x = -400.0;
 static char multi_select_dir_old[FS_MAX_PATH];
 
+const char *devices_list[] = {
+	"",
+	"DEV_PRODINFOF",
+	"DEV_SAFE",
+	"DEV_SYSTEM",
+	"DEV_USER"
+};
+
 void AnimateMenuBar(float delta_time) {
 	menubar_x += 1 * delta_time;
 	
@@ -27,59 +35,22 @@ void AnimateMenuBar(float delta_time) {
 		menubar_x = MENUBAR_X_BOUNDARY;
 }
 
-static void Mount_SD(void) {
-	fs = fsdevGetDefaultFileSystem();
-	BROWSE_STATE = STATE_SD;
-
-	total_storage = Utils_GetTotalStorage(fs);
-	used_storage = Utils_GetUsedStorage(fs);
-
-	Config_GetLastDirectory();
-	Dirbrowse_PopulateFiles(true);
-}
-
-static void Mount_Prodinfof(void) {
-	fs = &prodinfo_fs;
-	BROWSE_STATE = STATE_PRODINFOF;
+void Mount_Device(int device) {
+	// As long as it isn't SDMC, check for other mounted devices and mount them if they haven't been mounted.
+	if ((device != 0) && (!fsdevGetDeviceFileSystem(devices_list[device]))) {
+		FS_OpenBisFileSystem(&devices[device], 27 + device, "");
+		fsdevMountDevice(devices_list[device], devices[device]);
+	}
+	
+	fs = device == 0? fsdevGetDefaultFileSystem() : &devices[device];
+	BROWSE_STATE = device;
 
 	total_storage = Utils_GetTotalStorage(fs);
 	used_storage = Utils_GetUsedStorage(fs);
 
 	strcpy(cwd, ROOT_PATH);
 	Dirbrowse_PopulateFiles(true);
-}
-
-static void Mount_Safe(void) {
-	fs = &safe_fs;
-	BROWSE_STATE = STATE_SAFE;
-
-	total_storage = Utils_GetTotalStorage(fs);
-	used_storage = Utils_GetUsedStorage(fs);
-
-	strcpy(cwd, ROOT_PATH);
-	Dirbrowse_PopulateFiles(true);
-}
-
-static void Mount_System(void) {
-	fs = &system_fs;
-	BROWSE_STATE = STATE_SYSTEM;
-
-	total_storage = Utils_GetTotalStorage(fs);
-	used_storage = Utils_GetUsedStorage(fs);
-
-	strcpy(cwd, ROOT_PATH);
-	Dirbrowse_PopulateFiles(true);
-}
-
-static void Mount_User(void) {
-	fs = &user_fs;
-	BROWSE_STATE = STATE_USER;
-
-	total_storage = Utils_GetTotalStorage(fs);
-	used_storage = Utils_GetUsedStorage(fs);
-
-	strcpy(cwd, ROOT_PATH);
-	Dirbrowse_PopulateFiles(true);
+	MENU_DEFAULT_STATE = MENU_STATE_HOME;	
 }
 
 static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
@@ -123,25 +94,8 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 			else
 				MENU_DEFAULT_STATE = MENU_STATE_FTP;
 		}
-		else {
-			switch (menubar_selection) {
-				case 0:
-					Mount_SD();
-					break;
-				case 1:
-					Mount_Prodinfof();
-					break;
-				case 2:
-					Mount_Safe();
-					break;
-				case 3:
-					Mount_System();
-					break;
-				case 4:
-					Mount_User();
-					break;
-			}
-		}
+		else
+			Mount_Device(menubar_selection);
 	}
 
 	if ((input & KEY_MINUS) || (input & KEY_B)) {
@@ -154,23 +108,23 @@ static void Menu_ControlMenuBar(u64 input, TouchInfo touchInfo) {
 			MENU_DEFAULT_STATE = MENU_STATE_HOME;
 		else if (tapped_inside(touchInfo, menubar_x, 214, 400, 293)) {
 			menubar_selection = 0;
-			Mount_SD();
+			Mount_Device(menubar_selection);
 		}
 		else if (tapped_inside(touchInfo, menubar_x, 294, 400, 373)) {
 			menubar_selection = 1;
-			Mount_Prodinfof();
+			Mount_Device(menubar_selection);
 		}
 		else if (tapped_inside(touchInfo, menubar_x, 374, 400, 453)) {
 			menubar_selection = 2;
-			Mount_Safe();
+			Mount_Device(menubar_selection);
 		}
 		else if (tapped_inside(touchInfo, menubar_x, 454, 400, 533)) {
 			menubar_selection = 3;
-			Mount_System();
+			Mount_Device(menubar_selection);
 		}
 		else if (tapped_inside(touchInfo, menubar_x, 534, 400, 613)) {
 			menubar_selection = 4;
-			Mount_User();
+			Mount_Device(menubar_selection);
 		}
 		else if (tapped_inside(touchInfo, menubar_x + 20, 630, menubar_x + 80, 710))
 			MENU_DEFAULT_STATE = MENU_STATE_FTP;
@@ -184,16 +138,16 @@ static void Menu_DisplayMenuBar(void) {
 		"External storage",
 		"CalibrationFile",
 		"SafeMode",
-		"System",
 		"User",
+		"System"
 	};
 
 	const char *menubar_desc[] = {
 		"/",
 		"PRODINFOF:/",
 		"SAFE:/",
-		"SYSTEM:/",
 		"USER:/",
+		"SYSTEM:/"
 	};
 
 	SDL_DrawRect(menubar_x, 0, 400, 720, config.dark_theme? BLACK_BG : WHITE);

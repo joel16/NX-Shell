@@ -15,7 +15,7 @@ extern jmp_buf exitJmp;
 extern int MENU_DEFAULT_STATE;
 extern int BROWSE_STATE;
 extern FsFileSystem *fs;
-extern FsFileSystem sdmc_fs, prodinfo_fs, safe_fs, system_fs, user_fs;
+extern FsFileSystem devices[4];
 extern u64 total_storage, used_storage;
 
 enum MENU_STATES {
@@ -32,8 +32,8 @@ enum BROWSE_STATES {
     STATE_SD = 0,
     STATE_PRODINFOF = 1,
     STATE_SAFE = 2,
-    STATE_SYSTEM = 3,
-    STATE_USER = 4
+    STATE_USER = 3,
+    STATE_SYSTEM = 4,
 };
 
 extern char cwd[FS_MAX_PATH];

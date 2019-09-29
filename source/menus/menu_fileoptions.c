@@ -32,19 +32,6 @@ static u32 options_cancel_width = 0, options_cancel_height = 0;
 
 static int PREVIOUS_BROWSE_STATE = 0;
 
-static FsFileSystem *FileOptions_GetPreviousMount(void) {
-	if (PREVIOUS_BROWSE_STATE == STATE_PRODINFOF)
-		return &prodinfo_fs;
-	else if (PREVIOUS_BROWSE_STATE == STATE_SAFE)
-		return &safe_fs;
-	else if (PREVIOUS_BROWSE_STATE == STATE_SYSTEM)
-		return &system_fs;
-	else if (PREVIOUS_BROWSE_STATE == STATE_USER)
-		return &user_fs;
-
-	return &sdmc_fs;
-}
-
 void FileOptions_ResetClipboard(void) {
 	multi_select_index = 0;
 	memset(multi_select, 0, sizeof(multi_select));
@@ -314,7 +301,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 	snprintf(temp_path_src, FS_MAX_PATH, src);
 	snprintf(temp_path_dst, FS_MAX_PATH, dst);
 
-	if (R_FAILED(ret = fsFsOpenFile(FileOptions_GetPreviousMount(), temp_path_src, FS_OPEN_READ, &src_handle))) {
+	if (R_FAILED(ret = fsFsOpenFile(&devices[PREVIOUS_BROWSE_STATE], temp_path_src, FS_OPEN_READ, &src_handle))) {
 		fsFileClose(&src_handle);
 		Menu_DisplayError("fsFsOpenFile(src_handle) failed:", ret);
 		return ret;
@@ -375,7 +362,7 @@ static Result FileOptions_CopyDir(char *src, char *dst) {
 	FsDir dir;
 	Result ret = 0;
 	
-	if (R_SUCCEEDED(ret = FS_OpenDirectory(FileOptions_GetPreviousMount(), src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = FS_OpenDirectory(&devices[PREVIOUS_BROWSE_STATE], src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
 		FS_MakeDir(fs, dst);
 
 		u64 entryCount = 0;
@@ -543,9 +530,9 @@ static void HandleCopy(void) {
 					if (strncmp(multi_select_paths[i], "..", 2) != 0) {
 						snprintf(dest, FS_MAX_PATH, "%s%s", cwd, Utils_Basename(multi_select_paths[i]));
 				
-						if (FS_DirExists(FileOptions_GetPreviousMount(), multi_select_paths[i]))
+						if (FS_DirExists(&devices[PREVIOUS_BROWSE_STATE], multi_select_paths[i]))
 							FileOptions_CopyDir(multi_select_paths[i], dest);
-						else if (FS_FileExists(FileOptions_GetPreviousMount(), multi_select_paths[i]))
+						else if (FS_FileExists(&devices[PREVIOUS_BROWSE_STATE], multi_select_paths[i]))
 							FileOptions_CopyFile(multi_select_paths[i], dest, true);
 					}
 				}
