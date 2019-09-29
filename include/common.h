@@ -33,7 +33,7 @@ enum BROWSE_STATES {
     STATE_PRODINFOF = 1,
     STATE_SAFE = 2,
     STATE_USER = 3,
-    STATE_SYSTEM = 4,
+    STATE_SYSTEM = 4
 };
 
 extern char cwd[FS_MAX_PATH];

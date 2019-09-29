@@ -9,7 +9,7 @@ static drflac *flac;
 static drflac_uint64 frames_read = 0;
 
 int FLAC_Init(const char *path) {
-	flac = drflac_open_file(path);
+	flac = drflac_open_file(path, NULL);
 	if (flac == NULL)
 		return -1;
 
