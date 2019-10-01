@@ -128,9 +128,9 @@ static Result FileOptions_Rename(void) {
 	return 0;
 }
 
-static Result FileOptions_Delete(void) {
+static Result FileOptions_Delete(File *file) {
 	Result ret = 0;
-	File *file = Dirbrowse_GetFileIndex(position);
+	file = Dirbrowse_GetFileIndex(position);
 
 	// Not found
 	if (file == NULL) 
@@ -174,6 +174,8 @@ static void HandleDelete(void) {
 
 	if ((multi_select_index > 0) && (strlen(multi_select_dir) != 0)) {
 		for (int i = 0; i < multi_select_index; i++) {
+			Dialog_DisplayProgress("Delete", "Deleting multiple files...", i, multi_select_index);
+
 			if (strlen(multi_select_paths[i]) != 0) {
 				if (strncmp(multi_select_paths[i], "..", 2) != 0) {
 					if (FS_DirExists(fs, multi_select_paths[i])) {
@@ -190,8 +192,16 @@ static void HandleDelete(void) {
 
 		FileOptions_ResetClipboard();
 	}
-	else if (R_FAILED(FileOptions_Delete()))
-		return;
+	else {
+		File *file = Dirbrowse_GetFileIndex(position);
+		Dialog_DisplayMessage("Delete", "Deleting...", file->name, true);
+
+		if (R_FAILED(FileOptions_Delete(file))) {
+			appletSetMediaPlaybackState(false);
+			appletUnlockExit();
+			return;
+		}
+	}
 
 	appletSetMediaPlaybackState(false);
 	appletUnlockExit();
