@@ -10,28 +10,30 @@
 
 bool FS_FileExists(FsFileSystem *fs, const char *path) {
 	FsFile file;
-	
+
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
-	
-	if (R_FAILED(fsFsOpenFile(fs, temp_path, FS_OPEN_READ, &file)))
-		return false;
-		
-	fsFileClose(&file);
-	return true;
+
+	if (R_SUCCEEDED(fsFsOpenFile(fs, temp_path, FS_OPEN_READ, &file))) {
+		fsFileClose(&file);
+		return true;
+	}
+
+	return false;
 }
 
 bool FS_DirExists(FsFileSystem *fs, const char *path) {
 	FsDir dir;
-	
+
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
-	
-	if (R_SUCCEEDED(fsFsOpenDirectory(fs, temp_path, FS_DIROPEN_DIRECTORY, &dir)))
-		return false;
-		
-	fsDirClose(&dir);
-	return true;
+
+	if (R_SUCCEEDED(fsFsOpenDirectory(fs, temp_path, FS_DIROPEN_DIRECTORY, &dir))) {
+		fsDirClose(&dir);
+		return true;
+	}
+
+	return false;
 }
 
 Result FS_MakeDir(FsFileSystem *fs, const char *path) {
