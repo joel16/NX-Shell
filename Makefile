@@ -32,7 +32,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 #---------------------------------------------------------------------------------
 TARGET        := $(notdir $(CURDIR))
 BUILD         := build
-SOURCES       := source source/audio source/ftp source/gif source/menus
+SOURCES       := source source/audio source/ftp source/gif source/menus source/menus/menu_book_reader
 DATA          := data
 INCLUDES      := include include/audio include/ftp include/gif include/menus libs/include
 EXEFS_SRC     := exefs_src
@@ -67,6 +67,7 @@ LDFLAGS	 = -specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $
 
 LIBS	 := -lSDL2_ttf -lSDL2_image -lwebp -lpng -lturbojpeg -lSDL2 -lSDL2_gfx `sdl2-config --libs` `freetype-config --libs`\
 			-larchive -lbz2 -llzma -lz -lxmp-lite -lmpg123 -lFLAC -lopusfile -lopus -lvorbisidec -logg \
+			-lmupdf -lmupdf-third -lconfig \
 			-lnx -lm
 
 #---------------------------------------------------------------------------------

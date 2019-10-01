@@ -2,6 +2,7 @@
 #include "config.h"
 #include "dirbrowse.h"
 #include "fs.h"
+#include "menu_book_reader.h"
 #include "menu_archive.h"
 #include "menu_error.h"
 #include "menu_gallery.h"
@@ -291,6 +292,8 @@ void Dirbrowse_OpenFile(void) {
 		|| (!strncasecmp(file->ext, "mp3", 3)) || (!strncasecmp(file->ext, "ogg", 3)) || (!strncasecmp(file->ext, "opus", 4))
 		|| (!strncasecmp(file->ext, "s3m", 3)) || (!strncasecmp(file->ext, "wav", 3)) || (!strncasecmp(file->ext, "xm", 2)))
 		Menu_PlayMusic(path);
+	else if ((!strncasecmp(file->ext, "pdf", 3)) || (!strncasecmp(file->ext, "cbz", 3)) || (!strncasecmp(file->ext, "fb2", 3)) || (!strncasecmp(file->ext, "epub", 4)))
+		Menu_OpenBook(path);
 }
 
 // Navigate to Folder
