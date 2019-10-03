@@ -16,10 +16,10 @@ NX Shell is a multi-purpose file manager for the Nintendo Switch that aims towar
 - Create files and folders (standard switch keyboard).
 - Displays file size
 - Image viewer (GIF, JPG, PNG, WEBP)
-- Display animated GIFs.
+- Displays animated GIFs.
 - Extract various archives such as ZIP, RAR, 7Z, ISO 9660, AR, XAR and others supported by libarchive. 
 - Sorting options (Sort by name, date, size).
-- Dark theme toggle.
+- Toggle dark theme.
 - Audio playback. (Following formats are supported: FLAC, IT, MOD, MP3, OGG, OPUS, S3M and WAV)
 - Touch screen in most cases.
 
