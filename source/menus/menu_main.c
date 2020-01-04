@@ -42,7 +42,7 @@ void Mount_Device(int device) {
 		fsdevMountDevice(devices_list[device], devices[device]);
 	}
 	
-	fs = device == 0? fsdevGetDefaultFileSystem() : &devices[device];
+	fs = device == 0? fsdevGetDeviceFileSystem("sdmc") : &devices[device];
 	BROWSE_STATE = device;
 
 	total_storage = Utils_GetTotalStorage(fs);

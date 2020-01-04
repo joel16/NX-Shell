@@ -48,7 +48,7 @@ Result Config_Load(void) {
 	}
 
 	u64 size = 0;
-	FS_GetFileSize(fs, "/switch/NX-Shell/config.cfg", &size);
+	FS_Getfile_size(fs, "/switch/NX-Shell/config.cfg", &size);
 	char *buf = (char *)malloc(size + 1);
 
 	if (R_FAILED(ret = FS_ReadFile(fs, "/switch/NX-Shell/config.cfg", size, buf))) {
@@ -85,7 +85,7 @@ Result Config_GetLastDirectory(void) {
 	}
 	else {
 		u64 size = 0;
-		FS_GetFileSize(fs, "/switch/NX-Shell/lastdir.txt", &size);
+		FS_Getfile_size(fs, "/switch/NX-Shell/lastdir.txt", &size);
 		char *buf = (char *)malloc(size + 1);
 
 		if (R_FAILED(ret = FS_ReadFile(fs, "/switch/NX-Shell/lastdir.txt", size, buf))) {

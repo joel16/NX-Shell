@@ -37,9 +37,9 @@ int Utils_Alphasort(const void *p1, const void *p2) {
 	FsDirectoryEntry *entryA = (FsDirectoryEntry *)p1;
 	FsDirectoryEntry *entryB = (FsDirectoryEntry *)p2;
 	
-	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
+	if ((entryA->type == FsDirEntryType_Dir) && !(entryB->type == FsDirEntryType_Dir))
 		return -1;
-	else if (!(entryA->type == ENTRYTYPE_DIR) && (entryB->type == ENTRYTYPE_DIR))
+	else if (!(entryA->type == FsDirEntryType_Dir) && (entryB->type == FsDirEntryType_Dir))
 		return 1;
 		
 	return strcasecmp(entryA->name, entryB->name);

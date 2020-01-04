@@ -15,7 +15,7 @@
 static void *addr;
 
 static void Term_Services(void) {
-	if (fsdevGetDeviceFileSystem("DEV_USER"))
+	if (("DEV_USER"))
 		fsdevUnmountDevice("DEV_USER");
 
 	if (fsdevGetDeviceFileSystem("DEV_SYSTEM"))
@@ -57,7 +57,7 @@ static Result Init_Services(void) {
 	Textures_Load();
 
 	BROWSE_STATE = STATE_SD;
-	devices[0] = *fsdevGetDefaultFileSystem();
+	devices[0] = *fsdevGetDeviceFileSystem("sdmc");
 	fs = &devices[0];
 
 	total_storage = Utils_GetTotalStorage(fs);

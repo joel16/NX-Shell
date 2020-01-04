@@ -287,7 +287,7 @@ void Menu_DisplayProperties(void) {
 
 	char utils_size[16];
 	u64 size = 0;
-	FS_GetFileSize(fs, path, &size);
+	FS_Getfile_size(fs, path, &size);
 	Utils_GetSizeString(utils_size, size);
 
 	SDL_DrawTextf(390, 183, 25, config.dark_theme? TEXT_MIN_COLOUR_DARK : TEXT_MIN_COLOUR_LIGHT, "Name: %s", file->name);
@@ -313,7 +313,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 	snprintf(temp_path_src, FS_MAX_PATH, src);
 	snprintf(temp_path_dst, FS_MAX_PATH, dst);
 
-	if (R_FAILED(ret = fsFsOpenFile(&devices[PREVIOUS_BROWSE_STATE], temp_path_src, FS_OPEN_READ, &src_handle))) {
+	if (R_FAILED(ret = fsFsOpenFile(&devices[PREVIOUS_BROWSE_STATE], temp_path_src, FsOpenMode_Read, &src_handle))) {
 		fsFileClose(&src_handle);
 		Menu_DisplayError("fsFsOpenFile(src_handle) failed:", ret);
 		return ret;
@@ -328,7 +328,7 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 	if (!FS_FileExists(fs, temp_path_dst))
 		fsFsCreateFile(fs, temp_path_dst, size, 0);
 
-	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path_dst, FS_OPEN_WRITE, &dst_handle))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path_dst,  FsOpenMode_Write, &dst_handle))) {
 		fsFileClose(&src_handle);
 		fsFileClose(&dst_handle);
 		Menu_DisplayError("fsFsOpenFile(dst_handle) failed:", ret);
@@ -343,14 +343,14 @@ static int FileOptions_CopyFile(char *src, char *dst, bool display_animation) {
 	do {
 		memset(buf, 0, buf_size);
 
-		if (R_FAILED(ret = fsFileRead(&src_handle, offset, buf, buf_size, FS_READOPTION_NONE, &bytes_read))) {
+		if (R_FAILED(ret = fsFileRead(&src_handle, offset, buf, buf_size, FsReadOption_None, &bytes_read))) {
 			free(buf);
 			fsFileClose(&src_handle);
 			fsFileClose(&dst_handle);
 			Menu_DisplayError("fsFileRead() failed:", ret);
 			return ret;
 		}
-		if (R_FAILED(ret = fsFileWrite(&dst_handle, offset, buf, bytes_read, FS_WRITEOPTION_FLUSH))) {
+		if (R_FAILED(ret = fsFileWrite(&dst_handle, offset, buf, bytes_read, FsWriteOption_Flush))) {
 			free(buf);
 			fsFileClose(&src_handle);
 			fsFileClose(&dst_handle);
@@ -374,7 +374,7 @@ static Result FileOptions_CopyDir(char *src, char *dst) {
 	FsDir dir;
 	Result ret = 0;
 	
-	if (R_SUCCEEDED(ret = FS_OpenDirectory(&devices[PREVIOUS_BROWSE_STATE], src, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = FS_OpenDirectory(&devices[PREVIOUS_BROWSE_STATE], src, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, &dir))) {
 		FS_MakeDir(fs, dst);
 
 		u64 entryCount = 0;
@@ -411,7 +411,7 @@ static Result FileOptions_CopyDir(char *src, char *dst) {
 					strcpy(outbuffer + strlen(outbuffer), entries[i].name);
 
 					// Another Folder
-					if (entries[i].type == ENTRYTYPE_DIR)
+					if (entries[i].type == FsDirEntryType_Dir)
 						FileOptions_CopyDir(inbuffer, outbuffer); // Copy Folder (via recursion)
 
 					// Simple File
