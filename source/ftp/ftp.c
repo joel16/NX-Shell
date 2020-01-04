@@ -135,7 +135,7 @@ struct ftp_session_t {
   size_t   buffersize;                   /*! persistent buffer size between callbacks */
   size_t   cmd_buffersize;
   uint64_t filepos;                      /*! persistent file position between callbacks */
-  uint64_t filesize;                     /*! persistent file size between callbacks */
+  uint64_t file_size;                     /*! persistent file size between callbacks */
   FILE     *fp;                          /*! persistent open file pointer between callbacks */
   DIR      *dp;                          /*! persistent open directory pointer between callbacks */
 };
@@ -444,7 +444,7 @@ static int ftp_session_open_file_read(ftp_session_t *session) {
     //console_print(RED "fstat '%s': %d %s\n" RESET, session->buffer, errno, strerror(errno));
     return -1;
   }
-  session->filesize = st.st_size;
+  session->file_size = st.st_size;
 
   if(session->filepos != 0)
   {

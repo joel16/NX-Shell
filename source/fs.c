@@ -14,7 +14,7 @@ bool FS_FileExists(FsFileSystem *fs, const char *path) {
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
 
-	if (R_SUCCEEDED(fsFsOpenFile(fs, temp_path, FS_OPEN_READ, &file))) {
+	if (R_SUCCEEDED(fsFsOpenFile(fs, temp_path, FsOpenMode_Read, &file))) {
 		fsFileClose(&file);
 		return true;
 	}
@@ -28,7 +28,7 @@ bool FS_DirExists(FsFileSystem *fs, const char *path) {
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
 
-	if (R_SUCCEEDED(fsFsOpenDirectory(fs, temp_path, FS_DIROPEN_DIRECTORY, &dir))) {
+	if (R_SUCCEEDED(fsFsOpenDirectory(fs, temp_path, FsDirOpenMode_ReadDirs, &dir))) {
 		fsDirClose(&dir);
 		return true;
 	}
@@ -100,7 +100,7 @@ Result FS_GetDirEntryCount(FsDir *dir, u64 *count) {
 Result FS_ReadDir(FsDir *dir, u64 inval, size_t *total_entries, size_t max_entries, FsDirectoryEntry *entry) {
 	Result ret = 0;
 
-	if (R_FAILED(ret = fsDirRead(dir, inval, total_entries, max_entries, entry))) {
+	if (R_FAILED(ret = fsDirRead(dir, total_entries, max_entries, entry))) {
 		if (config.dev_options)
 			DEBUG_LOG("fsDirRead(%s, %d) failed: 0x%lx\n", cwd, max_entries, ret);
 
@@ -110,18 +110,18 @@ Result FS_ReadDir(FsDir *dir, u64 inval, size_t *total_entries, size_t max_entri
 	return 0;
 }
 
-Result FS_GetFileSize(FsFileSystem *fs, const char *path, u64 *size) {
+Result FS_Getfile_size(FsFileSystem *fs, const char *path, u64 *size) {
 	Result ret = 0;
 	FsFile file;
 
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
 
-	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path, FS_OPEN_READ, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path, FsOpenMode_Read, &file))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
-			DEBUG_LOG("fsFsOpenFile(%s, FS_OPEN_READ, %llu) failed: 0x%lx\n", temp_path, &size, ret);
+			DEBUG_LOG("fsFsOpenFile(%s, FsOpenMode_Read, %llu) failed: 0x%lx\n", temp_path, &size, ret);
 
 		return ret;
 	}
@@ -229,16 +229,16 @@ Result FS_ReadFile(FsFileSystem *fs, const char *path, size_t size, void *buf) {
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
 
-	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path, FS_OPEN_READ, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path, FsOpenMode_Read, &file))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
-			DEBUG_LOG("fsFsOpenFile(%s, FS_OPEN_READ, %llu) failed: 0x%lx\n", temp_path, &size, ret);
+			DEBUG_LOG("fsFsOpenFile(%s, FsOpenMode_Read, %llu) failed: 0x%lx\n", temp_path, &size, ret);
 
 		return ret;
 	}
 	
-	if (R_FAILED(ret = fsFileRead(&file, 0, buf, size, FS_READOPTION_NONE, &out))) {
+	if (R_FAILED(ret = fsFileRead(&file, 0, buf, size, FsReadOption_None, &out))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
@@ -278,16 +278,16 @@ Result FS_WriteFile(FsFileSystem *fs, const char *path, const void *buf, bool fl
 		return ret;
 	}
 
-	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path, FS_OPEN_WRITE, &file))) {
+	if (R_FAILED(ret = fsFsOpenFile(fs, temp_path,  FsOpenMode_Write, &file))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
-			DEBUG_LOG("fsFsOpenFile(%s, FS_OPEN_WRITE) failed: 0x%lx\n", temp_path, ret);
+			DEBUG_LOG("fsFsOpenFile(%s,  FsOpenMode_Write) failed: 0x%lx\n", temp_path, ret);
 
 		return ret;
 	}
 
-	if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size + len, flush? FS_WRITEOPTION_FLUSH : FS_WRITEOPTION_NONE))) {
+	if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size + len, flush? FsWriteOption_Flush : FsWriteOption_None))) {
 		fsFileClose(&file);
 
 		if (config.dev_options)
@@ -316,9 +316,9 @@ Result FS_SetArchiveBit(FsFileSystem *fs, const char *path) {
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
 
-	if (R_FAILED(ret = fsFsSetArchiveBit(fs, temp_path))) {
+	if (R_FAILED(ret = FS_SetArchiveBit(fs, temp_path))) {
 		if (config.dev_options)
-			DEBUG_LOG("fsFsSetArchiveBit(%s) failed: 0x%lx\n", temp_path, ret);
+			DEBUG_LOG("FS_SetArchiveBit(%s) failed: 0x%lx\n", temp_path, ret);
 
 		return ret;
 	}

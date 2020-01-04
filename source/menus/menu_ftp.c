@@ -12,7 +12,7 @@
 #include "touch_helper.h"
 
 void Menu_FTP(void) {
-	nifmInitialize();
+	nifmInitialize(1);
 	ftp_init();
 
 	char hostname[128];

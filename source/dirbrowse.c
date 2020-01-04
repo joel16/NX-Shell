@@ -27,9 +27,9 @@ static int cmpstringp(const void *p1, const void *p2) {
 	FsDirectoryEntry *entryB = (FsDirectoryEntry *)p2;
 	u64 sizeA = 0, sizeB = 0;
 	
-	if ((entryA->type == ENTRYTYPE_DIR) && !(entryB->type == ENTRYTYPE_DIR))
+	if ((entryA->type == FsDirEntryType_Dir) && !(entryB->type == FsDirEntryType_Dir))
 		return -1;
-	else if (!(entryA->type == ENTRYTYPE_DIR) && (entryB->type == ENTRYTYPE_DIR))
+	else if (!(entryA->type == FsDirEntryType_Dir) && (entryB->type == FsDirEntryType_Dir))
 		return 1;
 	else {
 		switch(config.sort) {
@@ -42,14 +42,14 @@ static int cmpstringp(const void *p1, const void *p2) {
 				break;
 			
 			case 2: // Sort by file size (largest first)
-				sizeA = entryA->fileSize;
-				sizeB = entryB->fileSize;
+				sizeA = entryA->file_size;
+				sizeB = entryB->file_size;
 				return sizeA > sizeB? -1 : sizeA < sizeB? 1 : 0;
 				break;
 			
 			case 3: // Sort by file size (smallest first)
-				sizeA = entryA->fileSize;
-				sizeB = entryB->fileSize;
+				sizeA = entryA->file_size;
+				sizeB = entryB->file_size;
 				return sizeB > sizeA? -1 : sizeB < sizeA? 1 : 0;
 				break;
 		}
@@ -66,7 +66,7 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 	FsDir dir;
 	Result ret = 0;
 
-	if (R_SUCCEEDED(ret = FS_OpenDirectory(fs, cwd, FS_DIROPEN_DIRECTORY | FS_DIROPEN_FILE, &dir))) {
+	if (R_SUCCEEDED(ret = FS_OpenDirectory(fs, cwd, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, &dir))) {
 		/* Add fake ".." entry except on root */
 		if (strcmp(cwd, ROOT_PATH)) {
 			files = (File *)malloc(sizeof(File)); // New list
@@ -100,8 +100,8 @@ Result Dirbrowse_PopulateFiles(bool clear) {
 				strcpy(item->name, entries[i].name);
 				strcpy(item->ext, FS_GetFileExt(item->name));
 
-				item->size = entries[i].fileSize;
-				item->isDir = entries[i].type == ENTRYTYPE_DIR;
+				item->size = entries[i].file_size;
+				item->isDir = entries[i].type == FsDirEntryType_Dir;
 				
 				if (files == NULL) // New list
 					files = item;
