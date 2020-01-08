@@ -44,6 +44,6 @@ make
 # Credits:
 
 - **Preetisketch** for some of the assets used as well as the banner.
-- **StevenMattera** for the implementing the foundation of all touch-screen code.
+- **NicholeMattera** for the implementing the foundation of all touch-screen code.
 - **grimfang4** for the original SDL_FontCache headers.
 - **theMealena** for CVE_gif*.
