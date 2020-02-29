@@ -7,7 +7,7 @@ install:
 - docker pull devkitpro/devkita64
 script:
 - docker run -e ENABLE_COMPATIBILITY_REPORTING -v $TRAVIS_BUILD_DIR:/NX-Shell
-  ubuntu:18.10 /bin/bash -ex /NX-Shell/.travis/.build.sh
+  ubuntu:18.04 /bin/bash -ex /NX-Shell/.travis/.build.sh
 
 deploy:
   provider: pages
