@@ -316,7 +316,7 @@ Result FS_SetArchiveBit(FsFileSystem *fs, const char *path) {
 	char temp_path[FS_MAX_PATH];
 	snprintf(temp_path, FS_MAX_PATH, path);
 
-	if (R_FAILED(ret = FS_SetArchiveBit(fs, temp_path))) {
+	if (R_FAILED(ret = fsdevSetConcatenationFileAttribute(temp_path))) {
 		if (config.dev_options)
 			DEBUG_LOG("FS_SetArchiveBit(%s) failed: 0x%lx\n", temp_path, ret);
 
