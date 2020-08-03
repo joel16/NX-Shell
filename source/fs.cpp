@@ -50,15 +50,15 @@ namespace FS {
 	FileType GetFileType(const std::string &filename) {
 		std::string ext = FS::GetFileExt(filename);
 		
-		if (ext == ".ZIP" || ext == ".RAR" || ext == ".7Z")
+		if ((!ext.compare(".ZIP")) || (!ext.compare(".RAR")) || (!ext.compare(".7Z")))
 			return FileTypeArchive;
-		else if (ext == ".FLAC" || ext == ".IT" || ext == ".MOD" || ext == ".MP3" || ext == ".OGG" || ext == ".OPUS"
-			|| ext == ".S3M" || ext == ".WAV" || ext == ".XM")
+		else if ((!ext.compare(".FLAC")) || (!ext.compare(".IT")) || (!ext.compare(".MOD")) || (!ext.compare(".MP3")) || (!ext.compare(".OGG"))
+			|| (!ext.compare(".OPUS")) || (!ext.compare(".S3M")) || (!ext.compare(".WAV")) || (!ext.compare(".XM")))
 			return FileTypeAudio;
-		else if (ext == ".NRO" || ext == ".BIN")
+		else if ((!ext.compare(".NRO")) || (!ext.compare(".BIN")))
 			return FileTypeBinary;
-		else if (ext == ".BMP" || ext == ".GIF" || ext == ".JPG" || ext == ".JPEG" || ext == ".PGM" || ext == ".PPM"
-			|| ext == ".PNG" || ext == ".PSD" || ext == ".TGA")
+		else if ((!ext.compare(".BMP")) || (!ext.compare(".GIF")) || (!ext.compare(".JPG")) || (!ext.compare(".JPEG")) || (!ext.compare(".PGM"))
+			|| (!ext.compare(".PPM")) || (!ext.compare(".PNG")) || (!ext.compare(".PSD")) || (!ext.compare(".TGA")))
 			return FileTypeImage;
 		
 		return FileTypeNone;
@@ -338,7 +338,7 @@ namespace FS {
 		for (s64 i = 0; i < entry_count; i++) {
 			std::string filename = entries[i].name;
 			if (!filename.empty()) {
-				if ((filename == ".") || (filename == ".."))
+				if ((!filename.compare(".")) || (!filename.compare("..")))
 					continue;
 				
 				std::string src = src_path;
