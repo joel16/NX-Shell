@@ -33,14 +33,18 @@ namespace GUI {
 		std::string selected_filename;
 		FsDirectoryEntry *entries = nullptr;
 		std::vector<bool> checked;
+		std::vector<bool> checked_copy;
 		std::string checked_cwd;
 		int checked_count = 0;
 	} MenuItem;
 
 	static void ResetCheckbox(MenuItem *item) {
+		item->checked.clear();
+		item->checked_copy.clear();
 		item->checked.resize(item->file_count);
 		item->checked.assign(item->checked.size(), false);
 		item->checked_cwd.clear();
+		item->checked_count = 0;
 	}
 
 	static void RenderOptionsMenu(MenuItem *item) {
@@ -101,10 +105,32 @@ namespace GUI {
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 			
 			if (ImGui::Button(!item->copy? "Copy" : "Paste", ImVec2(200, 50))) {
-				if (!item->copy)
-					FS::Copy(&item->entries[item->selected]);
+				if (!item->copy) {
+					if (item->checked_count <= 1)
+						FS::Copy(&item->entries[item->selected], config.cwd);
+				}
 				else {
-					if (R_SUCCEEDED(FS::Paste())) {
+					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0)) {
+						s64 entry_count = 0;
+						FsDirectoryEntry *entries = nullptr;
+
+						entry_count = FS::GetDirList(item->checked_cwd.data(), &entries);
+						for (long unsigned int i = 0; i < item->checked_copy.size(); i++) {
+							if (item->checked_copy.at(i)) {
+								FS::Copy(&entries[i], item->checked_cwd);
+								if (R_FAILED(FS::Paste())) {
+									item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+									GUI::ResetCheckbox(item);
+									break;
+								}
+							}
+						}
+
+						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+						GUI::ResetCheckbox(item);
+						FS::FreeDirEntries(&entries, entry_count);
+					}
+					else if (R_SUCCEEDED(FS::Paste())) {
 						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
 						GUI::ResetCheckbox(item);
 					}
@@ -118,10 +144,32 @@ namespace GUI {
 			ImGui::SameLine(0.0f, 15.0f);
 			
 			if (ImGui::Button(!item->move? "Move" : "Paste", ImVec2(200, 50))) {
-				if (!item->move)
-					FS::Copy(&item->entries[item->selected]);
+				if (!item->move) {
+					if (item->checked_count <= 1)
+						FS::Copy(&item->entries[item->selected], config.cwd);
+				}
 				else {
-					if (R_SUCCEEDED(FS::Move())) {
+					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0)) {
+						s64 entry_count = 0;
+						FsDirectoryEntry *entries = nullptr;
+
+						entry_count = FS::GetDirList(item->checked_cwd.data(), &entries);
+						for (long unsigned int i = 0; i < item->checked_copy.size(); i++) {
+							if (item->checked_copy.at(i)) {
+								FS::Copy(&entries[i], item->checked_cwd);
+								if (R_FAILED(FS::Move())) {
+									item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+									GUI::ResetCheckbox(item);
+									break;
+								}
+							}
+						}
+
+						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+						GUI::ResetCheckbox(item);
+						FS::FreeDirEntries(&entries, entry_count);
+					}
+					else if (R_SUCCEEDED(FS::Move())) {
 						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
 						GUI::ResetCheckbox(item);
 					}
@@ -445,6 +493,11 @@ namespace GUI {
 										s64 value = FS::ChangeDirNext(item.entries[item.selected].name, &item.entries, item.file_count);
 										if (value >= 0) {
 											item.file_count = value;
+
+											// Make a copy before resizing our vector.
+											if (item.checked_count > 1)
+												item.checked_copy = item.checked;
+											
 											item.checked.resize(item.file_count);
 											GImGui->NavId = 0;
 										}
@@ -468,6 +521,11 @@ namespace GUI {
 								s64 value = FS::ChangeDirPrev(&item.entries, item.file_count);
 								if (value >= 0) {
 									item.file_count = value;
+
+									// Make a copy before resizing our vector.
+									if (item.checked_count > 1)
+										item.checked_copy = item.checked;
+									
 									item.checked.resize(item.file_count);
 									GImGui->NavId = 0;
 								}
@@ -516,6 +574,7 @@ namespace GUI {
 			SDL_GL_SwapWindow(window);
 		}
 
+		FS::FreeDirEntries(&item.entries, item.file_count);
 		return 0;
 	}
 }

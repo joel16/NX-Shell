@@ -361,14 +361,12 @@ namespace FS {
 		return 0;
 	}
 
-	void Copy(FsDirectoryEntry *entry) {
-		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, nullptr) <= 0)
-			return;
-			
-		std::strcpy(fs_copy_struct.copy_path, path);
+	void Copy(FsDirectoryEntry *entry, const std::string &path) {
+		std::string full_path = path;
+		full_path.append("/");
+		full_path.append(entry->name);
+		std::strcpy(fs_copy_struct.copy_path, full_path.c_str());
 		std::strcpy(fs_copy_struct.copy_filename, entry->name);
-		
 		if (entry->type == FsDirEntryType_Dir)
 			fs_copy_struct.is_dir = true;
 	}
