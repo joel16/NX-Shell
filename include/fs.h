@@ -32,7 +32,7 @@ namespace FS {
     Result Delete(FsDirectoryEntry *entry);
     Result SetArchiveBit(FsDirectoryEntry *entry);
     void Copy(FsDirectoryEntry *entry, const std::string &path);
-    Result Paste();
+    Result Paste(void);
     Result Move(void);
     Result GetFileSize(const char path[FS_MAX_PATH], s64 *size);
     Result WriteFile(const char path[FS_MAX_PATH], const void *buf, u64 size);
