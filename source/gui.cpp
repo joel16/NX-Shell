@@ -47,6 +47,27 @@ namespace GUI {
 		item->checked_count = 0;
 	}
 
+	static void HandleMultipleCopy(MenuItem *item, Result (*func)()) {
+		s64 entry_count = 0;
+		FsDirectoryEntry *entries = nullptr;
+		
+		entry_count = FS::GetDirList(item->checked_cwd.data(), &entries);
+		for (long unsigned int i = 0; i < item->checked_copy.size(); i++) {
+			if (item->checked_copy.at(i)) {
+				FS::Copy(&entries[i], item->checked_cwd);
+				if (R_FAILED((*func)())) {
+					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+					GUI::ResetCheckbox(item);
+					break;
+				}
+			}
+		}
+		
+		item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+		GUI::ResetCheckbox(item);
+		FS::FreeDirEntries(&entries, entry_count);
+	}
+
 	static void RenderOptionsMenu(MenuItem *item) {
 		ImGui::OpenPopup("Options");
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
@@ -110,26 +131,8 @@ namespace GUI {
 						FS::Copy(&item->entries[item->selected], config.cwd);
 				}
 				else {
-					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0)) {
-						s64 entry_count = 0;
-						FsDirectoryEntry *entries = nullptr;
-
-						entry_count = FS::GetDirList(item->checked_cwd.data(), &entries);
-						for (long unsigned int i = 0; i < item->checked_copy.size(); i++) {
-							if (item->checked_copy.at(i)) {
-								FS::Copy(&entries[i], item->checked_cwd);
-								if (R_FAILED(FS::Paste())) {
-									item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-									GUI::ResetCheckbox(item);
-									break;
-								}
-							}
-						}
-
-						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-						GUI::ResetCheckbox(item);
-						FS::FreeDirEntries(&entries, entry_count);
-					}
+					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0))
+						GUI::HandleMultipleCopy(item, &FS::Paste);
 					else if (R_SUCCEEDED(FS::Paste())) {
 						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
 						GUI::ResetCheckbox(item);
@@ -149,26 +152,8 @@ namespace GUI {
 						FS::Copy(&item->entries[item->selected], config.cwd);
 				}
 				else {
-					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0)) {
-						s64 entry_count = 0;
-						FsDirectoryEntry *entries = nullptr;
-
-						entry_count = FS::GetDirList(item->checked_cwd.data(), &entries);
-						for (long unsigned int i = 0; i < item->checked_copy.size(); i++) {
-							if (item->checked_copy.at(i)) {
-								FS::Copy(&entries[i], item->checked_cwd);
-								if (R_FAILED(FS::Move())) {
-									item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-									GUI::ResetCheckbox(item);
-									break;
-								}
-							}
-						}
-
-						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-						GUI::ResetCheckbox(item);
-						FS::FreeDirEntries(&entries, entry_count);
-					}
+					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0))
+						GUI::HandleMultipleCopy(item, &FS::Move);
 					else if (R_SUCCEEDED(FS::Move())) {
 						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
 						GUI::ResetCheckbox(item);
