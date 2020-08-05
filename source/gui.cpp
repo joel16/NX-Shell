@@ -196,8 +196,6 @@ namespace GUI {
 		return string;
 	}
 
-	#define IM_CLAMP(V, MN, MX)     ((V) < (MN) ? (MN) : (V) > (MX) ? (MX) : (V))
-
 	static void RenderPropertiesMenu(MenuItem *item) {
 		ImGui::OpenPopup("Properties");
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
@@ -487,9 +485,11 @@ namespace GUI {
 									if (file_type == FileTypeImage) {
 										std::string path = std::string();
 										int length = FS::ConstructPath(&item.entries[item.selected], path.data(), nullptr);
-										bool image_ret = Textures::LoadImageFile(path, &texture);
-										IM_ASSERT(image_ret);
-										item.state = MENU_STATE_IMAGEVIEWER;
+										if (length > 0) {
+											bool image_ret = Textures::LoadImageFile(path, &texture);
+											IM_ASSERT(image_ret);
+											item.state = MENU_STATE_IMAGEVIEWER;
+										}
 									}
 								}
 							}
