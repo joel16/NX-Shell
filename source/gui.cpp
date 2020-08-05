@@ -71,7 +71,8 @@ namespace GUI {
 	static void RenderOptionsMenu(MenuItem *item) {
 		ImGui::OpenPopup("Options");
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
-		
+		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+
 		if (ImGui::BeginPopupModal("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			if (ImGui::Button("Properties", ImVec2(200, 50))) {
 				ImGui::CloseCurrentPopup();
@@ -195,9 +196,12 @@ namespace GUI {
 		return string;
 	}
 
+	#define IM_CLAMP(V, MN, MX)     ((V) < (MN) ? (MN) : (V) > (MX) ? (MX) : (V))
+
 	static void RenderPropertiesMenu(MenuItem *item) {
 		ImGui::OpenPopup("Properties");
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
+		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
 		
 		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			std::string name_text = "Name: " + item->selected_filename;
@@ -246,6 +250,7 @@ namespace GUI {
 	static void RenderDeleteMenu(MenuItem *item) {
 		ImGui::OpenPopup("Delete");
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
+		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
 		
 		if (ImGui::BeginPopupModal("Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::Text("This action cannot be undone");
@@ -306,8 +311,8 @@ namespace GUI {
 	}
 	
 	static void RenderSettingsMenu(MenuItem *item) {
-		ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Once);
-		ImGui::SetNextWindowSize({1280.0f, 720.0f}, ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+		ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
@@ -342,8 +347,8 @@ namespace GUI {
 	}
 
 	static void RenderImageViewer(MenuItem *item, Tex *texture) {
-		ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Once);
-		ImGui::SetNextWindowSize({1280.0f, 720.0f}, ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+		ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
 		if (ImGui::Begin(item->selected_filename.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
@@ -376,8 +381,8 @@ namespace GUI {
 			ImGui_ImplSDL2_NewFrame(window);
 			ImGui::NewFrame();
 			
-			ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Once);
-			ImGui::SetNextWindowSize({1280.0f, 720.0f}, ImGuiCond_Once);
+			ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+			ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			
 			if (ImGui::Begin("NX-Shell", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
@@ -451,33 +456,10 @@ namespace GUI {
 					ImGui::Text("No file entries");
 				
 				ImGui::EndChild();
-				
-				switch (item.state) {
-					case MENU_STATE_OPTIONS:
-						GUI::RenderOptionsMenu(&item);
-						break;
-						
-					case MENU_STATE_PROPERTIES:
-						GUI::RenderPropertiesMenu(&item);
-						break;
-						
-					case MENU_STATE_DELETE:
-						GUI::RenderDeleteMenu(&item);
-						break;
-						
-					case MENU_STATE_SETTINGS:
-						GUI::RenderSettingsMenu(&item);
-						break;
-
-					case MENU_STATE_IMAGEVIEWER:
-						GUI::RenderImageViewer(&item, &texture);
-						break;
-						
-					default:
-						break;
-				}
 			}
-			
+			ImGui::End();
+			ImGui::PopStyleVar();
+
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
 				ImGui_ImplSDL2_ProcessEvent(&event);
@@ -505,7 +487,6 @@ namespace GUI {
 									if (file_type == FileTypeImage) {
 										std::string path = std::string();
 										int length = FS::ConstructPath(&item.entries[item.selected], path.data(), nullptr);
-										printf("FileTypeImage: %s %d\n", path.c_str(), length);
 										bool image_ret = Textures::LoadImageFile(path, &texture);
 										IM_ASSERT(image_ret);
 										item.state = MENU_STATE_IMAGEVIEWER;
@@ -536,8 +517,10 @@ namespace GUI {
 							else
 								item.state = MENU_STATE_HOME;
 						}
-						else if (event.jbutton.button == 2)
-							item.state = MENU_STATE_OPTIONS;
+						else if (event.jbutton.button == 2) {
+							if (item.state == MENU_STATE_HOME)
+								item.state = MENU_STATE_OPTIONS;
+						}
 						else if (event.jbutton.button == 3) {
 							if (item.state == MENU_STATE_HOME) {
 								item.checked_cwd = config.cwd;
@@ -558,9 +541,31 @@ namespace GUI {
 				if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
 					done = true;
 			}
-			
-			ImGui::End();
-			ImGui::PopStyleVar();
+
+			switch (item.state) {
+				case MENU_STATE_OPTIONS:
+					GUI::RenderOptionsMenu(&item);
+					break;
+				
+				case MENU_STATE_PROPERTIES:
+					GUI::RenderPropertiesMenu(&item);
+					break;
+				
+				case MENU_STATE_DELETE:
+					GUI::RenderDeleteMenu(&item);
+					break;
+					
+				case MENU_STATE_SETTINGS:
+					GUI::RenderSettingsMenu(&item);
+					break;
+					
+				case MENU_STATE_IMAGEVIEWER:
+					GUI::RenderImageViewer(&item, &texture);
+					break;
+				
+				default:
+					break;
+			}
 			
 			// Rendering
 			ImGui::Render();
