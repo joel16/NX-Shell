@@ -19,7 +19,7 @@
 #include "imgui.h"
 #include "textures.h"
 
-Tex folder_texture, file_texture, archive_texture, audio_texture, image_texture, check_texture, uncheck_texture;
+Tex folder_icon, file_icon, archive_icon, audio_icon, image_icon, text_icon, check_icon, uncheck_icon;
 
 namespace Textures {
 	static bool LoadImage(unsigned char *data, int *width, int *height, GLint format, Tex *texture, void (*free_func)(void *)) {
@@ -54,25 +54,28 @@ namespace Textures {
 	}
 	
 	void Init(void) {
-		bool image_ret = Textures::LoadImageFile("romfs:/archive.png", &archive_texture);
+		bool image_ret = Textures::LoadImageFile("romfs:/archive.png", &archive_icon);
 		IM_ASSERT(image_ret);
 		
-		image_ret = Textures::LoadImageFile("romfs:/audio.png", &audio_texture);
+		image_ret = Textures::LoadImageFile("romfs:/audio.png", &audio_icon);
 		IM_ASSERT(image_ret);
 		
-		image_ret = Textures::LoadImageFile("romfs:/file.png", &file_texture);
+		image_ret = Textures::LoadImageFile("romfs:/file.png", &file_icon);
 		IM_ASSERT(image_ret);
 		
-		image_ret = Textures::LoadImageFile("romfs:/folder.png", &folder_texture);
+		image_ret = Textures::LoadImageFile("romfs:/folder.png", &folder_icon);
 		IM_ASSERT(image_ret);
 		
-		image_ret = Textures::LoadImageFile("romfs:/image.png", &image_texture);
+		image_ret = Textures::LoadImageFile("romfs:/image.png", &image_icon);
 		IM_ASSERT(image_ret);
 
-		image_ret = Textures::LoadImageFile("romfs:/check.png", &check_texture);
+		image_ret = Textures::LoadImageFile("romfs:/text.png", &text_icon);
 		IM_ASSERT(image_ret);
 
-		image_ret = Textures::LoadImageFile("romfs:/uncheck.png", &uncheck_texture);
+		image_ret = Textures::LoadImageFile("romfs:/check.png", &check_icon);
+		IM_ASSERT(image_ret);
+
+		image_ret = Textures::LoadImageFile("romfs:/uncheck.png", &uncheck_icon);
 		IM_ASSERT(image_ret);
 	}
 	
@@ -81,10 +84,13 @@ namespace Textures {
 	}
 	
 	void Exit(void) {
-		glDeleteTextures(1, &image_texture.id);
-		glDeleteTextures(1, &folder_texture.id);
-		glDeleteTextures(1, &file_texture.id);
-		glDeleteTextures(1, &audio_texture.id);
-		glDeleteTextures(1, &archive_texture.id);
+		glDeleteTextures(1, &uncheck_icon.id);
+		glDeleteTextures(1, &check_icon.id);
+		glDeleteTextures(1, &text_icon.id);
+		glDeleteTextures(1, &image_icon.id);
+		glDeleteTextures(1, &folder_icon.id);
+		glDeleteTextures(1, &file_icon.id);
+		glDeleteTextures(1, &audio_icon.id);
+		glDeleteTextures(1, &archive_icon.id);
 	}
 }

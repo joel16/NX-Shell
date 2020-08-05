@@ -396,24 +396,36 @@ namespace GUI {
 						std::string filename = item.entries[i].name;
 
 						if ((item.checked.at(i)) && (!item.checked_cwd.compare(config.cwd)))
-							ImGui::Image((void *)(intptr_t)check_texture.id, ImVec2(check_texture.width, check_texture.height));
+							ImGui::Image((void *)(intptr_t)check_icon.id, ImVec2(check_icon.width, check_icon.height));
 						else
-							ImGui::Image((void *)(intptr_t)uncheck_texture.id, ImVec2(uncheck_texture.width, uncheck_texture.height));
+							ImGui::Image((void *)(intptr_t)uncheck_icon.id, ImVec2(uncheck_icon.width, uncheck_icon.height));
 						ImGui::SameLine();
 
 						if (item.entries[i].type == FsDirEntryType_Dir)
-							ImGui::Image((void *)(intptr_t)folder_texture.id, ImVec2(folder_texture.width, folder_texture.height));
+							ImGui::Image((void *)(intptr_t)folder_icon.id, ImVec2(folder_icon.width, folder_icon.height));
 						else {
 							FileType file_type = FS::GetFileType(filename);
+							switch(file_type) {
+								case FileTypeArchive:
+									ImGui::Image((void *)(intptr_t)archive_icon.id, ImVec2(archive_icon.width, archive_icon.height));
+									break;
 
-							if (file_type == FileTypeArchive)
-								ImGui::Image((void *)(intptr_t)archive_texture.id, ImVec2(archive_texture.width, archive_texture.height));
-							else if (file_type == FileTypeAudio)
-								ImGui::Image((void *)(intptr_t)audio_texture.id, ImVec2(audio_texture.width, audio_texture.height));
-							else if (file_type == FileTypeImage)
-								ImGui::Image((void *)(intptr_t)image_texture.id, ImVec2(image_texture.width, image_texture.height));
-							else
-								ImGui::Image((void *)(intptr_t)file_texture.id, ImVec2(file_texture.width, file_texture.height));
+								case FileTypeAudio:
+									ImGui::Image((void *)(intptr_t)audio_icon.id, ImVec2(audio_icon.width, audio_icon.height));
+									break;
+
+								case FileTypeImage:
+									ImGui::Image((void *)(intptr_t)image_icon.id, ImVec2(image_icon.width, image_icon.height));
+									break;
+
+								case FileTypeText:
+									ImGui::Image((void *)(intptr_t)text_icon.id, ImVec2(text_icon.width, text_icon.height));
+									break;
+
+								default:
+									ImGui::Image((void *)(intptr_t)file_icon.id, ImVec2(file_icon.width, file_icon.height));
+									break;
+							}
 						}
 						
 						ImGui::SameLine();

@@ -10,7 +10,7 @@ typedef struct {
     int height = 0;
 } Tex;
 
-extern Tex folder_texture, file_texture, archive_texture, audio_texture, image_texture, check_texture, uncheck_texture;
+extern Tex folder_icon, file_icon, archive_icon, audio_icon, image_icon, text_icon, check_icon, uncheck_icon;
 
 namespace Textures {
     bool LoadImageFile(const std::string &path, Tex *texture);
