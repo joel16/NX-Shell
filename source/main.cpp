@@ -114,9 +114,12 @@ namespace Services {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+		io.IniFilename = nullptr;
+		io.MouseDrawCursor = false;
 		
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
