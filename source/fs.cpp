@@ -450,4 +450,36 @@ namespace FS {
 		fsFileClose(&file);
 		return 0;
 	}
+	
+	Result GetFreeStorageSpace(s64 *size) {
+		Result ret = 0;
+		
+		if (R_FAILED(ret = fsFsGetFreeSpace(fs, "/", size)))
+			return ret;
+		
+		return 0;
+	}
+	
+	Result GetTotalStorageSpace(s64 *size) {
+		Result ret = 0;
+		
+		if (R_FAILED(ret = fsFsGetTotalSpace(fs, "/", size)))
+			return ret;
+		
+		return 0;
+	}
+	
+	Result GetUsedStorageSpace(s64 *size) {
+		Result ret = 0;
+		s64 free_size = 0, total_size = 0;
+		
+		if (R_FAILED(ret = FS::GetFreeStorageSpace(&free_size)))
+			return ret;
+		
+		if (R_FAILED(ret = FS::GetTotalStorageSpace(&total_size)))
+			return ret;
+			
+		*size = (total_size - free_size);
+		return 0;
+	}
 }

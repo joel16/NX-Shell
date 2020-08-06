@@ -370,7 +370,11 @@ namespace GUI {
 			return -1;
 
 		item.checked.resize(item.file_count);
-			
+
+		s64 storage_space = 0, total_space = 0;
+		FS::GetUsedStorageSpace(&storage_space);
+		FS::GetTotalStorageSpace(&total_space);
+
 		// Main loop
 		bool done = false, set_focus = false, first = true;
 		while (!done) {
@@ -392,6 +396,12 @@ namespace GUI {
 				
 				// Display current working directory
 				ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), config.cwd);
+
+				// Draw storage bar
+				ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
+				ImGui::ProgressBar((float)storage_space/float(total_space), ImVec2(1280.0f, 6.0f));
+				ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Spacing
+
 				ImGui::BeginChild("##FS::DirList");
 				
 				if (item.file_count != 0) {
