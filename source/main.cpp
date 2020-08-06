@@ -1,10 +1,9 @@
-#define IMGUI_IMPL_OPENGL_LOADER_GLAD
-
 #ifdef DEBUG
 #include <sys/socket.h>
 #endif
 
 #include <switch.h>
+
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
@@ -14,9 +13,10 @@
 #include "textures.h"
 
 SDL_Window *window = nullptr;
-SDL_GLContext gl_context;
 
 namespace Services {
+	SDL_GLContext gl_context;
+
 	void SetDefaultTheme(void) {
 		ImGui::GetStyle().FrameRounding = 4.0f;
 		ImGui::GetStyle().GrabRounding = 4.0f;
