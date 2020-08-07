@@ -533,6 +533,9 @@ namespace GUI {
 						}
 						else if (event.jbutton.button == 3) {
 							if (item.state == MENU_STATE_HOME) {
+								if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
+									GUI::ResetCheckbox(&item);
+								
 								item.checked_cwd = config.cwd;
 								item.checked.at(item.selected) = !item.checked.at(item.selected);
 								item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
