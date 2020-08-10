@@ -399,7 +399,7 @@ namespace GUI {
 
 				// Draw storage bar
 				ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
-				ImGui::ProgressBar((float)storage_space/float(total_space), ImVec2(1280.0f, 6.0f));
+				ImGui::ProgressBar((float)storage_space / (float)total_space, ImVec2(1280.0f, 6.0f));
 				ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Spacing
 
 				ImGui::BeginChild("##FS::DirList");
