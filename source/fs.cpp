@@ -67,8 +67,8 @@ namespace FS {
 	}
 	
 	static int Sort(const void *p1, const void *p2) {
-		FsDirectoryEntry *entryA = (FsDirectoryEntry *)p1;
-		FsDirectoryEntry *entryB = (FsDirectoryEntry *)p2;
+		const FsDirectoryEntry *entryA = (reinterpret_cast<const FsDirectoryEntry*>(p1));
+		const FsDirectoryEntry *entryB = (reinterpret_cast<const FsDirectoryEntry*>(p2));
 		
 		if ((entryA->type == FsDirEntryType_Dir) && !(entryB->type == FsDirEntryType_Dir))
 			return -1;
@@ -109,7 +109,7 @@ namespace FS {
 			return ret;
 			
 		FsDirectoryEntry *entries = new FsDirectoryEntry[entry_count * sizeof(*entries)];
-		if (R_FAILED(ret = fsDirRead(&dir, nullptr, (size_t)entry_count, entries))) {
+		if (R_FAILED(ret = fsDirRead(&dir, nullptr, static_cast<size_t>(entry_count), entries))) {
 			delete[] entries;
 			return ret;
 		}
@@ -153,7 +153,7 @@ namespace FS {
 		// Remove upmost directory
 		bool copy = false;
 		int len = 0;
-		for (ssize_t i = (ssize_t)std::strlen(config.cwd); i >= 0; i--) {
+		for (ssize_t i = std::strlen(config.cwd); i >= 0; i--) {
 			if (config.cwd[i] == '/')
 				copy = true;
 			if (copy) {
@@ -200,7 +200,7 @@ namespace FS {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, nullptr) <= 0)
+		if (FS::ConstructPath(entry, path, "") <= 0)
 			return -1;
 			
 		if (R_FAILED(ret = fsFsGetFileTimeStampRaw(fs, path, timestamp)))
@@ -213,7 +213,7 @@ namespace FS {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, nullptr) <= 0)
+		if (FS::ConstructPath(entry, path, "") <= 0)
 			return -1;
 			
 		char new_path[FS_MAX_PATH];
@@ -236,7 +236,7 @@ namespace FS {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, nullptr) <= 0)
+		if (FS::ConstructPath(entry, path, "") <= 0)
 			return -1;
 			
 		if (entry->type == FsDirEntryType_Dir) {
@@ -255,7 +255,7 @@ namespace FS {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, nullptr) <= 0)
+		if (FS::ConstructPath(entry, path, "") <= 0)
 			return -1;
 			
 		if (R_FAILED(ret = fsFsSetConcatenationFileAttribute(fs, path)))
@@ -332,7 +332,7 @@ namespace FS {
 			return ret;
 			
 		FsDirectoryEntry *entries = new FsDirectoryEntry[entry_count * sizeof(*entries)];
-		if (R_FAILED(ret = fsDirRead(&dir, nullptr, (size_t)entry_count, entries))) {
+		if (R_FAILED(ret = fsDirRead(&dir, nullptr, static_cast<size_t>(entry_count), entries))) {
 			delete[] entries;
 			return ret;
 		}

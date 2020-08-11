@@ -60,7 +60,7 @@ namespace Config {
         }
 
         char *buf =  new char[size + 1];
-        if (R_FAILED(ret = fsFileRead(&file, 0, buf, (u64)size + 1, FsReadOption_None, nullptr))) {
+        if (R_FAILED(ret = fsFileRead(&file, 0, buf, static_cast<u64>(size) + 1, FsReadOption_None, nullptr))) {
             delete[] buf;
             fsFileClose(&file);
             return ret;

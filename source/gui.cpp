@@ -350,7 +350,7 @@ namespace GUI {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
 		if (ImGui::Begin(item->selected_filename.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
-			ImGui::Image((void *)(intptr_t)texture->id, ImVec2(texture->width, texture->height));
+			ImGui::Image(reinterpret_cast<ImTextureID>(texture->id), ImVec2(texture->width, texture->height));
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -399,7 +399,7 @@ namespace GUI {
 
 				// Draw storage bar
 				ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
-				ImGui::ProgressBar((float)storage_space / (float)total_space, ImVec2(1280.0f, 6.0f));
+				ImGui::ProgressBar(static_cast<float>(storage_space) / static_cast<float>(total_space), ImVec2(1280.0f, 6.0f));
 				ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Spacing
 
 				ImGui::BeginChild("##FS::DirList");
@@ -409,34 +409,34 @@ namespace GUI {
 						std::string filename = item.entries[i].name;
 
 						if ((item.checked.at(i)) && (!item.checked_cwd.compare(config.cwd)))
-							ImGui::Image((void *)(intptr_t)check_icon.id, ImVec2(check_icon.width, check_icon.height));
+							ImGui::Image(reinterpret_cast<ImTextureID>(check_icon.id), ImVec2(check_icon.width, check_icon.height));
 						else
-							ImGui::Image((void *)(intptr_t)uncheck_icon.id, ImVec2(uncheck_icon.width, uncheck_icon.height));
+							ImGui::Image(reinterpret_cast<ImTextureID>(uncheck_icon.id), ImVec2(uncheck_icon.width, uncheck_icon.height));
 						ImGui::SameLine();
 
 						if (item.entries[i].type == FsDirEntryType_Dir)
-							ImGui::Image((void *)(intptr_t)folder_icon.id, ImVec2(folder_icon.width, folder_icon.height));
+							ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(folder_icon.width, folder_icon.height));
 						else {
 							FileType file_type = FS::GetFileType(filename);
 							switch(file_type) {
 								case FileTypeArchive:
-									ImGui::Image((void *)(intptr_t)archive_icon.id, ImVec2(archive_icon.width, archive_icon.height));
+									ImGui::Image(reinterpret_cast<ImTextureID>(archive_icon.id), ImVec2(archive_icon.width, archive_icon.height));
 									break;
 
 								case FileTypeAudio:
-									ImGui::Image((void *)(intptr_t)audio_icon.id, ImVec2(audio_icon.width, audio_icon.height));
+									ImGui::Image(reinterpret_cast<ImTextureID>(audio_icon.id), ImVec2(audio_icon.width, audio_icon.height));
 									break;
 
 								case FileTypeImage:
-									ImGui::Image((void *)(intptr_t)image_icon.id, ImVec2(image_icon.width, image_icon.height));
+									ImGui::Image(reinterpret_cast<ImTextureID>(image_icon.id), ImVec2(image_icon.width, image_icon.height));
 									break;
 
 								case FileTypeText:
-									ImGui::Image((void *)(intptr_t)text_icon.id, ImVec2(text_icon.width, text_icon.height));
+									ImGui::Image(reinterpret_cast<ImTextureID>(text_icon.id), ImVec2(text_icon.width, text_icon.height));
 									break;
 
 								default:
-									ImGui::Image((void *)(intptr_t)file_icon.id, ImVec2(file_icon.width, file_icon.height));
+									ImGui::Image(reinterpret_cast<ImTextureID>(file_icon.id), ImVec2(file_icon.width, file_icon.height));
 									break;
 							}
 						}
@@ -582,7 +582,7 @@ namespace GUI {
 			
 			// Rendering
 			ImGui::Render();
-			glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+			glViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
 			glClearColor(0.00f, 0.00f, 0.00f, 1.00f);
 			glClear(GL_COLOR_BUFFER_BIT);
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
