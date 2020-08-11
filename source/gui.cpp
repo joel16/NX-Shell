@@ -1,359 +1,25 @@
 #include <algorithm>
-#include <cstdio>
 #include <iostream>
-#include <vector>
 
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
-#include "imgui_internal.h"
-#include "keyboard.h"
+#include "popups.h"
 #include "textures.h"
-#include "utils.h"
+#include "windows.h"
 
 namespace GUI {
-	enum MENU_STATES {
-		MENU_STATE_HOME = 0,
-		MENU_STATE_OPTIONS = 1,
-		MENU_STATE_DELETE = 2,
-		MENU_STATE_PROPERTIES = 3,
-		MENU_STATE_SETTINGS = 4,
-		MENU_STATE_IMAGEVIEWER = 5
-	};
-	
-	typedef struct {
-		int state = 0;
-		bool copy = false;
-		bool move = false;
-		int selected = 0;
-		int file_count = 0;
-		std::string selected_filename;
-		FsDirectoryEntry *entries = nullptr;
-		std::vector<bool> checked;
-		std::vector<bool> checked_copy;
-		std::string checked_cwd;
-		int checked_count = 0;
-	} MenuItem;
-
-	static void ResetCheckbox(MenuItem *item) {
+	void ResetCheckbox(MenuItem *item) {
 		item->checked.clear();
 		item->checked_copy.clear();
 		item->checked.resize(item->file_count);
 		item->checked.assign(item->checked.size(), false);
 		item->checked_cwd.clear();
 		item->checked_count = 0;
-	}
-
-	static void HandleMultipleCopy(MenuItem *item, Result (*func)()) {
-		s64 entry_count = 0;
-		FsDirectoryEntry *entries = nullptr;
-		
-		entry_count = FS::GetDirList(item->checked_cwd.data(), &entries);
-		for (long unsigned int i = 0; i < item->checked_copy.size(); i++) {
-			if (item->checked_copy.at(i)) {
-				FS::Copy(&entries[i], item->checked_cwd);
-				if (R_FAILED((*func)())) {
-					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
-					break;
-				}
-			}
-		}
-		
-		item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-		GUI::ResetCheckbox(item);
-		FS::FreeDirEntries(&entries, entry_count);
-	}
-
-	static void RenderOptionsMenu(MenuItem *item) {
-		ImGui::OpenPopup("Options");
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
-		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-
-		if (ImGui::BeginPopupModal("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			if (ImGui::Button("Properties", ImVec2(200, 50))) {
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_PROPERTIES;
-			}
-
-			ImGui::SameLine(0.0f, 15.0f);
-
-			if (ImGui::Button("Rename", ImVec2(200, 50))) {
-				std::string path = Keyboard::GetText("Enter name", item->entries[item->selected].name);
-				if (R_SUCCEEDED(FS::Rename(&item->entries[item->selected], path.c_str())))
-					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-				
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
-			}
-			
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			
-			if (ImGui::Button("New Folder", ImVec2(200, 50))) {
-				std::string path = config.cwd;
-				path.append("/");
-				std::string name = Keyboard::GetText("Enter folder name", "New folder");
-				path.append(name);
-				
-				if (R_SUCCEEDED(fsFsCreateDirectory(fs, path.c_str()))) {
-					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
-				}
-				
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
-			}
-			
-			ImGui::SameLine(0.0f, 15.0f);
-			
-			if (ImGui::Button("New File", ImVec2(200, 50))) {
-				std::string path = config.cwd;
-				path.append("/");
-				std::string name = Keyboard::GetText("Enter file name", "New file");
-				path.append(name);
-				
-				if (R_SUCCEEDED(fsFsCreateFile(fs, path.c_str(), 0, 0))) {
-					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
-				}
-				
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
-			}
-			
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			
-			if (ImGui::Button(!item->copy? "Copy" : "Paste", ImVec2(200, 50))) {
-				if (!item->copy) {
-					if (item->checked_count <= 1)
-						FS::Copy(&item->entries[item->selected], config.cwd);
-				}
-				else {
-					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0))
-						GUI::HandleMultipleCopy(item, &FS::Paste);
-					else if (R_SUCCEEDED(FS::Paste())) {
-						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-						GUI::ResetCheckbox(item);
-					}
-				}
-				
-				item->copy = !item->copy;
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
-			}
-			
-			ImGui::SameLine(0.0f, 15.0f);
-			
-			if (ImGui::Button(!item->move? "Move" : "Paste", ImVec2(200, 50))) {
-				if (!item->move) {
-					if (item->checked_count <= 1)
-						FS::Copy(&item->entries[item->selected], config.cwd);
-				}
-				else {
-					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0))
-						GUI::HandleMultipleCopy(item, &FS::Move);
-					else if (R_SUCCEEDED(FS::Move())) {
-						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-						GUI::ResetCheckbox(item);
-					}
-				}
-				
-				item->move = !item->move;
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
-			}
-			
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			
-			if (ImGui::Button("Delete", ImVec2(200, 50))) {
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_DELETE;
-			}
-			
-			ImGui::SameLine(0.0f, 15.0f);
-			
-			if (ImGui::Button("Set archive bit", ImVec2(200, 50))) {
-				if (R_SUCCEEDED(FS::SetArchiveBit(&item->entries[item->selected]))) {
-					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
-				}
-					
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
-			}
-			
-			ImGui::EndPopup();
-		}
-
-		ImGui::PopStyleVar();
-	}
-
-	static char *FormatDate(char *string, time_t timestamp) {
-		strftime(string, 36, "%Y/%m/%d %H:%M:%S", localtime(&timestamp));
-		return string;
-	}
-
-	static void RenderPropertiesMenu(MenuItem *item) {
-		ImGui::OpenPopup("Properties");
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
-		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-		
-		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			std::string name_text = "Name: " + item->selected_filename;
-			ImGui::Text(name_text.c_str());
-			
-			if (item->entries[item->selected].type == FsDirEntryType_File) {
-				char size[16];
-				Utils::GetSizeString(size, item->entries[item->selected].file_size);
-				std::string size_text = "Size: ";
-				size_text.append(size);
-				ImGui::Text(size_text.c_str());
-			}
-			
-			FsTimeStampRaw timestamp;
-			if (R_SUCCEEDED(FS::GetTimeStamp(&item->entries[item->selected], &timestamp))) {
-				if (timestamp.is_valid == 1) { // Confirm valid timestamp
-					char date[3][36];
-					
-					std::string created_time = "Created: ";
-					created_time.append(GUI::FormatDate(date[0], timestamp.created));
-					ImGui::Text(created_time.c_str());
-					
-					std::string modified_time = "Modified: ";
-					modified_time.append(GUI::FormatDate(date[1], timestamp.modified));
-					ImGui::Text(modified_time.c_str());
-					
-					std::string accessed_time = "Accessed: ";
-					accessed_time.append(GUI::FormatDate(date[2], timestamp.accessed));
-					ImGui::Text(accessed_time.c_str());
-				}
-			}
-			
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			
-			if (ImGui::Button("OK", ImVec2(120, 0))) {
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_OPTIONS;
-			}
-
-			ImGui::EndPopup();
-		}
-
-		ImGui::PopStyleVar();
-	}
-
-	static void RenderDeleteMenu(MenuItem *item) {
-		ImGui::OpenPopup("Delete");
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
-		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-		
-		if (ImGui::BeginPopupModal("Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::Text("This action cannot be undone");
-			if ((item->checked_count > 1) && (!item->checked_cwd.compare(config.cwd))) {
-				ImGui::Text("Do you wish to delete the following:");
-				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::BeginChild("Scrolling", ImVec2(0, 100));
-				for (long unsigned int i = 0; i < item->checked.size(); i++) {
-					if (item->checked.at(i))
-						ImGui::Text(item->entries[i].name);
-				}
-				ImGui::EndChild();
-			}
-			else {
-				std::string text = "Do you wish to delete " + item->selected_filename + "?";
-				ImGui::Text(text.c_str());
-			}
-			
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			
-			if (ImGui::Button("OK", ImVec2(120, 0))) {
-				Result ret = 0;
-				if ((item->checked_count > 1) && (!item->checked_cwd.compare(config.cwd))) {
-					for (long unsigned int i = 0; i < item->checked.size(); i++) {
-						if (item->checked.at(i)) {
-							if (R_FAILED(ret = FS::Delete(&item->entries[i]))) {
-								item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-								GUI::ResetCheckbox(item);
-								break;
-							}
-						}
-					}
-				}
-				else
-					ret = FS::Delete(&item->entries[item->selected]);
-				
-				if (R_SUCCEEDED(ret)) {
-					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
-				}
-				
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
-			}
-			
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine(0.0f, 15.0f);
-			
-			if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_OPTIONS;
-			}
-			
-			ImGui::EndPopup();
-		}
-		
-		ImGui::PopStyleVar();
-	}
-	
-	static void RenderSettingsMenu(MenuItem *item) {
-		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		
-		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-			if (ImGui::TreeNode("Sort Settings")) {
-				ImGui::RadioButton(" By name (ascending)", &config.sort, 0);
-				ImGui::RadioButton(" By name (descending)", &config.sort, 1);
-				ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacing
-				ImGui::RadioButton(" By size (largest first)", &config.sort, 2);
-				ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacing
-				ImGui::RadioButton(" By size (smallest first)", &config.sort, 3);
-				ImGui::TreePop();
-			}
-			
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			
-			if (ImGui::TreeNode("About")) {
-				ImGui::Text("NX-Shell Version: v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
-				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Text("ImGui Version: %s",  ImGui::GetVersion());
-				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Text("Author: Joel16");
-				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Text("Banner: Preetisketch");
-				ImGui::TreePop();
-			}
-		}
-		
-		ImGui::End();
-		ImGui::PopStyleVar();
-		Config::Save(config);
-		item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-	}
-
-	static void RenderImageViewer(MenuItem *item, Tex *texture) {
-		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-
-		if (ImGui::Begin(item->selected_filename.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
-			ImGui::Image(reinterpret_cast<ImTextureID>(texture->id), ImVec2(texture->width, texture->height));
-
-		ImGui::End();
-		ImGui::PopStyleVar();
 	}
 
 	int RenderMainMenu(SDL_Window *window) {
@@ -370,103 +36,18 @@ namespace GUI {
 			return -1;
 
 		item.checked.resize(item.file_count);
-
-		s64 storage_space = 0, total_space = 0;
-		FS::GetUsedStorageSpace(&storage_space);
-		FS::GetTotalStorageSpace(&total_space);
+		FS::GetUsedStorageSpace(&item.used_storage);
+		FS::GetTotalStorageSpace(&item.total_storage);
 
 		// Main loop
-		bool done = false, set_focus = false, first = true;
+		bool done = false, focus = false, first_item = true;
 		while (!done) {
 			// Start the Dear ImGui frame
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplSDL2_NewFrame(window);
 			ImGui::NewFrame();
 			
-			ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-			ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			
-			if (ImGui::Begin("NX-Shell", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-				// Initially set default focus to next window (FS::DirList)
-				if (!set_focus) {
-					ImGui::SetNextWindowFocus();
-					set_focus = true;
-				}
-				
-				// Display current working directory
-				ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), config.cwd);
-
-				// Draw storage bar
-				ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
-				ImGui::ProgressBar(static_cast<float>(storage_space) / static_cast<float>(total_space), ImVec2(1280.0f, 6.0f));
-				ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Spacing
-
-				ImGui::BeginChild("##FS::DirList");
-				
-				if (item.file_count != 0) {
-					for (s64 i = 0; i < item.file_count; i++) {
-						std::string filename = item.entries[i].name;
-
-						if ((item.checked.at(i)) && (!item.checked_cwd.compare(config.cwd)))
-							ImGui::Image(reinterpret_cast<ImTextureID>(check_icon.id), ImVec2(check_icon.width, check_icon.height));
-						else
-							ImGui::Image(reinterpret_cast<ImTextureID>(uncheck_icon.id), ImVec2(uncheck_icon.width, uncheck_icon.height));
-						ImGui::SameLine();
-
-						if (item.entries[i].type == FsDirEntryType_Dir)
-							ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(folder_icon.width, folder_icon.height));
-						else {
-							FileType file_type = FS::GetFileType(filename);
-							switch(file_type) {
-								case FileTypeArchive:
-									ImGui::Image(reinterpret_cast<ImTextureID>(archive_icon.id), ImVec2(archive_icon.width, archive_icon.height));
-									break;
-
-								case FileTypeAudio:
-									ImGui::Image(reinterpret_cast<ImTextureID>(audio_icon.id), ImVec2(audio_icon.width, audio_icon.height));
-									break;
-
-								case FileTypeImage:
-									ImGui::Image(reinterpret_cast<ImTextureID>(image_icon.id), ImVec2(image_icon.width, image_icon.height));
-									break;
-
-								case FileTypeText:
-									ImGui::Image(reinterpret_cast<ImTextureID>(text_icon.id), ImVec2(text_icon.width, text_icon.height));
-									break;
-
-								default:
-									ImGui::Image(reinterpret_cast<ImTextureID>(file_icon.id), ImVec2(file_icon.width, file_icon.height));
-									break;
-							}
-						}
-						
-						ImGui::SameLine();
-						ImGui::Selectable(filename.c_str());
-						
-						if (first) {
-							ImGui::SetFocusID(ImGui::GetID((item.entries[0].name)), ImGui::GetCurrentWindow());
-							ImGuiContext& g = *ImGui::GetCurrentContext();
-							g.NavDisableHighlight = false;
-							first = false;
-						}
-						
-						if (!ImGui::IsAnyItemFocused())
-							GImGui->NavId = GImGui->CurrentWindow->DC.LastItemId;
-							
-						if (ImGui::IsItemHovered()) {
-							item.selected = i;
-							item.selected_filename = item.entries[item.selected].name;
-						}
-					}
-				}
-				else
-					ImGui::Text("No file entries");
-				
-				ImGui::EndChild();
-			}
-			ImGui::End();
-			ImGui::PopStyleVar();
+			Windows::FileBrowserWindow(&item, &focus, &first_item);
 
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
@@ -557,23 +138,23 @@ namespace GUI {
 
 			switch (item.state) {
 				case MENU_STATE_OPTIONS:
-					GUI::RenderOptionsMenu(&item);
+					Popups::OptionsPopup(&item);
 					break;
 				
 				case MENU_STATE_PROPERTIES:
-					GUI::RenderPropertiesMenu(&item);
+					Popups::PropertiesPopup(&item);
 					break;
 				
 				case MENU_STATE_DELETE:
-					GUI::RenderDeleteMenu(&item);
+					Popups::DeletePopup(&item);
 					break;
 					
 				case MENU_STATE_SETTINGS:
-					GUI::RenderSettingsMenu(&item);
+					Windows::SettingsWindow(&item);
 					break;
 					
 				case MENU_STATE_IMAGEVIEWER:
-					GUI::RenderImageViewer(&item, &texture);
+					Windows::ImageWindow(&item, &texture);
 					break;
 				
 				default:
