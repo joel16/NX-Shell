@@ -10,9 +10,7 @@ namespace Popups {
 	}
 
 	void PropertiesPopup(MenuItem *item) {
-		ImGui::OpenPopup("Properties");
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
-		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+		Popups::SetupPopup("Properties");
 		
 		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			std::string name_text = "Name: " + item->selected_filename;

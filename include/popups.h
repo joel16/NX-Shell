@@ -2,8 +2,15 @@
 #define NX_SHELL_POPUPS_H
 
 #include "gui.h"
+#include "imgui.h"
 
 namespace Popups {
+    inline void SetupPopup(const char *id) {
+        ImGui::OpenPopup(id);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
+		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+    };
+
     void OptionsPopup(MenuItem *item);
     void DeletePopup(MenuItem *item);
     void PropertiesPopup(MenuItem *item);

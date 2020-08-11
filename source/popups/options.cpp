@@ -27,9 +27,7 @@ namespace Popups {
 	}
 
 	void OptionsPopup(MenuItem *item) {
-		ImGui::OpenPopup("Options");
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
-		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+		Popups::SetupPopup("Options");
 
 		if (ImGui::BeginPopupModal("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			if (ImGui::Button("Properties", ImVec2(200, 50))) {

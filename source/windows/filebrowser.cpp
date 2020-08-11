@@ -6,9 +6,7 @@
 
 namespace Windows {
     void FileBrowserWindow(MenuItem *item, bool *focus, bool *first_item) {
-        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        Windows::SetupWindow();
         
         if (ImGui::Begin("NX-Shell", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             // Initially set default focus to next window (FS::DirList)

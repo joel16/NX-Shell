@@ -5,9 +5,7 @@
 
 namespace Windows {
     void SettingsWindow(MenuItem *item) {
-		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		Windows::SetupWindow();
 		
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 			if (ImGui::TreeNode("Sort Settings")) {

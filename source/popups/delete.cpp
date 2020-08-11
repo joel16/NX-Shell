@@ -5,9 +5,7 @@
 
 namespace Popups {
     void DeletePopup(MenuItem *item) {
-		ImGui::OpenPopup("Delete");
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
-		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+		Popups::SetupPopup("Delete");
 		
 		if (ImGui::BeginPopupModal("Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::Text("This action cannot be undone");
