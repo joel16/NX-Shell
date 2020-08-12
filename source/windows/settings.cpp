@@ -10,14 +10,17 @@ namespace Windows {
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 			if (ImGui::TreeNode("Sort Settings")) {
 				ImGui::RadioButton(" By name (ascending)", &config.sort, 0);
+				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
 				ImGui::RadioButton(" By name (descending)", &config.sort, 1);
-				ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacing
+				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
 				ImGui::RadioButton(" By size (largest first)", &config.sort, 2);
-				ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacing
+				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
 				ImGui::RadioButton(" By size (smallest first)", &config.sort, 3);
 				ImGui::TreePop();
 			}
 			
+			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+			ImGui::Separator();
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 			
 			if (ImGui::TreeNode("About")) {
