@@ -39,27 +39,7 @@ namespace Windows {
                         ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(folder_icon.width, folder_icon.height));
                     else {
                         FileType file_type = FS::GetFileType(filename);
-                        switch(file_type) {
-                            case FileTypeArchive:
-                                ImGui::Image(reinterpret_cast<ImTextureID>(archive_icon.id), ImVec2(archive_icon.width, archive_icon.height));
-                                break;
-                                
-                            case FileTypeAudio:
-                                ImGui::Image(reinterpret_cast<ImTextureID>(audio_icon.id), ImVec2(audio_icon.width, audio_icon.height));
-                                break;
-                                
-                            case FileTypeImage:
-                                ImGui::Image(reinterpret_cast<ImTextureID>(image_icon.id), ImVec2(image_icon.width, image_icon.height));
-                                break;
-                                
-                            case FileTypeText:
-                                ImGui::Image(reinterpret_cast<ImTextureID>(text_icon.id), ImVec2(text_icon.width, text_icon.height));
-                                break;
-                                
-                            default:
-                                ImGui::Image(reinterpret_cast<ImTextureID>(file_icon.id), ImVec2(file_icon.width, file_icon.height));
-                                break;
-                        }
+                        ImGui::Image(reinterpret_cast<ImTextureID>(file_icons[file_type].id), ImVec2(40.0f, 40.0f));
                     }
                     
                     ImGui::SameLine();

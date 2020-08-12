@@ -11,7 +11,6 @@ typedef enum FileType {
     FileTypeNone,
     FileTypeArchive,
     FileTypeAudio,
-    FileTypeBinary,
     FileTypeImage,
     FileTypeText
 } FileType;
