@@ -42,7 +42,7 @@ BUILD		:=	build
 SOURCES		:=	libs/source libs/source/imgui source source/windows source/popups
 DATA		:=	data
 INCLUDES	:=	libs/include libs/include/imgui include
-ROMFS	    :=	romfs
+ROMFS		:=	romfs
 
 VERSION_MAJOR := 3
 VERSION_MINOR := 0
@@ -57,14 +57,15 @@ APP_VERSION   := ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 
-CFLAGS	:=	-g -Wall -O3 -ffunction-sections -Wno-format-truncation \
-            -DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO) \
-			-DIMGUI_IMPL_OPENGL_LOADER_GLAD \
-			$(ARCH) $(DEFINES)
+CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
+		$(ARCH) $(DEFINES)
 
-CFLAGS	+=	-D__SWITCH__ $(INCLUDE) `sdl2-config --cflags` -DDEBUG
+CFLAGS	+=	$(INCLUDE) -D__SWITCH__
+CFLAGS	+=	`sdl2-config --cflags`
+CFLAGS	+=	-DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO)
+CFLAGS	+=	-DIMGUI_IMPL_OPENGL_LOADER_GLAD -DDEBUG
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++17
+CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-exceptions -fno-rtti
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)

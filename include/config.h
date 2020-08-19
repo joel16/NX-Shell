@@ -7,7 +7,7 @@
 typedef struct {
 	int sort = 0;
 	bool dark_theme = false;
-	char cwd[FS_MAX_PATH];
+	char cwd[FS_MAX_PATH + 1];
 } config_t;
 
 extern config_t config;
