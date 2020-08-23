@@ -66,7 +66,7 @@ namespace Textures {
 		return 0;
 	}
 
-	static bool LoadImage(unsigned char *data, int *width, int *height, GLint format, Tex *texture, void (*free_func)(void *)) {
+	static bool LoadImage(unsigned char *data, GLint format, Tex *texture, void (*free_func)(void *)) {
 		// Create a OpenGL texture identifier
 		glGenTextures(1, &texture->id);
 		glBindTexture(GL_TEXTURE_2D, texture->id);
@@ -77,7 +77,7 @@ namespace Textures {
 		
 		// Upload pixels into texture
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, *width, *height, 0, format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, texture->width, texture->height, 0, format, GL_UNSIGNED_BYTE, data);
 		
 		if (*free_func)
 			free_func(data);
@@ -99,7 +99,7 @@ namespace Textures {
 			if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
 				texture->width = image.width;
 				texture->height = image.height;
-				ret = Textures::LoadImage(buffer, reinterpret_cast<int *>(&texture->width), reinterpret_cast<int *>(&texture->height), GL_RGBA, texture, nullptr);
+				ret = Textures::LoadImage(buffer, GL_RGBA, texture, nullptr);
 				delete[] buffer;
 				png_image_free(&image);
 			}
@@ -120,7 +120,7 @@ namespace Textures {
 		tjDecompressHeader2(jpeg, *data, *size, &texture->width, &texture->height, &jpegsubsamp);
 		unsigned char *buffer = new unsigned char[texture->width * texture->height * 3];
 		tjDecompress2(jpeg, *data, *size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT);
-		bool ret = LoadImage(buffer, &texture->width, &texture->height, GL_RGB, texture, nullptr);
+		bool ret = LoadImage(buffer, GL_RGB, texture, nullptr);
 		tjDestroy(jpeg);
 		delete[] buffer;
 		return ret;
@@ -128,7 +128,7 @@ namespace Textures {
 
 	static bool LoadImageOther(unsigned char **data, s64 *size, Tex *texture) {
 		unsigned char *image = stbi_load_from_memory(*data, *size, &texture->width, &texture->height, nullptr, STBI_rgb_alpha);
-		bool ret = Textures::LoadImage(image, &texture->width, &texture->height, GL_RGBA, texture, nullptr);
+		bool ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
 		return ret;
 	}
 
@@ -146,7 +146,7 @@ namespace Textures {
 			if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
 				texture->width = image.width;
 				texture->height = image.height;
-				ret = Textures::LoadImage(buffer, reinterpret_cast<int *>(&texture->width), reinterpret_cast<int *>(&texture->height), GL_RGBA, texture, nullptr);
+				ret = Textures::LoadImage(buffer, GL_RGBA, texture, nullptr);
 				delete[] buffer;
 				png_image_free(&image);
 			}
@@ -163,7 +163,7 @@ namespace Textures {
 
 	static bool LoadImageWEBP(unsigned char **data, s64 *size, Tex *texture) {
 		*data = WebPDecodeRGBA(*data, *size, &texture->width, &texture->height);
-		bool ret = Textures::LoadImage(*data, &texture->width, &texture->height, GL_RGBA, texture, nullptr);
+		bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
 		return ret;
 	}
 
