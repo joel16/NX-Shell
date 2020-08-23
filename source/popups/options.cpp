@@ -1,6 +1,7 @@
 #include "config.h"
 #include "fs.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "keyboard.h"
 #include "popups.h"
 
@@ -30,6 +31,32 @@ namespace Popups {
 		Popups::SetupPopup("Options");
 
 		if (ImGui::BeginPopupModal("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			if (ImGui::Button("Select all", ImVec2(200, 50))) {
+				if ((!item->checked_cwd.empty()) && (item->checked_cwd.compare(config.cwd) != 0))
+					GUI::ResetCheckbox(item);
+
+				item->checked_cwd = config.cwd;
+				std::fill(item->checked.begin(), item->checked.end(), true);
+				item->checked_count = item->checked.size();
+			}
+
+			ImGui::SameLine(0.0f, 15.0f);
+
+			if (!item->checked_count) {
+				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+				if (ImGui::Button("Clear clipboard", ImVec2(200, 50)))
+					GUI::ResetCheckbox(item);
+				ImGui::PopItemFlag();
+				ImGui::PopStyleVar();
+			}
+			else {
+				if (ImGui::Button("Clear clipboard", ImVec2(200, 50)))
+					GUI::ResetCheckbox(item);
+			}
+
+			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
 			if (ImGui::Button("Properties", ImVec2(200, 50))) {
 				ImGui::CloseCurrentPopup();
 				item->state = MENU_STATE_PROPERTIES;
