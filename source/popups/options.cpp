@@ -45,13 +45,12 @@ namespace Popups {
 			if (!item->checked_count) {
 				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-				if (ImGui::Button("Clear clipboard", ImVec2(200, 50)))
-					GUI::ResetCheckbox(item);
+				ImGui::Button("Clear all", ImVec2(200, 50));
 				ImGui::PopItemFlag();
 				ImGui::PopStyleVar();
 			}
 			else {
-				if (ImGui::Button("Clear clipboard", ImVec2(200, 50)))
+				if (ImGui::Button("Clear all", ImVec2(200, 50)))
 					GUI::ResetCheckbox(item);
 			}
 
@@ -167,7 +166,23 @@ namespace Popups {
 				ImGui::CloseCurrentPopup();
 				item->state = MENU_STATE_HOME;
 			}
+
+			ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacing
 			
+			if (ImGui::Button("OK", ImVec2(120, 0))) {
+				ImGui::CloseCurrentPopup();
+				item->state = MENU_STATE_HOME;
+			}
+
+			if (item->copy || item->move) {
+				ImGui::SameLine(0.0f, 15.0f);
+				
+				if (ImGui::Button("Clear clipboard", ImVec2(280, 0))) {
+					item->copy = false;
+					item->move = false;
+				}
+			}
+
 			ImGui::EndPopup();
 		}
 
