@@ -1,7 +1,6 @@
 #ifndef NX_SHELL_POPUPS_H
 #define NX_SHELL_POPUPS_H
 
-#include "gui.h"
 #include "imgui.h"
 
 namespace Popups {
@@ -11,10 +10,10 @@ namespace Popups {
 		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
     };
 
-    void DeletePopup(MenuItem *item);
-    void OptionsPopup(MenuItem *item);
+    void DeletePopup(void);
+    void OptionsPopup(void);
     void ProgressPopup(float offset, float size, const std::string &title, const std::string &text);
-    void PropertiesPopup(MenuItem *item);
+    void PropertiesPopup(void);
 }
 
 #endif

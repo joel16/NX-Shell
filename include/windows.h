@@ -1,7 +1,6 @@
 #ifndef NX_SHELL_WINDOWS_H
 #define NX_SHELL_WINDOWS_H
 
-#include "gui.h"
 #include "imgui.h"
 #include "textures.h"
 
@@ -12,9 +11,9 @@ namespace Windows {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     };
 
-    void FileBrowserWindow(MenuItem *item, bool *focus, bool *first_item);
-    void ImageWindow(MenuItem *item, Tex *texture);
-    void SettingsWindow(MenuItem *item);
+    void FileBrowserWindow(bool *focus, bool *first_item);
+    void ImageWindow(Tex *texture);
+    void SettingsWindow(void);
 }
 
 #endif

@@ -1,4 +1,5 @@
 #include "fs.h"
+#include "gui.h"
 #include "imgui.h"
 #include "popups.h"
 #include "utils.h"
@@ -9,23 +10,23 @@ namespace Popups {
 		return string;
 	}
 
-	void PropertiesPopup(MenuItem *item) {
+	void PropertiesPopup(void) {
 		Popups::SetupPopup("Properties");
 		
 		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			std::string name_text = "Name: " + item->selected_filename;
+			std::string name_text = "Name: " + item.selected_filename;
 			ImGui::Text(name_text.c_str());
 			
-			if (item->entries[item->selected].type == FsDirEntryType_File) {
+			if (item.entries[item.selected].type == FsDirEntryType_File) {
 				char size[16];
-				Utils::GetSizeString(size, item->entries[item->selected].file_size);
+				Utils::GetSizeString(size, item.entries[item.selected].file_size);
 				std::string size_text = "Size: ";
 				size_text.append(size);
 				ImGui::Text(size_text.c_str());
 			}
 			
 			FsTimeStampRaw timestamp;
-			if (R_SUCCEEDED(FS::GetTimeStamp(&item->entries[item->selected], &timestamp))) {
+			if (R_SUCCEEDED(FS::GetTimeStamp(&item.entries[item.selected], &timestamp))) {
 				if (timestamp.is_valid == 1) { // Confirm valid timestamp
 					char date[3][36];
 					
@@ -47,7 +48,7 @@ namespace Popups {
 			
 			if (ImGui::Button("OK", ImVec2(120, 0))) {
 				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_OPTIONS;
+				item.state = MENU_STATE_OPTIONS;
 			}
 
 			ImGui::EndPopup();

@@ -1,3 +1,4 @@
+#include "gui.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
@@ -12,7 +13,7 @@ namespace Popups {
 		ImGui_ImplSDL2_NewFrame(window);
 		ImGui::NewFrame();
 
-		Windows::FileBrowserWindow(&item, &focus, &first_item);
+		Windows::FileBrowserWindow(&focus, &first_item);
         Popups::SetupPopup(title.c_str());
 		
 		if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {

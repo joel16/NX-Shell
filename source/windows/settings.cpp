@@ -1,10 +1,11 @@
 #include "config.h"
 #include "fs.h"
+#include "gui.h"
 #include "imgui.h"
 #include "windows.h"
 
 namespace Windows {
-    void SettingsWindow(MenuItem *item) {
+    void SettingsWindow(void) {
 		Windows::SetupWindow();
 		
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
@@ -38,6 +39,6 @@ namespace Windows {
 		ImGui::End();
 		ImGui::PopStyleVar();
 		Config::Save(config);
-		item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+		item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
 	}
 }

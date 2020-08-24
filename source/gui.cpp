@@ -41,7 +41,7 @@ namespace GUI {
 			ImGui_ImplSDL2_NewFrame(window);
 			ImGui::NewFrame();
 			
-			Windows::FileBrowserWindow(&item, &focus, &first_item);
+			Windows::FileBrowserWindow(&focus, &first_item);
 
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
@@ -133,23 +133,23 @@ namespace GUI {
 
 			switch (item.state) {
 				case MENU_STATE_OPTIONS:
-					Popups::OptionsPopup(&item);
+					Popups::OptionsPopup();
 					break;
 				
 				case MENU_STATE_PROPERTIES:
-					Popups::PropertiesPopup(&item);
+					Popups::PropertiesPopup();
 					break;
 				
 				case MENU_STATE_DELETE:
-					Popups::DeletePopup(&item);
+					Popups::DeletePopup();
 					break;
 					
 				case MENU_STATE_SETTINGS:
-					Windows::SettingsWindow(&item);
+					Windows::SettingsWindow();
 					break;
 					
 				case MENU_STATE_IMAGEVIEWER:
-					Windows::ImageWindow(&item, &texture);
+					Windows::ImageWindow(&texture);
 					break;
 				
 				default:
