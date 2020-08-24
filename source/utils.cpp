@@ -2,7 +2,7 @@
 #include "utils.h"
 
 namespace Utils {
-	void GetSizeString(char *string, double size) {
+    void GetSizeString(char *string, double size) {
         int i = 0;
         const char *units[] = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
         
