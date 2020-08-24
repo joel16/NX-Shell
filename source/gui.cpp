@@ -12,23 +12,16 @@
 #include "textures.h"
 #include "windows.h"
 
-namespace GUI {
-	void ResetCheckbox(MenuItem *item) {
-		item->checked.clear();
-		item->checked_copy.clear();
-		item->checked.resize(item->file_count);
-		item->checked.assign(item->checked.size(), false);
-		item->checked_cwd.clear();
-		item->checked_count = 0;
-	}
+// Global var used across windows/popups
+MenuItem item;
 
-	int RenderMainMenu(SDL_Window *window) {
+namespace GUI {
+	int RenderLoop(void) {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		// Used for displaying images
 		Tex texture;
-		
-		MenuItem item;
+
 		item.state = MENU_STATE_HOME;
 		item.selected = 0;
 		item.file_count = FS::GetDirList(config.cwd, &item.entries);
@@ -41,6 +34,7 @@ namespace GUI {
 
 		// Main loop
 		bool done = false, focus = false, first_item = true;
+
 		while (!done) {
 			// Start the Dear ImGui frame
 			ImGui_ImplOpenGL3_NewFrame();
@@ -116,7 +110,7 @@ namespace GUI {
 						else if (event.jbutton.button == 3) {
 							if (item.state == MENU_STATE_HOME) {
 								if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
-									GUI::ResetCheckbox(&item);
+									GUI::ResetCheckbox();
 								
 								item.checked_cwd = config.cwd;
 								item.checked.at(item.selected) = !item.checked.at(item.selected);

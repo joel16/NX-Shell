@@ -31,9 +31,20 @@ typedef struct {
     s64 total_storage = 0;
 } MenuItem;
 
+extern SDL_Window *window;
+extern MenuItem item;
+
 namespace GUI {
-    void ResetCheckbox(MenuItem *item);
-    int RenderMainMenu(SDL_Window *window);
+    inline void ResetCheckbox(void) {
+		item.checked.clear();
+		item.checked_copy.clear();
+		item.checked.resize(item.file_count);
+		item.checked.assign(item.checked.size(), false);
+		item.checked_cwd.clear();
+		item.checked_count = 0;
+	};
+
+    int RenderLoop(void);
 }
 
 #endif

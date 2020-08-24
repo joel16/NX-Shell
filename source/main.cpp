@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
 	if (R_FAILED(ret = Services::InitImGui()))
 		return ret;
 
-	if (R_FAILED(ret = GUI::RenderMainMenu(window)))
+	if (R_FAILED(ret = GUI::RenderLoop()))
 		return ret;
 
 	Services::ExitImGui();

@@ -16,14 +16,14 @@ namespace Popups {
 				FS::Copy(&entries[i], item->checked_cwd);
 				if (R_FAILED((*func)())) {
 					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
+					GUI::ResetCheckbox();
 					break;
 				}
 			}
 		}
 		
 		item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-		GUI::ResetCheckbox(item);
+		GUI::ResetCheckbox();
 		FS::FreeDirEntries(&entries, entry_count);
 	}
 
@@ -33,7 +33,7 @@ namespace Popups {
 		if (ImGui::BeginPopupModal("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			if (ImGui::Button("Select all", ImVec2(200, 50))) {
 				if ((!item->checked_cwd.empty()) && (item->checked_cwd.compare(config.cwd) != 0))
-					GUI::ResetCheckbox(item);
+					GUI::ResetCheckbox();
 
 				item->checked_cwd = config.cwd;
 				std::fill(item->checked.begin(), item->checked.end(), true);
@@ -51,7 +51,7 @@ namespace Popups {
 			}
 			else {
 				if (ImGui::Button("Clear all", ImVec2(200, 50)))
-					GUI::ResetCheckbox(item);
+					GUI::ResetCheckbox();
 			}
 
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -82,7 +82,7 @@ namespace Popups {
 				
 				if (R_SUCCEEDED(fsFsCreateDirectory(fs, path.c_str()))) {
 					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
+					GUI::ResetCheckbox();
 				}
 				
 				ImGui::CloseCurrentPopup();
@@ -99,7 +99,7 @@ namespace Popups {
 				
 				if (R_SUCCEEDED(fsFsCreateFile(fs, path.c_str(), 0, 0))) {
 					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
+					GUI::ResetCheckbox();
 				}
 				
 				ImGui::CloseCurrentPopup();
@@ -112,19 +112,28 @@ namespace Popups {
 				if (!item->copy) {
 					if (item->checked_count <= 1)
 						FS::Copy(&item->entries[item->selected], config.cwd);
+						
+					item->copy = !item->copy;
+					item->state = MENU_STATE_HOME;
 				}
 				else {
+					ImGui::EndPopup();
+					ImGui::PopStyleVar();
+					ImGui::Render();
+
 					if ((item->checked_count > 1) && (item->checked_cwd.compare(config.cwd) != 0))
 						Popups::HandleMultipleCopy(item, &FS::Paste);
-					else if (R_SUCCEEDED(FS::Paste())) {
-						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-						GUI::ResetCheckbox(item);
+					else {
+						if (R_SUCCEEDED(FS::Paste())) {
+							item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
+							GUI::ResetCheckbox();
+						}
 					}
+
+					item->copy = !item->copy;
+					item->state = MENU_STATE_HOME;
+					return;
 				}
-				
-				item->copy = !item->copy;
-				ImGui::CloseCurrentPopup();
-				item->state = MENU_STATE_HOME;
 			}
 			
 			ImGui::SameLine(0.0f, 15.0f);
@@ -139,7 +148,7 @@ namespace Popups {
 						Popups::HandleMultipleCopy(item, &FS::Move);
 					else if (R_SUCCEEDED(FS::Move())) {
 						item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-						GUI::ResetCheckbox(item);
+						GUI::ResetCheckbox();
 					}
 				}
 				
@@ -160,7 +169,7 @@ namespace Popups {
 			if (ImGui::Button("Set archive bit", ImVec2(200, 50))) {
 				if (R_SUCCEEDED(FS::SetArchiveBit(&item->entries[item->selected]))) {
 					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
+					GUI::ResetCheckbox();
 				}
 					
 				ImGui::CloseCurrentPopup();

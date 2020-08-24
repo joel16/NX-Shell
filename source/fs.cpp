@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "fs.h"
+#include "popups.h"
 
 // Global vars
 FsFileSystem *fs;
@@ -288,6 +289,7 @@ namespace FS {
 		const u64 buf_size = 0x10000;
 		s64 offset = 0;
 		unsigned char *buf = new unsigned char[buf_size];
+		std::string filename = std::filesystem::path(src_path).filename();
 		
 		do {
 			std::memset(buf, 0, buf_size);
@@ -307,6 +309,7 @@ namespace FS {
 			}
 			
 			offset += bytes_read;
+			Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(size), "Copying:", filename.c_str());
 		} while(offset < size);
 		
 		delete[] buf;

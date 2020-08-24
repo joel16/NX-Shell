@@ -33,7 +33,7 @@ namespace Popups {
 						if (item->checked.at(i)) {
 							if (R_FAILED(ret = FS::Delete(&item->entries[i]))) {
 								item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-								GUI::ResetCheckbox(item);
+								GUI::ResetCheckbox();
 								break;
 							}
 						}
@@ -44,7 +44,7 @@ namespace Popups {
 				
 				if (R_SUCCEEDED(ret)) {
 					item->file_count = FS::RefreshEntries(&item->entries, item->file_count);
-					GUI::ResetCheckbox(item);
+					GUI::ResetCheckbox();
 				}
 				
 				ImGui::CloseCurrentPopup();
