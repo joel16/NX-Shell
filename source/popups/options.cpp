@@ -42,17 +42,11 @@ namespace Popups {
 			}
 
 			ImGui::SameLine(0.0f, 15.0f);
-
-			if (!item.checked_count) {
-				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-				ImGui::Button("Clear all", ImVec2(200, 50));
-				ImGui::PopItemFlag();
-				ImGui::PopStyleVar();
-			}
-			else {
-				if (ImGui::Button("Clear all", ImVec2(200, 50)))
-					GUI::ResetCheckbox();
+			
+			if (ImGui::Button("Clear all", ImVec2(200, 50))) {
+				GUI::ResetCheckbox();
+				item.copy = false;
+				item.move = false;
 			}
 
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -111,6 +105,8 @@ namespace Popups {
 			
 			if (ImGui::Button(!item.copy? "Copy" : "Paste", ImVec2(200, 50))) {
 				if (!item.copy) {
+					if ((item.checked_count >= 1) && (item.checked_cwd.compare(config.cwd) != 0))
+						GUI::ResetCheckbox();
 					if (item.checked_count <= 1)
 						FS::Copy(&item.entries[item.selected], config.cwd);
 						
@@ -141,6 +137,8 @@ namespace Popups {
 			
 			if (ImGui::Button(!item.move? "Move" : "Paste", ImVec2(200, 50))) {
 				if (!item.move) {
+					if ((item.checked_count >= 1) && (item.checked_cwd.compare(config.cwd) != 0))
+						GUI::ResetCheckbox();
 					if (item.checked_count <= 1)
 						FS::Copy(&item.entries[item.selected], config.cwd);
 				}
@@ -175,22 +173,6 @@ namespace Popups {
 					
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_HOME;
-			}
-
-			ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacing
-			
-			if (ImGui::Button("OK", ImVec2(120, 0))) {
-				ImGui::CloseCurrentPopup();
-				item.state = MENU_STATE_HOME;
-			}
-
-			if (item.copy || item.move) {
-				ImGui::SameLine(0.0f, 15.0f);
-				
-				if (ImGui::Button("Clear clipboard", ImVec2(280, 0))) {
-					item.copy = false;
-					item.move = false;
-				}
 			}
 
 			ImGui::EndPopup();
