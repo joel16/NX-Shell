@@ -7,7 +7,7 @@ namespace Keyboard {
 	// Empty strings are invalid.
 	SwkbdTextCheckResult ValidateText(char *string, size_t size) {
 		if (std::strcmp(string, "") == 0) {
-			std::strncpy(string, "The name cannot be empty.", size); 
+			std::strncpy(string, u8"名称不能为空", size); 
 			return SwkbdTextCheckResult_Bad;
 		}
 		

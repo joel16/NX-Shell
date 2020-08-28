@@ -63,7 +63,7 @@ namespace Windows {
                 }
             }
             else
-                ImGui::Text("No file entries");
+                ImGui::Text(u8"没有文件条目");
             
             ImGui::EndChild();
         }

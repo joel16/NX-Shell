@@ -309,7 +309,7 @@ namespace FS {
 			}
 			
 			offset += bytes_read;
-			Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(size), "Copying:", filename.c_str());
+			Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(size), u8"复制中:", filename.c_str());
 		} while(offset < size);
 		
 		delete[] buf;

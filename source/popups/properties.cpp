@@ -11,16 +11,16 @@ namespace Popups {
 	}
 
 	void PropertiesPopup(void) {
-		Popups::SetupPopup("Properties");
+		Popups::SetupPopup(u8"属性");
 		
-		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			std::string name_text = "Name: " + item.selected_filename;
+		if (ImGui::BeginPopupModal(u8"属性", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			std::string name_text = u8"名称: " + item.selected_filename;
 			ImGui::Text(name_text.c_str());
 			
 			if (item.entries[item.selected].type == FsDirEntryType_File) {
 				char size[16];
 				Utils::GetSizeString(size, item.entries[item.selected].file_size);
-				std::string size_text = "Size: ";
+				std::string size_text = u8"大小: ";
 				size_text.append(size);
 				ImGui::Text(size_text.c_str());
 			}
@@ -30,15 +30,15 @@ namespace Popups {
 				if (timestamp.is_valid == 1) { // Confirm valid timestamp
 					char date[3][36];
 					
-					std::string created_time = "Created: ";
+					std::string created_time = u8"创建时间: ";
 					created_time.append(Popups::FormatDate(date[0], timestamp.created));
 					ImGui::Text(created_time.c_str());
 					
-					std::string modified_time = "Modified: ";
+					std::string modified_time = u8"修改时间: ";
 					modified_time.append(Popups::FormatDate(date[1], timestamp.modified));
 					ImGui::Text(modified_time.c_str());
 					
-					std::string accessed_time = "Accessed: ";
+					std::string accessed_time = u8"访问时间: ";
 					accessed_time.append(Popups::FormatDate(date[2], timestamp.accessed));
 					ImGui::Text(accessed_time.c_str());
 				}
@@ -46,7 +46,7 @@ namespace Popups {
 			
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 			
-			if (ImGui::Button("OK", ImVec2(120, 0))) {
+			if (ImGui::Button(u8"确定", ImVec2(120, 0))) {
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_OPTIONS;
 			}

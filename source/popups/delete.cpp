@@ -6,12 +6,12 @@
 
 namespace Popups {
     void DeletePopup(void) {
-		Popups::SetupPopup("Delete");
+		Popups::SetupPopup(u8"删除");
 		
-		if (ImGui::BeginPopupModal("Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::Text("This action cannot be undone");
+		if (ImGui::BeginPopupModal(u8"删除", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			ImGui::Text(u8"此操作无法撤消");
 			if ((item.checked_count > 1) && (!item.checked_cwd.compare(config.cwd))) {
-				ImGui::Text("Do you wish to delete the following:");
+				ImGui::Text(u8"是否要删除以下内容:");
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::BeginChild("Scrolling", ImVec2(0, 100));
 				for (long unsigned int i = 0; i < item.checked.size(); i++) {
@@ -21,13 +21,13 @@ namespace Popups {
 				ImGui::EndChild();
 			}
 			else {
-				std::string text = "Do you wish to delete " + item.selected_filename + "?";
+				std::string text = u8"是否要删除 " + item.selected_filename + "?";
 				ImGui::Text(text.c_str());
 			}
 			
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 			
-			if (ImGui::Button("OK", ImVec2(120, 0))) {
+			if (ImGui::Button(u8"确定", ImVec2(120, 0))) {
 				Result ret = 0;
 				if ((item.checked_count > 1) && (!item.checked_cwd.compare(config.cwd))) {
 					for (long unsigned int i = 0; i < item.checked.size(); i++) {
@@ -55,7 +55,7 @@ namespace Popups {
 			ImGui::SetItemDefaultFocus();
 			ImGui::SameLine(0.0f, 15.0f);
 			
-			if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+			if (ImGui::Button(u8"取消", ImVec2(120, 0))) {
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_OPTIONS;
 			}

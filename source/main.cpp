@@ -128,7 +128,7 @@ namespace Services {
 		ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 		ImGui_ImplOpenGL3_Init(glsl_version);
 		
-		ImFont *font = io.Fonts->AddFontFromFileTTF("romfs:/NotoSans-Regular.ttf", 35.0f);
+		ImFont *font = io.Fonts->AddFontFromFileTTF("romfs:/Roboto-Regular.ttf", 35.0f,nullptr,io.Fonts->GetGlyphRangesChineseFull());
 		IM_ASSERT(font != nullptr);
 		Services::SetDefaultTheme();
 		Textures::Init();
