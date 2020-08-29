@@ -36,15 +36,17 @@ namespace Windows {
                     
                     ImGui::SameLine();
                     
+                    FileType file_type = FS::GetFileType(filename);
                     if (item.entries[i].type == FsDirEntryType_Dir)
                         ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(folder_icon.width, folder_icon.height));
-                    else {
-                        FileType file_type = FS::GetFileType(filename);
+                    else
                         ImGui::Image(reinterpret_cast<ImTextureID>(file_icons[file_type].id), ImVec2(40.0f, 40.0f));
-                    }
                     
                     ImGui::SameLine();
-                    ImGui::Selectable(filename.c_str());
+                    if (ImGui::Selectable(filename.c_str())) {
+                        if (file_type == FileTypeArchive)
+                            item.state = MENU_STATE_ARCHIVEEXTRACT;
+                    }
                     
                     if (*first_item) {
                         ImGui::SetFocusID(ImGui::GetID((item.entries[0].name)), ImGui::GetCurrentWindow());

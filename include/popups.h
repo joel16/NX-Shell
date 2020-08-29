@@ -10,6 +10,7 @@ namespace Popups {
 		ImGui::SetNextWindowPos(ImVec2(640.0f, 360.0f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
     };
 
+    void ArchivePopup(void);
     void DeletePopup(void);
     void OptionsPopup(void);
     void ProgressPopup(float offset, float size, const std::string &title, const std::string &text);

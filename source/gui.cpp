@@ -132,6 +132,15 @@ namespace GUI {
 			}
 
 			switch (item.state) {
+				// Popups
+				case MENU_STATE_ARCHIVEEXTRACT:
+					Popups::ArchivePopup();
+					break;
+
+				case MENU_STATE_DELETE:
+					Popups::DeletePopup();
+					break;
+				
 				case MENU_STATE_OPTIONS:
 					Popups::OptionsPopup();
 					break;
@@ -139,17 +148,14 @@ namespace GUI {
 				case MENU_STATE_PROPERTIES:
 					Popups::PropertiesPopup();
 					break;
-				
-				case MENU_STATE_DELETE:
-					Popups::DeletePopup();
+
+				// Windows
+				case MENU_STATE_IMAGEVIEWER:
+					Windows::ImageWindow(&texture);
 					break;
 					
 				case MENU_STATE_SETTINGS:
 					Windows::SettingsWindow();
-					break;
-					
-				case MENU_STATE_IMAGEVIEWER:
-					Windows::ImageWindow(&texture);
 					break;
 				
 				default:

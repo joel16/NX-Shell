@@ -70,7 +70,7 @@ CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-exceptions -fno-rtti
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=	-ljansson -lturbojpeg -ljpeg -lpng -lwebp \
+LIBS	:=	-lzzip -ljansson -lturbojpeg -ljpeg -lpng -lwebp \
 		`sdl2-config --libs` -lglad -lEGL -lglapi -ldrm_nouveau -lnx -lm -lz
 
 #---------------------------------------------------------------------------------
