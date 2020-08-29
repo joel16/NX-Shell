@@ -31,15 +31,11 @@
 Tex folder_icon, file_icons[5], check_icon, uncheck_icon;
 
 namespace Textures {
-	static Result ReadFile(const std::string &path, unsigned char **buffer, s64 *size) {
+	static Result ReadFile(const char path[FS_MAX_PATH], unsigned char **buffer, s64 *size) {
 		Result ret = 0;
 		FsFile file;
-
-		char new_path[FS_MAX_PATH + 1];
-		if (R_FAILED(fsdevTranslatePath(path.c_str(), &fs, new_path)))
-			return -1;
 		
-		if (R_FAILED(ret = fsFsOpenFile(fs, new_path, FsOpenMode_Read, &file))) {
+		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file))) {
 			fsFileClose(&file);
 			return ret;
 		}
@@ -180,16 +176,17 @@ namespace Textures {
 		return ImageTypeOther;
 	}
 
-	bool LoadImageFile(const std::string &path, ImageType type, Tex *texture) {
+	bool LoadImageFile(const char path[FS_MAX_PATH], Tex *texture) {
+		bool ret = false;
 		unsigned char *data = nullptr;
 		s64 size = 0;
 
 		if (R_FAILED(Textures::ReadFile(path, &data, &size))) {
 			delete[] data;
-			return false;
+			return ret;
 		}
-		
-		bool ret = false;
+
+		ImageType type = GetImageType(path);
 		switch(type) {
 			case ImageTypeJPEG:
 				ret = Textures::LoadImageJPEG(&data, &size, texture);

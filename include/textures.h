@@ -22,8 +22,7 @@ typedef struct {
 extern Tex folder_icon, file_icons[NUM_FILE_ICONS], check_icon, uncheck_icon;
 
 namespace Textures {
-    ImageType GetImageType(const std::string &filename);
-    bool LoadImageFile(const std::string &path, ImageType type, Tex *texture);
+    bool LoadImageFile(const char path[FS_MAX_PATH], Tex *texture);
     void Free(Tex *texture);
     void Init(void);
     void Exit(void);

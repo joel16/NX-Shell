@@ -68,14 +68,11 @@ namespace GUI {
 								else {
 									FileType file_type = FS::GetFileType(item.selected_filename);
 									if (file_type == FileTypeImage) {
-										ImageType type = Textures::GetImageType(item.selected_filename);
-										std::string path = std::string();
-										int length = FS::ConstructPath(&item.entries[item.selected], path.data(), nullptr);
-										if (length > 0) {
-											bool image_ret = Textures::LoadImageFile(path, type, &texture);
-											IM_ASSERT(image_ret);
-											item.state = MENU_STATE_IMAGEVIEWER;
-										}
+										char path[FS_MAX_PATH + 1];
+										std::sprintf(path, "%s/%s", config.cwd, item.selected_filename.c_str());
+										bool image_ret = Textures::LoadImageFile(path, &texture);
+										IM_ASSERT(image_ret);
+										item.state = MENU_STATE_IMAGEVIEWER;
 									}
 								}
 							}
