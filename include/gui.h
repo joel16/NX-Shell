@@ -6,6 +6,8 @@
 #include <SDL.h>
 #include <switch.h>
 
+#include "textures.h"
+
 enum MENU_STATES {
     MENU_STATE_HOME,
     MENU_STATE_OPTIONS,
@@ -30,6 +32,7 @@ typedef struct {
     int checked_count = 0;
     s64 used_storage = 0;
     s64 total_storage = 0;
+    Tex texture;
 } MenuItem;
 
 extern SDL_Window *window;

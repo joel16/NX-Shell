@@ -44,8 +44,21 @@ namespace Windows {
                     
                     ImGui::SameLine();
                     if (ImGui::Selectable(filename.c_str())) {
-                        if (file_type == FileTypeArchive)
-                            item.state = MENU_STATE_ARCHIVEEXTRACT;
+                        switch(file_type) {
+                            case FileTypeArchive:
+                                item.state = MENU_STATE_ARCHIVEEXTRACT;
+                                break;
+                                
+                            case FileTypeImage:
+                                char path[FS_MAX_PATH + 1];
+                                std::sprintf(path, "%s/%s", config.cwd, item.selected_filename.c_str());
+                                Textures::LoadImageFile(path, &item.texture);
+                                item.state = MENU_STATE_IMAGEVIEWER;
+                                break;
+                            
+                            default:
+                                break;
+                        }
                     }
                     
                     if (*first_item) {

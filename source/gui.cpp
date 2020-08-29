@@ -9,7 +9,6 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 #include "popups.h"
-#include "textures.h"
 #include "windows.h"
 
 // Global var used across windows/popups
@@ -18,9 +17,6 @@ MenuItem item;
 namespace GUI {
 	int RenderLoop(void) {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-		// Used for displaying images
-		Tex texture;
 
 		item.state = MENU_STATE_HOME;
 		item.selected = 0;
@@ -65,16 +61,6 @@ namespace GUI {
 										}
 									}
 								}
-								else {
-									FileType file_type = FS::GetFileType(item.selected_filename);
-									if (file_type == FileTypeImage) {
-										char path[FS_MAX_PATH + 1];
-										std::sprintf(path, "%s/%s", config.cwd, item.selected_filename.c_str());
-										bool image_ret = Textures::LoadImageFile(path, &texture);
-										IM_ASSERT(image_ret);
-										item.state = MENU_STATE_IMAGEVIEWER;
-									}
-								}
 							}
 						}
 						else if (event.jbutton.button == 1) {
@@ -94,7 +80,7 @@ namespace GUI {
 							else if ((item.state == MENU_STATE_PROPERTIES) || (item.state == MENU_STATE_DELETE))
 								item.state = MENU_STATE_OPTIONS;
 							else if (item.state == MENU_STATE_IMAGEVIEWER) {
-								Textures::Free(&texture);
+								Textures::Free(&item.texture);
 								item.state = MENU_STATE_HOME;
 							}
 							else
@@ -148,7 +134,7 @@ namespace GUI {
 
 				// Windows
 				case MENU_STATE_IMAGEVIEWER:
-					Windows::ImageWindow(&texture);
+					Windows::ImageWindow(&item.texture);
 					break;
 					
 				case MENU_STATE_SETTINGS:
