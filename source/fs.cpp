@@ -267,21 +267,20 @@ namespace FS {
 		Result ret = 0;
 		FsFile src_handle, dest_handle;
 		
-		if (R_FAILED(ret = fsFsOpenFile(&devices[PREVIOUS_BROWSE_STATE], src_path, FsOpenMode_Read, &src_handle))) {
+		if (R_FAILED(ret = fsFsOpenFile(&devices[PREVIOUS_BROWSE_STATE], src_path, FsOpenMode_Read, &src_handle)))
+			return ret;
+		
+		s64 size = 0;
+		if (R_FAILED(ret = fsFileGetSize(&src_handle, &size))) {
 			fsFileClose(&src_handle);
 			return ret;
 		}
-		
-		s64 size = 0;
-		if (R_FAILED(ret = fsFileGetSize(&src_handle, &size)))
-			return ret;
 			
 		if (!FS::FileExists(dest_path))
 			fsFsCreateFile(fs, dest_path, size, 0);
 			
-		if (R_FAILED(ret = fsFsOpenFile(fs, dest_path,  FsOpenMode_Write, &dest_handle))) {
+		if (R_FAILED(ret = fsFsOpenFile(fs, dest_path, FsOpenMode_Write, &dest_handle))) {
 			fsFileClose(&src_handle);
-			fsFileClose(&dest_handle);
 			return ret;
 		}
 		
