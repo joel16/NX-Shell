@@ -39,9 +39,9 @@ include $(DEVKITPRO)/libnx/switch_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	libs/source libs/source/imgui source source/windows source/popups
+SOURCES		:=	libs/imgui source source/windows source/popups
 DATA		:=	data
-INCLUDES	:=	libs/include libs/include/imgui include
+INCLUDES	:=	libs/imgui include
 ROMFS		:=	romfs
 
 VERSION_MAJOR := 3
