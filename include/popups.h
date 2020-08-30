@@ -12,9 +12,10 @@ namespace Popups {
 
     void ArchivePopup(void);
     void DeletePopup(void);
+    void FilePropertiesPopup(void);
+    void ImageProperties(bool *state);
     void OptionsPopup(void);
     void ProgressPopup(float offset, float size, const std::string &title, const std::string &text);
-    void PropertiesPopup(void);
 }
 
 #endif

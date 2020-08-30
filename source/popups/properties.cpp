@@ -10,7 +10,7 @@ namespace Popups {
 		return string;
 	}
 
-	void PropertiesPopup(void) {
+	void FilePropertiesPopup(void) {
 		Popups::SetupPopup("Properties");
 		
 		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -50,10 +50,38 @@ namespace Popups {
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_OPTIONS;
 			}
-
-			ImGui::EndPopup();
 		}
 
+		ImGui::EndPopup();
+		ImGui::PopStyleVar();
+	}
+	
+	void ImageProperties(bool *state) {
+		Popups::SetupPopup("Properties");
+		
+		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			std::string name_text = "Name: " + item.selected_filename;
+			ImGui::Text(name_text.c_str());
+			
+			std::string width_text = "Width: ";
+			width_text.append(std::to_string(item.texture.width));
+			width_text.append("px");
+			ImGui::Text(width_text.c_str());
+			
+			std::string height_text = "Height: ";
+			height_text.append(std::to_string(item.texture.height));
+			height_text.append("px");
+			ImGui::Text(height_text.c_str());
+			
+			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+			
+			if (ImGui::Button("OK", ImVec2(120, 0))) {
+				ImGui::CloseCurrentPopup();
+				*state = false;
+			}
+		}
+		
+		ImGui::EndPopup();
 		ImGui::PopStyleVar();
 	}
 }

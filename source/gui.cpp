@@ -29,7 +29,7 @@ namespace GUI {
 		FS::GetTotalStorageSpace(&item.total_storage);
 
 		// Main loop
-		bool done = false, focus = false, first_item = true;
+		bool done = false, focus = false, first_item = true, tex_properties = false;
 
 		while (!done) {
 			// Start the Dear ImGui frame
@@ -80,8 +80,12 @@ namespace GUI {
 							else if ((item.state == MENU_STATE_PROPERTIES) || (item.state == MENU_STATE_DELETE))
 								item.state = MENU_STATE_OPTIONS;
 							else if (item.state == MENU_STATE_IMAGEVIEWER) {
-								Textures::Free(&item.texture);
-								item.state = MENU_STATE_HOME;
+								if (tex_properties)
+									tex_properties = false;
+								else {
+									Textures::Free(&item.texture);
+									item.state = MENU_STATE_HOME;
+								}
 							}
 							else
 								item.state = MENU_STATE_HOME;
@@ -89,6 +93,8 @@ namespace GUI {
 						else if (event.jbutton.button == 2) {
 							if (item.state == MENU_STATE_HOME)
 								item.state = MENU_STATE_OPTIONS;
+							else if (item.state == MENU_STATE_IMAGEVIEWER)
+								tex_properties = true;
 						}
 						else if (event.jbutton.button == 3) {
 							if (item.state == MENU_STATE_HOME) {
@@ -129,12 +135,15 @@ namespace GUI {
 					break;
 				
 				case MENU_STATE_PROPERTIES:
-					Popups::PropertiesPopup();
+					Popups::FilePropertiesPopup();
 					break;
 
 				// Windows
 				case MENU_STATE_IMAGEVIEWER:
 					Windows::ImageWindow(&item.texture);
+					if (tex_properties)
+						Popups::ImageProperties(&tex_properties);
+					
 					break;
 					
 				case MENU_STATE_SETTINGS:
