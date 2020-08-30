@@ -7,4 +7,5 @@ source /etc/profile.d/devkit-env.sh
 export DEVKITA64=/opt/devkitpro/devkitA64
 
 cd /NX-Shell && make
-rm -rf !(*.nro)
+rm -rf .travis build include libs romfs source	
+rm .gitattributes .gitignore .travis.yml icon.jpg LICENSE Makefile NX-Shell.elf NX-Shell.nacp README.md
