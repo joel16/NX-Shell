@@ -415,10 +415,8 @@ namespace FS {
 		Result ret = 0;
 		
 		FsFile file;
-		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file))) {
-			fsFileClose(&file);
+		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file)))
 			return ret;
-		}
 		
 		if (R_FAILED(ret = fsFileGetSize(&file, size))) {
 			fsFileClose(&file);
@@ -437,10 +435,8 @@ namespace FS {
 		fsFsCreateFile(fs, path, size, 0);
 		
 		FsFile file;
-		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Write, &file))) {
-			fsFileClose(&file);
+		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Write, &file)))
 			return ret;
-		}
 		
 		if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size, FsWriteOption_Flush))) {
 			fsFileClose(&file);

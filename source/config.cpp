@@ -48,11 +48,9 @@ namespace Config {
         }
         
         FsFile file;
-        if (R_FAILED(ret = fsFsOpenFile(fs, "/switch/NX-Shell/config.json", FsOpenMode_Read, &file))) {
-            fsFileClose(&file);
+        if (R_FAILED(ret = fsFsOpenFile(fs, "/switch/NX-Shell/config.json", FsOpenMode_Read, &file)))
             return ret;
-        }
-
+        
         s64 size = 0;
         if (R_FAILED(ret = fsFileGetSize(&file, &size))) {
             fsFileClose(&file);

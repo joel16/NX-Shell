@@ -75,11 +75,9 @@ namespace Textures {
 		Result ret = 0;
 		FsFile file;
 		
-		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file))) {
-			fsFileClose(&file);
+		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file)))
 			return ret;
-		}
-
+		
 		if (R_FAILED(ret = fsFileGetSize(&file, size))) {
 			fsFileClose(&file);
 			return ret;
