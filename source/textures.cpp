@@ -1,15 +1,18 @@
 #include <cstring>
 
+// BMP
+#include "libnsbmp.h"
+
 // JPEG
 #include <turbojpeg.h>
 
 // STB
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_BMP
 #define STBI_NO_HDR
 #define STBI_NO_JPEG
 #define STBI_NO_PIC
 #define STBI_NO_PNG
-#define STBI_ONLY_BMP
 #define STBI_ONLY_GIF
 #define STBI_ONLY_PNM
 #define STBI_ONLY_PSD
@@ -28,9 +31,46 @@
 #include "imgui.h"
 #include "textures.h"
 
+#define BYTES_PER_PIXEL 4
+#define MAX_IMAGE_BYTES (48 * 1024 * 1024)
+
 Tex folder_icon, file_icons[5], check_icon, uncheck_icon;
 
+namespace BMP {
+	static void *bitmap_create(int width, int height, unsigned int state) {
+		(void) state;  /* unused */
+		/* ensure a stupidly large (>50Megs or so) bitmap is not created */
+		if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
+			return nullptr;
+			
+		return calloc(width * height, BYTES_PER_PIXEL);
+	}
+	
+	static unsigned char *bitmap_get_buffer(void *bitmap) {
+		assert(bitmap);
+		return static_cast<unsigned char *>(bitmap);
+	}
+	
+	static size_t bitmap_get_bpp(void *bitmap) {
+		(void) bitmap;  /* unused */
+		return BYTES_PER_PIXEL;
+	}
+	
+	static void bitmap_destroy(void *bitmap) {
+		assert(bitmap);
+		free(bitmap);
+	}
+}
+
 namespace Textures {
+	typedef enum ImageType {
+		ImageTypeBMP,
+		ImageTypeJPEG,
+		ImageTypePNG,
+		ImageTypeWEBP,
+		ImageTypeOther
+	} ImageType;
+	
 	static Result ReadFile(const char path[FS_MAX_PATH], unsigned char **buffer, s64 *size) {
 		Result ret = 0;
 		FsFile file;
@@ -109,7 +149,46 @@ namespace Textures {
 
 		return ret;
 	}
-
+	
+	static bool LoadImageBMP(unsigned char **data, s64 *size, Tex *texture) {
+		bmp_bitmap_callback_vt bitmap_callbacks = {
+			BMP::bitmap_create,
+			BMP::bitmap_destroy,
+			BMP::bitmap_get_buffer,
+			BMP::bitmap_get_bpp
+		};
+		
+		bmp_result code = BMP_OK;
+		bmp_image bmp;
+		bmp_create(&bmp, &bitmap_callbacks);
+		
+		code = bmp_analyse(&bmp, *size, *data);
+		if (code != BMP_OK) {
+			bmp_finalise(&bmp);
+			return false;
+		}
+		
+		code = bmp_decode(&bmp);
+		if (code != BMP_OK) {
+			if ((code != BMP_INSUFFICIENT_DATA) && (code != BMP_DATA_ERROR)) {
+				bmp_finalise(&bmp);
+				return false;
+			}
+			
+			/* skip if the decoded image would be ridiculously large */
+			if ((bmp.width * bmp.height) > 200000) {
+				bmp_finalise(&bmp);
+				return false;
+			}
+		}
+		
+		texture->width = bmp.width;
+		texture->height = bmp.height;
+		bool ret = LoadImage(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
+		bmp_finalise(&bmp);
+		return ret;
+	}
+	
 	static bool LoadImageJPEG(unsigned char **data, s64 *size, Tex *texture) {
 		tjhandle jpeg = tjInitDecompress();
 		int jpegsubsamp = 0;
@@ -165,7 +244,9 @@ namespace Textures {
 
 	ImageType GetImageType(const std::string &filename) {
 		std::string ext = FS::GetFileExt(filename);
-		
+
+		if (!ext.compare(".BMP"))
+			return ImageTypeBMP;
 		if ((!ext.compare(".JPG")) || (!ext.compare(".JPEG")))
 			return ImageTypeJPEG;
 		else if (!ext.compare(".PNG"))
@@ -188,6 +269,10 @@ namespace Textures {
 
 		ImageType type = GetImageType(path);
 		switch(type) {
+			case ImageTypeBMP:
+				ret = Textures::LoadImageBMP(&data, &size, texture);
+				break;
+			
 			case ImageTypeJPEG:
 				ret = Textures::LoadImageJPEG(&data, &size, texture);
 				break;

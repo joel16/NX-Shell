@@ -6,13 +6,6 @@
 
 #define NUM_FILE_ICONS 5
 
-typedef enum ImageType {
-    ImageTypeJPEG,
-    ImageTypePNG,
-    ImageTypeWEBP,
-    ImageTypeOther
-} ImageType;
-
 typedef struct {
     GLuint id = 0;
     int width = 0;
