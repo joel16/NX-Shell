@@ -83,7 +83,6 @@ namespace Windows {
             ImGui::EndChild();
         }
         
-        ImGui::End();
-        ImGui::PopStyleVar();
+        Windows::CloseWindow();
     }
 }

@@ -36,8 +36,7 @@ namespace Windows {
 			}
 		}
 		
-		ImGui::End();
-		ImGui::PopStyleVar();
+		Windows::CloseWindow();
 		Config::Save(config);
 		item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
 	}

@@ -11,6 +11,11 @@ namespace Windows {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     };
 
+    inline void CloseWindow(void) {
+        ImGui::End();
+        ImGui::PopStyleVar();
+    };
+
     void FileBrowserWindow(bool *focus, bool *first_item);
     void ImageWindow(Tex *texture);
     void SettingsWindow(void);
