@@ -51,9 +51,8 @@ namespace Popups {
 				item.state = MENU_STATE_OPTIONS;
 			}
 		}
-
-		ImGui::EndPopup();
-		ImGui::PopStyleVar();
+		
+		Popups::ExitPopup();
 	}
 	
 	void ImageProperties(bool *state) {
@@ -81,7 +80,6 @@ namespace Popups {
 			}
 		}
 		
-		ImGui::EndPopup();
-		ImGui::PopStyleVar();
+		Popups::ExitPopup();
 	}
 }

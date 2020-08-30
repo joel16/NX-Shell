@@ -59,10 +59,8 @@ namespace Popups {
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_OPTIONS;
 			}
-			
-			ImGui::EndPopup();
 		}
 		
-		ImGui::PopStyleVar();
+		Popups::ExitPopup();
 	}
 }

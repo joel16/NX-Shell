@@ -19,10 +19,9 @@ namespace Popups {
 		if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::Text(text.c_str());
 			ImGui::ProgressBar(offset/size, ImVec2(0.0f, 0.0f));
-			ImGui::EndPopup();
 		}
 		
-		ImGui::PopStyleVar();
+		Popups::ExitPopup();
 		ImGui::Render();
 		glViewport(0, 0, static_cast<int>(ImGui::GetIO().DisplaySize.x), static_cast<int>(ImGui::GetIO().DisplaySize.y));
 		glClearColor(0.00f, 0.00f, 0.00f, 1.00f);
