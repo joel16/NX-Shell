@@ -11,7 +11,7 @@ namespace Windows {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     };
 
-    inline void CloseWindow(void) {
+    inline void ExitWindow(void) {
         ImGui::End();
         ImGui::PopStyleVar();
     };

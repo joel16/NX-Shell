@@ -36,7 +36,7 @@ namespace Windows {
 			}
 		}
 		
-		Windows::CloseWindow();
+		Windows::ExitWindow();
 		Config::Save(config);
 		item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
 	}

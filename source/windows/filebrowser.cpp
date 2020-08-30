@@ -83,6 +83,6 @@ namespace Windows {
             ImGui::EndChild();
         }
         
-        Windows::CloseWindow();
+        Windows::ExitWindow();
     }
 }

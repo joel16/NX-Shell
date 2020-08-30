@@ -10,7 +10,7 @@ namespace Windows {
         if (ImGui::Begin(item.selected_filename.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar))
             ImGui::Image(reinterpret_cast<ImTextureID>(texture->id), ImVec2(texture->width, texture->height));
         
-        Windows::CloseWindow();
+        Windows::ExitWindow();
         ImGui::PopStyleVar();
     }
 }
