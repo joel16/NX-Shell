@@ -19,7 +19,7 @@ namespace Popups {
 			
 			if (item.entries[item.selected].type == FsDirEntryType_File) {
 				char size[16];
-				Utils::GetSizeString(size, item.entries[item.selected].file_size);
+				Utils::GetSizeString(size, static_cast<double>(item.entries[item.selected].file_size));
 				std::string size_text = "Size: ";
 				size_text.append(size);
 				ImGui::Text(size_text.c_str());

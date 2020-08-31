@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include <cstdio>
+
 #include "utils.h"
 
 namespace Utils {
@@ -11,6 +12,6 @@ namespace Utils {
             i++;
         }
         
-        sprintf(string, "%.*f %s", (i == 0) ? 0 : 2, size, units[i]);
+        std::sprintf(string, "%.*f %s", (i == 0) ? 0 : 2, size, units[i]);
     }
 }

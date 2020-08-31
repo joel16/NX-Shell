@@ -17,7 +17,7 @@ namespace Config {
     int Save(config_t config) {
         Result ret = 0;
         char *buf = new char[buf_size];
-        u64 len = snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.dark_theme, config.cwd);
+        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.dark_theme, config.cwd);
         
         if (R_FAILED(ret = FS::WriteFile("/switch/NX-Shell/config.json", buf, len))) {
             delete[] buf;

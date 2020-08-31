@@ -122,7 +122,7 @@ namespace Textures {
 	static bool LoadImageRomfs(const std::string &path, Tex *texture) {
 		bool ret = false;
 		png_image image;
-		memset(&image, 0, (sizeof image));
+		std::memset(&image, 0, (sizeof image));
 		image.version = PNG_IMAGE_VERSION;
 
 		if (png_image_begin_read_from_file(&image, path.c_str()) != 0) {
@@ -208,7 +208,7 @@ namespace Textures {
 	static bool LoadImagePNG(unsigned char **data, s64 *size, Tex *texture) {
 		bool ret = false;
 		png_image image;
-		memset(&image, 0, (sizeof image));
+		std::memset(&image, 0, (sizeof image));
 		image.version = PNG_IMAGE_VERSION;
 
 		if (png_image_begin_read_from_memory(&image, *data, *size) != 0) {
