@@ -10,6 +10,7 @@ namespace Windows {
 		
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 			if (ImGui::TreeNode("Sort Settings")) {
+				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::RadioButton(" By name (ascending)", &config.sort, 0);
 				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
 				ImGui::RadioButton(" By name (descending)", &config.sort, 1);
@@ -19,12 +20,23 @@ namespace Windows {
 				ImGui::RadioButton(" By size (smallest first)", &config.sort, 3);
 				ImGui::TreePop();
 			}
+
+			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+			ImGui::Separator();
+			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
+			if (ImGui::TreeNode("Image Viewer")) {
+				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+				ImGui::Checkbox(" Display filename", &config.image_filename);
+				ImGui::TreePop();
+			}
 			
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 			ImGui::Separator();
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 			
 			if (ImGui::TreeNode("About")) {
+				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::Text("NX-Shell Version: v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::Text("ImGui Version: %s",  ImGui::GetVersion());
