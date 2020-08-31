@@ -131,10 +131,11 @@ namespace Popups {
                 ImGui::Render();
                 
                 char path[FS_MAX_PATH + 1];
-                std::sprintf(path, "%s/%s", config.cwd, item.selected_filename.c_str());
-                ArchiveHelper::Extract(path);
-                item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
-                GUI::ResetCheckbox();
+                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
+                    ArchiveHelper::Extract(path);
+                    item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+                    GUI::ResetCheckbox();
+                }
                 
                 ImGui::CloseCurrentPopup();
                 item.state = MENU_STATE_HOME;

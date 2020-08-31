@@ -25,7 +25,6 @@ namespace FS {
     s64 RefreshEntries(FsDirectoryEntry **entries, s64 entry_count);
     s64 ChangeDirNext(const char path[FS_MAX_PATH], FsDirectoryEntry **entries, s64 entry_count);
     s64 ChangeDirPrev(FsDirectoryEntry **entries, s64 entry_count);
-    int ConstructPath(FsDirectoryEntry *entry, char path[FS_MAX_PATH], const char filename[FS_MAX_PATH]);
     Result GetTimeStamp(FsDirectoryEntry *entry, FsTimeStampRaw *timestamp);
     Result Rename(FsDirectoryEntry *entry, const char filename[FS_MAX_PATH]);
     Result Delete(FsDirectoryEntry *entry);

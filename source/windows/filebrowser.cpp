@@ -51,9 +51,10 @@ namespace Windows {
                                 
                             case FileTypeImage:
                                 char path[FS_MAX_PATH + 1];
-                                std::sprintf(path, "%s/%s", config.cwd, item.selected_filename.c_str());
-                                Textures::LoadImageFile(path, &item.texture);
-                                item.state = MENU_STATE_IMAGEVIEWER;
+                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
+                                    Textures::LoadImageFile(path, &item.texture);
+                                    item.state = MENU_STATE_IMAGEVIEWER;
+                                }
                                 break;
                             
                             default:

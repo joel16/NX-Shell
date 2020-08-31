@@ -170,10 +170,13 @@ namespace FS {
 	}
 
 	s64 ChangeDirNext(const char path[FS_MAX_PATH], FsDirectoryEntry **entries, s64 entry_count) {
-		char new_cwd[FS_MAX_PATH];
+		char new_cwd[FS_MAX_PATH + 1];
 		const char *sep = !std::strncmp(config.cwd, "/", 2) ? "" : "/"; // Don't append / if at /
-		std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", config.cwd, sep, path);
-		return FS::ChangeDir(new_cwd, entries, entry_count);
+		
+		if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", config.cwd, sep, path)) > 0)
+			return FS::ChangeDir(new_cwd, entries, entry_count);
+		
+		return 0;
 	}
 	
 	s64 ChangeDirPrev(FsDirectoryEntry **entries, s64 entry_count) {
@@ -184,22 +187,24 @@ namespace FS {
 		return FS::ChangeDir(new_cwd, entries, entry_count);
 	}
 	
-	int ConstructPath(FsDirectoryEntry *entry, char path[FS_MAX_PATH], const char filename[FS_MAX_PATH]) {
-		int length = 0;
-
-		if (entry)
-			length = std::snprintf(path, FS_MAX_PATH, "%s%s%s", config.cwd, !std::strncmp(config.cwd, "/", 2) ? "" : "/", entry? entry->name : "");
-		else
-			length = std::snprintf(path, FS_MAX_PATH, "%s%s%s", config.cwd, !std::strncmp(config.cwd, "/", 2) ? "" : "/", filename);
+	int ConstructPath(FsDirectoryEntry *entry, char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {		
+		if (entry) {
+			if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", config.cwd, !std::strncmp(config.cwd, "/", 2) ? "" : "/", entry? entry->name : "")) > 0)
+				return 0;
+		}
+		else {
+			if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", config.cwd, !std::strncmp(config.cwd, "/", 2) ? "" : "/", filename[0] != '\0'? filename : "")) > 0)
+				return 0;
+		}
 		
-		return length;
+		return -1;
 	}
 
 	Result GetTimeStamp(FsDirectoryEntry *entry, FsTimeStampRaw *timestamp) {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, "") <= 0)
+		if (FS::ConstructPath(entry, path, "") < 0)
 			return -1;
 			
 		if (R_FAILED(ret = fsFsGetFileTimeStampRaw(fs, path, timestamp)))
@@ -212,11 +217,11 @@ namespace FS {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, "") <= 0)
+		if (FS::ConstructPath(entry, path, "") < 0)
 			return -1;
 			
 		char new_path[FS_MAX_PATH];
-		if (FS::ConstructPath(nullptr, new_path, filename) <= 0)
+		if (FS::ConstructPath(nullptr, new_path, filename) < 0)
 			return -1;
 		
 		if (entry->type == FsDirEntryType_Dir) {
@@ -235,7 +240,7 @@ namespace FS {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, "") <= 0)
+		if (FS::ConstructPath(entry, path, "") < 0)
 			return -1;
 			
 		if (entry->type == FsDirEntryType_Dir) {
@@ -254,7 +259,7 @@ namespace FS {
 		Result ret = 0;
 		
 		char path[FS_MAX_PATH];
-		if (FS::ConstructPath(entry, path, "") <= 0)
+		if (FS::ConstructPath(entry, path, "") < 0)
 			return -1;
 			
 		if (R_FAILED(ret = fsFsSetConcatenationFileAttribute(fs, path)))
