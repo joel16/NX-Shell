@@ -5,6 +5,12 @@
 #include "windows.h"
 
 namespace Windows {
+	void Separator(void) {
+		ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+		ImGui::Separator();
+		ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+	}
+
     void SettingsWindow(void) {
 		Windows::SetupWindow();
 		
@@ -20,20 +26,24 @@ namespace Windows {
 				ImGui::RadioButton(" By size (smallest first)", &config.sort, 3);
 				ImGui::TreePop();
 			}
-
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			ImGui::Separator();
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+			
+			Windows::Separator();
 
 			if (ImGui::TreeNode("Image Viewer")) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::Checkbox(" Display filename", &config.image_filename);
 				ImGui::TreePop();
 			}
+
+			Windows::Separator();
+
+			if (ImGui::TreeNode("Developer Options")) {
+				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+				ImGui::Checkbox(" Enable logging", &config.dev_options);
+				ImGui::TreePop();
+			}
 			
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-			ImGui::Separator();
-			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+			Windows::Separator();
 			
 			if (ImGui::TreeNode("About")) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing

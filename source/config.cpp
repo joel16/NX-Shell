@@ -10,14 +10,14 @@
 config_t config;
 
 namespace Config {
-    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"sort\": %d,\n\t\"dark_theme\": %d,\n\t\"image_filename\": %d,\n\t\"last_dir\": \"%s\"\n}";
+    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"sort\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d,\n\t\"last_dir\": \"%s\"\n}";
     static int config_version_holder = 0;
     static const int buf_size = 128 + FS_MAX_PATH;
     
     int Save(config_t config) {
         Result ret = 0;
         char *buf = new char[buf_size];
-        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.dark_theme, config.image_filename, config.cwd);
+        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.dev_options, config.image_filename, config.cwd);
         
         if (R_FAILED(ret = FS::WriteFile("/switch/NX-Shell/config.json", buf, len))) {
             delete[] buf;
@@ -30,7 +30,7 @@ namespace Config {
     
     static void SetDefault(config_t *config) {
         config->sort = 0;
-        config->dark_theme = false;
+        config->dev_options = false;
         config->image_filename = false;
         std::strcpy(config->cwd, "/");
     }
@@ -83,8 +83,8 @@ namespace Config {
         json_t *sort = json_object_get(root, "sort");
         config.sort = json_integer_value(sort);
         
-        json_t *dark_theme = json_object_get(root, "dark_theme");
-        config.dark_theme = json_integer_value(dark_theme);
+        json_t *dev_options = json_object_get(root, "dev_options");
+        config.dev_options = json_integer_value(dev_options);
 
         json_t *image_filename = json_object_get(root, "image_filename");
         config.image_filename = json_integer_value(image_filename);

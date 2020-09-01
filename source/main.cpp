@@ -158,21 +158,19 @@ namespace Services {
 		// FS
 		devices[0] = *fsdevGetDeviceFileSystem("sdmc");
 		fs = &devices[0];
-		
-		#ifdef DEBUG
-			socketInitializeDefault();
-			nxlinkStdio();
-		#endif
-		
+
 		Config::Load();
+
+		socketInitializeDefault();
+		
+		if (config.dev_options)
+			nxlinkStdio();
+		
 		return 0;
 	}
 	
 	void Exit(void) {
-		#ifdef DEBUG
-			socketExit();
-		#endif
-
+		socketExit();
 		romfsExit();
 	}
 }
