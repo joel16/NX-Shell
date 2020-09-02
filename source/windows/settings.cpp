@@ -39,7 +39,7 @@ namespace Windows {
 
 			if (ImGui::TreeNode("Developer Options")) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Checkbox(" Enable logging", &config.dev_options);
+				ImGui::Checkbox(" Enable logs", &config.dev_options);
 				ImGui::TreePop();
 			}
 			

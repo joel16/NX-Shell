@@ -10,6 +10,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+#include "log.h"
 #include "textures.h"
 
 SDL_Window *window = nullptr;
@@ -74,13 +75,13 @@ namespace Services {
 	
 	int InitImGui(void) {
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-			SDL_Log("Error: %s\n", SDL_GetError());
+			Log::Error("Error: %s\n", SDL_GetError());
 			return -1;
 		}
 		
 		for (int i = 0; i < 2; i++) {
 			if (!SDL_JoystickOpen(i)) {
-				SDL_Log("SDL_JoystickOpen: %s\n", SDL_GetError());
+				Log::Error("SDL_JoystickOpen: %s\n", SDL_GetError());
 				SDL_Quit();
 				return -1;
 			}
@@ -106,7 +107,7 @@ namespace Services {
 		// Initialize OpenGL loader
 		bool err = gladLoadGL() == 0;
 		if (err) {
-			SDL_Log("Failed to initialize OpenGL loader!\n");
+			Log::Error("Failed to initialize OpenGL loader!\n");
 			return -1;
 		}
 		
@@ -149,12 +150,6 @@ namespace Services {
 	}
 	
 	int Init(void) {
-		Result ret = 0;
-		if (R_FAILED(ret = romfsInit())) {
-			printf("romfsInit() failed: 0x%x\n", ret);
-			return ret;
-		}
-			
 		// FS
 		devices[0] = *fsdevGetDeviceFileSystem("sdmc");
 		fs = &devices[0];
@@ -165,11 +160,20 @@ namespace Services {
 		
 		if (config.dev_options)
 			nxlinkStdio();
-		
+
+		Log::Init();
+
+		Result ret = 0;
+		if (R_FAILED(ret = romfsInit())) {
+			Log::Error("romfsInit() failed: 0x%x\n", ret);
+			return ret;
+		}
+
 		return 0;
 	}
 	
 	void Exit(void) {
+		Log::Exit();
 		socketExit();
 		romfsExit();
 	}
