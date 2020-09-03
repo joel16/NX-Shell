@@ -6,6 +6,7 @@
 #include "fs.h"
 #include "gui.h"
 #include "imgui.h"
+#include "log.h"
 #include "popups.h"
 
 namespace ArchiveHelper {
@@ -41,10 +42,15 @@ namespace ArchiveHelper {
         for (p = buf + 1; *p; p++) {
             if (*p == '/') {
                 *p = 0;
-                ret = fsFsCreateDirectory(fs, buf);    
+
+                if (R_FAILED(ret = fsFsCreateDirectory(fs, buf)))
+                    Log::Error("fsFsCreateDirectory(%s) failed: 0x%x\n", path.c_str(), ret);
+                
                 *p = '/';
             }
-            ret = fsFsCreateDirectory(fs, buf);
+            
+            if (R_FAILED(ret = fsFsCreateDirectory(fs, buf)))
+                Log::Error("fsFsCreateDirectory(%s) failed: 0x%x\n", path.c_str(), ret);
         }
         
         return ret;
@@ -53,8 +59,10 @@ namespace ArchiveHelper {
     Result ExtractFile(ZZIP_DIR *dir, const ZZIP_DIRENT &entry, const std::string &path) {
         Result ret = 0;
         ZZIP_FILE *src_handle = zzip_file_open(dir, entry.d_name, O_RDONLY);
-        if (!src_handle)
+        if (!src_handle) {
+            Log::Error("zzip_file_open(%s) failed\n", path.c_str());
             return -1;
+        }
             
         char dest_path[FS_MAX_PATH + 1];
         std::snprintf(dest_path, FS_MAX_PATH, path.c_str());
@@ -64,6 +72,7 @@ namespace ArchiveHelper {
             
         FsFile dest_handle;
         if (R_FAILED(ret = fsFsOpenFile(fs, dest_path, FsOpenMode_Write, &dest_handle))) {
+            Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path.c_str(), ret);
             zzip_file_close(src_handle);
             return ret;
         }
@@ -76,6 +85,7 @@ namespace ArchiveHelper {
         std::string filename = std::filesystem::path(entry.d_name).filename();
         while (0 < (bytes_read = zzip_read(src_handle, buf, buf_size - 1))) {
             if (R_FAILED(ret = fsFileWrite(&dest_handle, offset, buf, bytes_read, FsWriteOption_Flush))) {
+                Log::Error("fsFileWrite(%s) failed: 0x%x\n", path.c_str(), ret);
                 delete[] buf;
                 zzip_file_close(src_handle);
                 fsFileClose(&dest_handle);
@@ -99,8 +109,10 @@ namespace ArchiveHelper {
         zzip_error_t error;
         
         dir = zzip_dir_open(path, &error);
-        if (!dir)
+        if (!dir) {
+            Log::Error("zzip_dir_open(%s) failed: 0x%x\n", path, error);
             return;
+        }
             
         while (zzip_dir_read(dir, &entry)) {
             std::string pathname = ArchiveHelper::ConstructDirname(path, entry.d_name);
