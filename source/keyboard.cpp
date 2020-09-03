@@ -2,6 +2,7 @@
 #include <switch.h>
 
 #include "keyboard.h"
+#include "log.h"
 
 namespace Keyboard {
 	// Empty strings are invalid.
@@ -20,6 +21,7 @@ namespace Keyboard {
 		static char input_string[256];
 		
 		if (R_FAILED(ret = swkbdCreate(&swkbd, 0))) {
+			Log::Error("swkbdCreate() failed: 0x%x\n", ret);
 			swkbdClose(&swkbd);
 			return std::string();
 		}
@@ -33,6 +35,7 @@ namespace Keyboard {
 		
 		swkbdConfigSetTextCheckCallback(&swkbd, Keyboard::ValidateText);
 		if (R_FAILED(ret = swkbdShow(&swkbd, input_string, sizeof(input_string)))) {
+			Log::Error("swkbdShow() failed: 0x%x\n", ret);
 			swkbdClose(&swkbd);
 			return std::string();
 		}
