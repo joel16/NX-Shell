@@ -29,6 +29,7 @@
 
 #include "fs.h"
 #include "imgui.h"
+#include "log.h"
 #include "textures.h"
 
 #define BYTES_PER_PIXEL 4
@@ -75,10 +76,13 @@ namespace Textures {
 		Result ret = 0;
 		FsFile file;
 		
-		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file)))
+		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file))) {
+			Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
 			return ret;
+		}
 		
 		if (R_FAILED(ret = fsFileGetSize(&file, size))) {
+			Log::Error("fsFileGetSize(%s) failed: 0x%x\n", path, ret);
 			fsFileClose(&file);
 			return ret;
 		}
@@ -87,11 +91,13 @@ namespace Textures {
 
 		u64 bytes_read = 0;
 		if (R_FAILED(ret = fsFileRead(&file, 0, *buffer, static_cast<u64>(*size), FsReadOption_None, &bytes_read))) {
+			Log::Error("fsFileRead(%s) failed: 0x%x\n", path, ret);
 			fsFileClose(&file);
 			return ret;
 		}
 		
 		if (bytes_read != static_cast<u64>(*size)) {
+			Log::Error("bytes_read(%llu) does not match file size(%llu)\n", bytes_read, *size);
 			fsFileClose(&file);
 			return -1;
 		}
