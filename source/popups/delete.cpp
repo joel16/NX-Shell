@@ -52,7 +52,6 @@ namespace Popups {
 				item.state = MENU_STATE_HOME;
 			}
 			
-			ImGui::SetItemDefaultFocus();
 			ImGui::SameLine(0.0f, 15.0f);
 			
 			if (ImGui::Button("Cancel", ImVec2(120, 0))) {
