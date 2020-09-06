@@ -42,15 +42,11 @@ namespace ArchiveHelper {
         for (p = buf + 1; *p; p++) {
             if (*p == '/') {
                 *p = 0;
-
-                if (R_FAILED(ret = fsFsCreateDirectory(fs, buf)))
-                    Log::Error("fsFsCreateDirectory(%s) failed: 0x%x\n", path.c_str(), ret);
-                
+                ret = fsFsCreateDirectory(fs, buf);
                 *p = '/';
             }
             
-            if (R_FAILED(ret = fsFsCreateDirectory(fs, buf)))
-                Log::Error("fsFsCreateDirectory(%s) failed: 0x%x\n", path.c_str(), ret);
+            ret = fsFsCreateDirectory(fs, buf);
         }
         
         return ret;
@@ -154,7 +150,6 @@ namespace Popups {
                 return;
             }
             
-            ImGui::SetItemDefaultFocus();
             ImGui::SameLine(0.0f, 15.0f);
             
             if (ImGui::Button("Cancel", ImVec2(120, 0))) {
