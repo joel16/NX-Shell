@@ -90,7 +90,7 @@ namespace ArchiveHelper {
             
             offset += bytes_read;
             std::memset(buf, 0, buf_size);
-            Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(entry.st_size), "Copying:", filename.c_str());
+            Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(entry.st_size), "Extracting:", filename.c_str());
         }
         
         delete[] buf;
