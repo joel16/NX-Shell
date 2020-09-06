@@ -2,6 +2,7 @@
 #include "fs.h"
 #include "gui.h"
 #include "imgui.h"
+#include "log.h"
 #include "popups.h"
 
 namespace Popups {
@@ -29,6 +30,8 @@ namespace Popups {
 			
 			if (ImGui::Button("OK", ImVec2(120, 0))) {
 				Result ret = 0;
+				Log::Exit();
+
 				if ((item.checked_count > 1) && (!item.checked_cwd.compare(config.cwd))) {
 					for (long unsigned int i = 0; i < item.checked.size(); i++) {
 						if (item.checked.at(i)) {
@@ -47,7 +50,8 @@ namespace Popups {
 					item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
 					GUI::ResetCheckbox();
 				}
-				
+
+				Log::Exit();
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_HOME;
 			}
