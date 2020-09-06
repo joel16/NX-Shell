@@ -45,7 +45,7 @@ INCLUDES	:=	libs/imgui libs/libnsbmp include
 ROMFS		:=	romfs
 
 VERSION_MAJOR := 3
-VERSION_MINOR := 1
+VERSION_MINOR := 2
 VERSION_MICRO := 0
 
 APP_TITLE     := NX-Shell
