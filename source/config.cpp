@@ -96,7 +96,7 @@ namespace Config {
             std::strcpy(config.cwd, "/");
             
         // Delete config file if config file is updated. This will rarely happen.
-        if (config_version_holder  < CONFIG_VERSION) {
+        if (config_version_holder < CONFIG_VERSION) {
             fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
             Config::SetDefault(&config);
             return Config::Save(config);

@@ -15,7 +15,8 @@ enum MENU_STATES {
     MENU_STATE_PROPERTIES,
     MENU_STATE_SETTINGS,
     MENU_STATE_IMAGEVIEWER,
-    MENU_STATE_ARCHIVEEXTRACT
+    MENU_STATE_ARCHIVEEXTRACT,
+    MENU_STATE_TEXTREADER
 };
 
 typedef struct {
@@ -35,8 +36,14 @@ typedef struct {
     Tex texture;
 } MenuItem;
 
+typedef struct {
+    char *buf;
+    size_t buf_size;
+} TextReader;
+
 extern SDL_Window *window;
 extern MenuItem item;
+extern TextReader text_reader;
 
 namespace GUI {
     inline void ResetCheckbox(void) {

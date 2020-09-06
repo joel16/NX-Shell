@@ -3,6 +3,7 @@
 #include "gui.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "log.h"
 #include "windows.h"
 
 namespace Windows {
@@ -44,16 +45,47 @@ namespace Windows {
                     
                     ImGui::SameLine();
                     if (ImGui::Selectable(filename.c_str())) {
+                        char path[FS_MAX_PATH + 1];
+
                         switch(file_type) {
                             case FileTypeArchive:
                                 item.state = MENU_STATE_ARCHIVEEXTRACT;
                                 break;
                                 
                             case FileTypeImage:
-                                char path[FS_MAX_PATH + 1];
                                 if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
                                     Textures::LoadImageFile(path, &item.texture);
                                     item.state = MENU_STATE_IMAGEVIEWER;
+                                }
+                                break;
+
+                            case FileTypeText:
+                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
+                                    Log::Exit();
+
+                                    FsFile file;
+                                    Result ret = 0;
+                                    if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file)))
+                                        Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
+                                    
+                                    s64 size = 0;
+                                    if (R_FAILED(ret = fsFileGetSize(&file, &size))) {
+                                        Log::Error("fsFileGetSize(%s) failed: 0x%x\n", path, ret);
+                                        fsFileClose(&file);
+                                    }
+
+                                    text_reader.buf = new char[size];
+                                    
+                                    u64 bytes_read = 0;
+                                    if (R_FAILED(ret = fsFileRead(&file, 0, text_reader.buf, static_cast<u64>(size), FsReadOption_None, &bytes_read))) {
+                                        Log::Error("fsFileRead(%s) failed: 0x%x\n", path, ret);
+                                        fsFileClose(&file);
+                                    }
+
+                                    fsFileClose(&file);
+                                    Log::Init();
+                                    text_reader.buf_size = bytes_read;
+                                    item.state = MENU_STATE_TEXTREADER;
                                 }
                                 break;
                             

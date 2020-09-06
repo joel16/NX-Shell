@@ -87,6 +87,11 @@ namespace GUI {
 									item.state = MENU_STATE_HOME;
 								}
 							}
+							else if (item.state == MENU_STATE_TEXTREADER) {
+								text_reader.buf_size = 0;
+								delete[] text_reader.buf;
+								item.state = MENU_STATE_HOME;
+							}
 							else
 								item.state = MENU_STATE_HOME;
 						}
@@ -148,6 +153,10 @@ namespace GUI {
 					
 				case MENU_STATE_SETTINGS:
 					Windows::SettingsWindow();
+					break;
+
+				case MENU_STATE_TEXTREADER:
+					Windows::TextReaderWindow();
 					break;
 				
 				default:
