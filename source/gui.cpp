@@ -15,6 +15,18 @@
 MenuItem item;
 
 namespace GUI {
+	enum SDL_KEYS {
+		SDL_KEY_A, SDL_KEY_B, SDL_KEY_X, SDL_KEY_Y,
+		SDL_KEY_LSTICK, SDL_KEY_RSTICK,
+		SDL_KEY_L, SDL_KEY_R,
+		SDL_KEY_ZL, SDL_KEY_ZR,
+		SDL_KEY_PLUS, SDL_KEY_MINUS,
+		SDL_KEY_DLEFT, SDL_KEY_DUP, SDL_KEY_DRIGHT, SDL_KEY_DDOWN,
+		SDL_KEY_LSTICK_LEFT, SDL_KEY_LSTICK_UP, SDL_KEY_LSTICK_RIGHT, SDL_KEY_LSTICK_DOWN,
+		SDL_KEY_RSTICK_LEFT, SDL_KEY_RSTICK_UP, SDL_KEY_RSTICK_RIGHT, SDL_KEY_RSTICK_DOWN,
+		SDL_KEY_SL_LEFT, SDL_KEY_SR_LEFT, SDL_KEY_SL_RIGHT, SDL_KEY_SR_RIGHT
+	};
+
 	int RenderLoop(void) {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
@@ -43,85 +55,83 @@ namespace GUI {
 			while (SDL_PollEvent(&event)) {
 				ImGui_ImplSDL2_ProcessEvent(&event);
 				if (event.type == SDL_JOYBUTTONDOWN) {
-					if (event.jbutton.which == 0) {
-						if (event.jbutton.button == 0) {
-							if (item.state == MENU_STATE_HOME) {
-								if (item.entries[item.selected].type == FsDirEntryType_Dir) {
-									if (item.file_count != 0) {
-										s64 value = FS::ChangeDirNext(item.entries[item.selected].name, &item.entries, item.file_count);
-										if (value >= 0) {
-											item.file_count = value;
-
-											// Make a copy before resizing our vector.
-											if (item.checked_count > 1)
-												item.checked_copy = item.checked;
+					if (event.jbutton.button == SDL_KEY_A) {
+						if (item.state == MENU_STATE_HOME) {
+							if (item.entries[item.selected].type == FsDirEntryType_Dir) {
+								if (item.file_count != 0) {
+									s64 value = FS::ChangeDirNext(item.entries[item.selected].name, &item.entries, item.file_count);
+									if (value >= 0) {
+										item.file_count = value;
+										
+										// Make a copy before resizing our vector.
+										if (item.checked_count > 1)
+											item.checked_copy = item.checked;
 											
-											item.checked.resize(item.file_count);
-											GImGui->NavId = 0;
-										}
+										item.checked.resize(item.file_count);
+										GImGui->NavId = 0;
 									}
 								}
 							}
 						}
-						else if (event.jbutton.button == 1) {
-							if (item.state == MENU_STATE_HOME) {
-								s64 value = FS::ChangeDirPrev(&item.entries, item.file_count);
-								if (value >= 0) {
-									item.file_count = value;
-
-									// Make a copy before resizing our vector.
-									if (item.checked_count > 1)
-										item.checked_copy = item.checked;
-									
-									item.checked.resize(item.file_count);
-									GImGui->NavId = 0;
-								}
-							}
-							else if ((item.state == MENU_STATE_PROPERTIES) || (item.state == MENU_STATE_DELETE))
-								item.state = MENU_STATE_OPTIONS;
-							else if (item.state == MENU_STATE_IMAGEVIEWER) {
-								if (tex_properties)
-									tex_properties = false;
-								else {
-									Textures::Free(&item.texture);
-									item.state = MENU_STATE_HOME;
-								}
-							}
-							else if (item.state == MENU_STATE_TEXTREADER) {
-								text_reader.buf_size = 0;
-								delete[] text_reader.buf;
-								item.state = MENU_STATE_HOME;
-							}
-							else
-								item.state = MENU_STATE_HOME;
-						}
-						else if (event.jbutton.button == 2) {
-							if (item.state == MENU_STATE_HOME)
-								item.state = MENU_STATE_OPTIONS;
-							else if (item.state == MENU_STATE_IMAGEVIEWER)
-								tex_properties = true;
-						}
-						else if (event.jbutton.button == 3) {
-							if (item.state == MENU_STATE_HOME) {
-								if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
-									GUI::ResetCheckbox();
-								
-								item.checked_cwd = config.cwd;
-								item.checked.at(item.selected) = !item.checked.at(item.selected);
-								item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
-							}
-						}
-						else if (event.jbutton.button == 11)
-							item.state = MENU_STATE_SETTINGS;
-						else if (event.jbutton.button == 10)
-							done = true;
 					}
+					else if (event.jbutton.button == SDL_KEY_B) {
+						if (item.state == MENU_STATE_HOME) {
+							s64 value = FS::ChangeDirPrev(&item.entries, item.file_count);
+							if (value >= 0) {
+								item.file_count = value;
+								
+								// Make a copy before resizing our vector.
+								if (item.checked_count > 1)
+									item.checked_copy = item.checked;
+									
+								item.checked.resize(item.file_count);
+								GImGui->NavId = 0;
+							}
+						}
+						else if ((item.state == MENU_STATE_PROPERTIES) || (item.state == MENU_STATE_DELETE))
+							item.state = MENU_STATE_OPTIONS;
+						else if (item.state == MENU_STATE_IMAGEVIEWER) {
+							if (tex_properties)
+								tex_properties = false;
+							else {
+								Textures::Free(&item.texture);
+								item.state = MENU_STATE_HOME;
+							}
+						}
+						else if (item.state == MENU_STATE_TEXTREADER) {
+							text_reader.buf_size = 0;
+							delete[] text_reader.buf;
+							item.state = MENU_STATE_HOME;
+						}
+						else
+							item.state = MENU_STATE_HOME;
+					}
+					else if (event.jbutton.button == SDL_KEY_X) {
+						if (item.state == MENU_STATE_HOME)
+							item.state = MENU_STATE_OPTIONS;
+						else if (item.state == MENU_STATE_IMAGEVIEWER)
+							tex_properties = true;
+					}
+					else if (event.jbutton.button == SDL_KEY_Y) {
+						if (item.state == MENU_STATE_HOME) {
+							if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
+								GUI::ResetCheckbox();
+								
+							item.checked_cwd = config.cwd;
+							item.checked.at(item.selected) = !item.checked.at(item.selected);
+							item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
+						}
+					}
+					else if (event.jbutton.button == SDL_KEY_MINUS)
+						item.state = MENU_STATE_SETTINGS;
+					else if (event.jbutton.button == SDL_KEY_PLUS)
+						done = true;
 				}
 				
 				if (event.type == SDL_QUIT)
 					done = true;
 				
-				if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+				if ((event.type == SDL_WINDOWEVENT) && (event.window.event == SDL_WINDOWEVENT_CLOSE) && (event.window.windowID == SDL_GetWindowID(window)))
 					done = true;
 			}
 

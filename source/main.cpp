@@ -179,7 +179,7 @@ namespace Services {
 	}
 }
 
-int main(int argc, char *argv[]) {
+int main(int, char **) {
 	Result ret = 0;
 	
 	if (R_FAILED(ret = Services::Init()))
