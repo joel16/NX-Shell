@@ -169,13 +169,19 @@ namespace Services {
 			return ret;
 		}
 
+		if (R_FAILED(ret = nifmInitialize(NifmServiceType_User))) {
+			Log::Error("nifmInitialize(NifmServiceType_User) failed: 0x%x\n", ret);
+			return ret;
+		}
+
 		return 0;
 	}
 	
 	void Exit(void) {
+		nifmExit();
+		romfsExit();
 		Log::Exit();
 		socketExit();
-		romfsExit();
 	}
 }
 

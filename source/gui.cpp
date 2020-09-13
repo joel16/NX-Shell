@@ -55,7 +55,8 @@ namespace GUI {
 			while (SDL_PollEvent(&event)) {
 				ImGui_ImplSDL2_ProcessEvent(&event);
 				if (event.type == SDL_JOYBUTTONDOWN) {
-					if (event.jbutton.button == SDL_KEY_A) {
+					Uint8 button = event.jbutton.button;
+					if (button == SDL_KEY_A) {
 						if (item.state == MENU_STATE_HOME) {
 							if (item.entries[item.selected].type == FsDirEntryType_Dir) {
 								if (item.file_count != 0) {
@@ -74,7 +75,7 @@ namespace GUI {
 							}
 						}
 					}
-					else if (event.jbutton.button == SDL_KEY_B) {
+					else if (button == SDL_KEY_B) {
 						if (item.state == MENU_STATE_HOME) {
 							s64 value = FS::ChangeDirPrev(&item.entries, item.file_count);
 							if (value >= 0) {
@@ -106,13 +107,13 @@ namespace GUI {
 						else
 							item.state = MENU_STATE_HOME;
 					}
-					else if (event.jbutton.button == SDL_KEY_X) {
+					else if (button == SDL_KEY_X) {
 						if (item.state == MENU_STATE_HOME)
 							item.state = MENU_STATE_OPTIONS;
 						else if (item.state == MENU_STATE_IMAGEVIEWER)
 							tex_properties = true;
 					}
-					else if (event.jbutton.button == SDL_KEY_Y) {
+					else if (button == SDL_KEY_Y) {
 						if (item.state == MENU_STATE_HOME) {
 							if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
 								GUI::ResetCheckbox();
@@ -122,9 +123,21 @@ namespace GUI {
 							item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
 						}
 					}
-					else if (event.jbutton.button == SDL_KEY_MINUS)
+					else if (button == SDL_KEY_DLEFT) {
+						if (item.state == MENU_STATE_HOME) {
+							ImGui::SetNavID(0, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					else if (button == SDL_KEY_DRIGHT) {
+						if (item.state == MENU_STATE_HOME) {
+							ImGui::SetNavID(item.file_count - 1, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
+							ImGui::SetScrollHereY(1.0f);
+						}
+					}
+					else if (button == SDL_KEY_MINUS)
 						item.state = MENU_STATE_SETTINGS;
-					else if (event.jbutton.button == SDL_KEY_PLUS)
+					else if (button == SDL_KEY_PLUS)
 						done = true;
 				}
 				

@@ -2,6 +2,7 @@
 #include "fs.h"
 #include "gui.h"
 #include "imgui.h"
+#include "net.h"
 #include "windows.h"
 
 namespace Windows {
@@ -54,6 +55,12 @@ namespace Windows {
 				ImGui::Text("Author: Joel16");
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::Text("Banner: Preetisketch");
+				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+				if (ImGui::Button("Check for Updates", ImVec2(250, 50))) {
+					std::string tag_name = Net::GetLatestReleaseJSON();
+					if ((Net::GetAvailableUpdate(tag_name)) && (Net::GetNetworkStatus()))
+						Net::GetLatestReleaseNRO(tag_name);
+				}
 				ImGui::TreePop();
 			}
 		}
