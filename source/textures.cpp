@@ -1,7 +1,7 @@
 #include <cstring>
 
 // BMP
-#include "libnsbmp.h"
+#include <libnsbmp.h>
 
 // JPEG
 #include <turbojpeg.h>
@@ -44,7 +44,7 @@ namespace BMP {
 		if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
 			return nullptr;
 			
-		return calloc(width * height, BYTES_PER_PIXEL);
+		return std::calloc(width * height, BYTES_PER_PIXEL);
 	}
 	
 	static unsigned char *bitmap_get_buffer(void *bitmap) {
@@ -59,7 +59,7 @@ namespace BMP {
 	
 	static void bitmap_destroy(void *bitmap) {
 		assert(bitmap);
-		free(bitmap);
+		std::free(bitmap);
 	}
 }
 
