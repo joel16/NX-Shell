@@ -168,7 +168,7 @@ namespace GUI {
 
 				// Windows
 				case MENU_STATE_IMAGEVIEWER:
-					Windows::ImageWindow(&item.texture);
+					Windows::ImageWindow();
 					if (tex_properties)
 						Popups::ImageProperties(&tex_properties);
 					

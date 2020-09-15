@@ -17,7 +17,7 @@ namespace Windows {
     };
 
     void FileBrowserWindow(bool *focus, bool *first_item);
-    void ImageWindow(Tex *texture);
+    void ImageWindow(void);
     void SettingsWindow(void);
     void TextReaderWindow(void);
 }
