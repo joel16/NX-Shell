@@ -11,8 +11,8 @@ namespace Windows {
 		ImGui::Separator();
 		ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 	}
-
-    void SettingsWindow(void) {
+	
+	void SettingsWindow(void) {
 		Windows::SetupWindow();
 		
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
@@ -29,15 +29,15 @@ namespace Windows {
 			}
 			
 			Windows::Separator();
-
+			
 			if (ImGui::TreeNode("Image Viewer")) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::Checkbox(" Display filename", &config.image_filename);
 				ImGui::TreePop();
 			}
-
+			
 			Windows::Separator();
-
+			
 			if (ImGui::TreeNode("Developer Options")) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::Checkbox(" Enable logs", &config.dev_options);
@@ -64,9 +64,6 @@ namespace Windows {
 				ImGui::TreePop();
 			}
 		}
-		
-		Windows::ExitWindow();
-		Config::Save(config);
-		item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+		Windows::ExitWindow();	
 	}
 }

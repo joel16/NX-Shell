@@ -2,7 +2,6 @@
 #define NX_SHELL_WINDOWS_H
 
 #include "imgui.h"
-#include "textures.h"
 
 namespace Windows {
     inline void SetupWindow(void) {
@@ -18,6 +17,7 @@ namespace Windows {
 
     void FileBrowserWindow(bool *focus, bool *first_item);
     void ImageWindow(void);
+    void PartitionBrowserWindow(void);
     void SettingsWindow(void);
     void TextReaderWindow(void);
 }

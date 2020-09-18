@@ -104,6 +104,10 @@ namespace GUI {
 							delete[] text_reader.buf;
 							item.state = MENU_STATE_HOME;
 						}
+						else if (item.state == MENU_STATE_SETTINGS) {
+							Config::Save(config);
+							item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+						}
 						else
 							item.state = MENU_STATE_HOME;
 					}
