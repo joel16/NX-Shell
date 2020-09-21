@@ -107,6 +107,7 @@ namespace GUI {
 						else if (item.state == MENU_STATE_SETTINGS) {
 							Config::Save(config);
 							item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+							item.state = MENU_STATE_HOME;
 						}
 						else
 							item.state = MENU_STATE_HOME;
