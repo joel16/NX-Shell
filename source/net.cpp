@@ -10,6 +10,8 @@
 #include "net.h"
 
 namespace Net {
+    static s64 offset = 0;
+
     bool GetNetworkStatus(void) {
         Result ret = 0;
         NifmInternetConnectionStatus status;
@@ -75,28 +77,41 @@ namespace Net {
     }
 
     size_t WriteNROData(const char *ptr, size_t size, size_t nmemb, void *userdata) {
-        fwrite(ptr, size, nmemb, reinterpret_cast<FILE *>(userdata));
+        if (R_SUCCEEDED(fsFileWrite(reinterpret_cast<FsFile *>(userdata), offset, ptr, (size * nmemb), FsWriteOption_Flush)))
+            offset += (size * nmemb);
+            
         return (size * nmemb);
     }
     
     void GetLatestReleaseNRO(const std::string &tag) {
-        FILE *file = fopen("/switch/NX-Shell/NX-Shell.nro", "wb");
-        if (!file)
+        Result ret = 0;
+        FsFile file;
+
+        if (!FS::FileExists("/switch/NX-Shell/NX-Shell.nro"))
+            fsFsCreateFile(fs, "/switch/NX-Shell/NX-Shell.nro", 0, 0);
+
+        if (R_FAILED(ret = fsFsOpenFile(fs, "/switch/NX-Shell/NX-Shell.nro", FsOpenMode_Write | FsOpenMode_Append, &file))) {
+            Log::Error("fsFsOpenFile(/switch/NX-Shell/NX-Shell.nro) failed: 0x%x\n", ret);
             return;
+        }
         
         CURL *handle = curl_easy_init();
-        std::string URL = "https://github.com/joel16/NX-Shell/releases/download/" + tag + "/NX-Shell.nro";
-        curl_easy_setopt(handle, CURLOPT_URL, URL.c_str());
-        curl_easy_setopt(handle, CURLOPT_USERAGENT, "NX-Shell");
-        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
-        curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
-        curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, Net::WriteNROData);
-        curl_easy_setopt(handle, CURLOPT_WRITEDATA, file);
-        curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
-        curl_easy_perform(handle);
-        curl_easy_cleanup(handle);
-
-        fclose(file);
+        if (handle) {
+            std::string URL = "https://github.com/joel16/NX-Shell/releases/download/" + tag + "/NX-Shell.nro";
+            curl_easy_setopt(handle, CURLOPT_URL, URL.c_str());
+            curl_easy_setopt(handle, CURLOPT_USERAGENT, "NX-Shell");
+            curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
+            curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, Net::WriteNROData);
+            curl_easy_setopt(handle, CURLOPT_WRITEDATA, &file);
+            curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
+            curl_easy_perform(handle);
+            curl_easy_cleanup(handle);
+        }
+        
+        fsFileClose(&file);
+        offset = 0;
+        return;
     }
 }
