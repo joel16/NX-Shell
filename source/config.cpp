@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "fs.h"
+#include "log.h"
 
 #define CONFIG_VERSION 1
 
@@ -19,11 +20,25 @@ namespace Config {
         char *buf = new char[buf_size];
         u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.dev_options, config.image_filename, config.cwd);
         
-        if (R_FAILED(ret = FS::WriteFile("/switch/NX-Shell/config.json", buf, len))) {
+        // Delete and re-create the file, we don't care about the return value here.
+        fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
+        fsFsCreateFile(fs, "/switch/NX-Shell/config.json", len, 0);
+        
+        FsFile file;
+        if (R_FAILED(ret = fsFsOpenFile(fs, "/switch/NX-Shell/config.json", FsOpenMode_Write, &file))) {
+            Log::Error("fsFsOpenFile(/switch/NX-Shell/config.json) failed: 0x%x\n", ret);
             delete[] buf;
             return ret;
         }
         
+        if (R_FAILED(ret = fsFileWrite(&file, 0, buf, len, FsWriteOption_Flush))) {
+            Log::Error("fsFileWrite(/switch/NX-Shell/config.json) failed: 0x%x\n", ret);
+            delete[] buf;
+            fsFileClose(&file);
+            return ret;
+        }
+        
+        fsFileClose(&file);
         delete[] buf;
         return 0;
     }

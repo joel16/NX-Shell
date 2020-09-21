@@ -468,29 +468,6 @@ namespace FS {
 		return 0;
 	}
 	
-	Result WriteFile(const char path[FS_MAX_PATH], const void *buf, u64 size) {
-		Result ret = 0;
-		
-		// Delete and re-create the file, we don't care about the return value here.
-		fsFsDeleteFile(fs, path);
-		fsFsCreateFile(fs, path, size, 0);
-		
-		FsFile file;
-		if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Write, &file))) {
-			Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
-			return ret;
-		}
-		
-		if (R_FAILED(ret = fsFileWrite(&file, 0, buf, size, FsWriteOption_Flush))) {
-			Log::Error("fsFileWrite(%s) failed: 0x%x\n", path, ret);
-			fsFileClose(&file);
-			return ret;
-		}
-		
-		fsFileClose(&file);
-		return 0;
-	}
-	
 	Result GetFreeStorageSpace(s64 *size) {
 		Result ret = 0;
 		
