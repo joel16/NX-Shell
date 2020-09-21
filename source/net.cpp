@@ -86,12 +86,13 @@ namespace Net {
     void GetLatestReleaseNRO(const std::string &tag) {
         Result ret = 0;
         FsFile file;
+        const char path[FS_MAX_PATH] = "/switch/NX-Shell/NX-Shell.nro";
 
-        if (!FS::FileExists("/switch/NX-Shell/NX-Shell.nro"))
-            fsFsCreateFile(fs, "/switch/NX-Shell/NX-Shell.nro", 0, 0);
+        if (!FS::FileExists(path))
+            fsFsCreateFile(fs, path, 0, 0);
 
-        if (R_FAILED(ret = fsFsOpenFile(fs, "/switch/NX-Shell/NX-Shell.nro", FsOpenMode_Write | FsOpenMode_Append, &file))) {
-            Log::Error("fsFsOpenFile(/switch/NX-Shell/NX-Shell.nro) failed: 0x%x\n", ret);
+        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Write | FsOpenMode_Append, &file))) {
+            Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
             return;
         }
         
