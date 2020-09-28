@@ -1,7 +1,4 @@
-#ifdef DEBUG
-#include <sys/socket.h>
-#endif
-
+#include <cstring>
 #include <switch.h>
 
 #include "config.h"
@@ -14,6 +11,7 @@
 #include "textures.h"
 
 SDL_Window *window = nullptr;
+char __application_path[FS_MAX_PATH];
 
 namespace Services {
 	SDL_GLContext gl_context;
@@ -133,6 +131,7 @@ namespace Services {
 		IM_ASSERT(font != nullptr);
 		Services::SetDefaultTheme();
 		Textures::Init();
+		romfsExit();
 		return 0;
 	}
 	
@@ -179,21 +178,25 @@ namespace Services {
 	
 	void Exit(void) {
 		nifmExit();
-		romfsExit();
 		Log::Exit();
 		socketExit();
 	}
 }
 
-int main(int, char **) {
+int main(int, char *argv[]) {
 	Result ret = 0;
+	
+	// Strip "sdmc:" from application path
+	std::string __application_path_string = argv[0];
+	__application_path_string.erase(0, 5);
+	std::strcpy(__application_path, __application_path_string.c_str());
 	
 	if (R_FAILED(ret = Services::Init()))
 		return ret;
 	
 	if (R_FAILED(ret = Services::InitImGui()))
 		return ret;
-
+	
 	if (R_FAILED(ret = GUI::RenderLoop()))
 		return ret;
 

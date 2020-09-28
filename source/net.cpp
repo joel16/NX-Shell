@@ -24,8 +24,6 @@ namespace Net {
     }
 
     bool GetAvailableUpdate(const std::string &tag) {
-        return true;
-
         if (tag.empty())
             return false;
         
@@ -64,7 +62,7 @@ namespace Net {
         
         json_t *root;
         json_error_t error;
-        root = json_loads(json.data(), 0, &error);
+        root = json_loads(json.c_str(), JSON_DECODE_ANY, &error);
         
         if (!root) {
             Log::Error("json_loads failed on line %d: %s\n", error.line, error.text);
@@ -86,7 +84,7 @@ namespace Net {
     void GetLatestReleaseNRO(const std::string &tag) {
         Result ret = 0;
         FsFile file;
-        const char path[FS_MAX_PATH] = "/switch/NX-Shell/NX-Shell.nro";
+        const char path[FS_MAX_PATH] = "/switch/NX-Shell/NX-Shell_UPDATE.nro";
 
         if (!FS::FileExists(path))
             fsFsCreateFile(fs, path, 0, 0);

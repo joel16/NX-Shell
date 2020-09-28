@@ -3,9 +3,13 @@
 #include "gui.h"
 #include "imgui.h"
 #include "net.h"
+#include "popups.h"
 #include "windows.h"
 
 namespace Windows {
+	static bool update_popup = false, network_status = false, update_available = false;
+	static std::string tag_name = std::string();
+
 	void Separator(void) {
 		ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 		ImGui::Separator();
@@ -57,13 +61,18 @@ namespace Windows {
 				ImGui::Text("Banner: Preetisketch");
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				if (ImGui::Button("Check for Updates", ImVec2(250, 50))) {
-					std::string tag_name = Net::GetLatestReleaseJSON();
-					if ((Net::GetAvailableUpdate(tag_name)) && (Net::GetNetworkStatus()))
-						Net::GetLatestReleaseNRO(tag_name);
+					tag_name = Net::GetLatestReleaseJSON();
+					network_status = Net::GetNetworkStatus();
+					update_available = Net::GetAvailableUpdate(tag_name);
+					update_popup = true;
 				}
 				ImGui::TreePop();
 			}
 		}
-		Windows::ExitWindow();	
+
+		if (update_popup)
+			Popups::UpdatePopup(&update_popup, &network_status, &update_available, tag_name);
+		
+		Windows::ExitWindow();
 	}
 }
