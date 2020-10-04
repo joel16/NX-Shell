@@ -3,12 +3,13 @@
 
 #include "keyboard.h"
 #include "log.h"
-
+#include "lang.hpp"
+using namespace lang::literals;
 namespace Keyboard {
 	// Empty strings are invalid.
 	SwkbdTextCheckResult ValidateText(char *string, size_t size) {
 		if (std::strcmp(string, "") == 0) {
-			std::strncpy(string, "The name cannot be empty.", size); 
+			std::strncpy(string, "Text_The_name_cannot"_lang.c_str(), size); 
 			return SwkbdTextCheckResult_Bad;
 		}
 		

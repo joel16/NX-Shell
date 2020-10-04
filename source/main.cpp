@@ -9,9 +9,32 @@
 #include "imgui_impl_opengl3.h"
 #include "log.h"
 #include "textures.h"
-
+#include "lang.hpp"
 SDL_Window *window = nullptr;
 char __application_path[FS_MAX_PATH];
+
+using namespace lang::literals;
+
+
+//init the pl lib
+extern "C" void userAppInit() {
+    setsysInitialize();
+    plInitialize(PlServiceType_User);
+    //romfsInit();
+#ifdef DEBUG
+    socketInitializeDefault();
+    nxlinkStdio();
+#endif
+}
+
+extern "C" void userAppExit() {
+    setsysExit();
+    plExit();
+    //romfsExit();
+#ifdef DEBUG
+    socketExit();
+#endif
+}
 
 namespace Services {
 	SDL_GLContext gl_context;
@@ -127,11 +150,50 @@ namespace Services {
 		ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 		ImGui_ImplOpenGL3_Init(glsl_version);
 		
-		ImFont *font = io.Fonts->AddFontFromFileTTF("romfs:/NotoSans-Regular.ttf", 35.0f);
+
+		// Load nintendo font  from machine
+
+		if (auto rc = lang::initialize_to_system_language(); R_FAILED(rc))
+				Log::Error("Failed to init language: %#x, will fall back to key names\n");
+
+
+		ImFont *font  ; 
+		PlFontData standard, extended, chinese;
+		static ImWchar extended_range[] = {0xe000, 0xe152};
+		if (R_SUCCEEDED(plGetSharedFontByType(&standard,     PlSharedFontType_Standard)) &&
+				R_SUCCEEDED(plGetSharedFontByType(&extended, PlSharedFontType_NintendoExt)) &&
+				R_SUCCEEDED(plGetSharedFontByType(&chinese,  PlSharedFontType_ChineseSimplified))  
+				//&&R_SUCCEEDED(plGetSharedFontByType(&korean,   PlSharedFontType_KO))
+				)
+				//add the language you need when add new language 
+				 {
+			std::uint8_t *px;
+			int w, h, bpp;
+			ImFontConfig font_cfg;
+
+			font_cfg.FontDataOwnedByAtlas = false;
+			io.Fonts->AddFontFromMemoryTTF(standard.address, standard.size, 25.0f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
+			font_cfg.MergeMode            = true;
+			io.Fonts->AddFontFromMemoryTTF(extended.address, extended.size, 25.0f, &font_cfg, extended_range);
+			font = io.Fonts->AddFontFromMemoryTTF(chinese.address,  chinese.size,  25.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+			//io.Fonts->AddFontFromMemoryTTF(korean.address,   korean.size,   35.0f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
+
+			// build font atlas
+			io.Fonts->GetTexDataAsAlpha8(&px, &w, &h, &bpp);
+			io.Fonts->Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight;
+			io.Fonts->Build();
+		}
+		//
+
+		//ImFont *font = io.Fonts->AddFontFromFileTTF("romfs:/NotoSans-Regular.ttf", 35.0f);
+		//use AddFontFromMemoryTTF   insteal of  AddFontFromFileTTF  :)   
+
+
+
 		IM_ASSERT(font != nullptr);
 		Services::SetDefaultTheme();
 		Textures::Init();
-		romfsExit();
+
 		return 0;
 	}
 	
@@ -177,6 +239,7 @@ namespace Services {
 	}
 	
 	void Exit(void) {
+		romfsExit();  
 		nifmExit();
 		Log::Exit();
 		socketExit();
@@ -186,7 +249,7 @@ namespace Services {
 int main(int, char *argv[]) {
 	Result ret = 0;
 	
-	// Strip "sdmc:" from application path
+	// Strip "sdmc:" from application path 
 	std::string __application_path_string = argv[0];
 	__application_path_string.erase(0, 5);
 	std::strcpy(__application_path, __application_path_string.c_str());

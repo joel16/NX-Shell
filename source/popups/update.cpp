@@ -6,31 +6,32 @@
 #include "popups.h"
 #include "utils.h"
 #include "windows.h"
-
+#include "lang.hpp"
+using namespace lang::literals;
 namespace Popups {
     static bool done = false;
 
     void UpdatePopup(bool *state, bool *connection_status, bool *available, const std::string &tag) {
-        Popups::SetupPopup("Update");
+        Popups::SetupPopup("Update"_lang.c_str());
         
-        if (ImGui::BeginPopupModal("Update", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("Update"_lang.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             if (!*connection_status)
-                ImGui::Text("Could not connect to network.");
+                ImGui::Text("Text_Could"_lang.c_str());
             else if ((*connection_status) && (*available) && (!tag.empty()) && (!done)) {
-                ImGui::Text("An update is available.");
-                std::string text = "Do you wish to download and install NX-Shell v" + tag + "?";
+                ImGui::Text("Text_An"_lang.c_str());
+                std::string text = "Text_Do_you_wish_to_download"_lang+ tag + "?";
                 ImGui::Text(text.c_str());
             }
             else if (done) {
-                ImGui::Text("Update was successful.");
-                ImGui::Text("Please exit and rerun the application.");
+                ImGui::Text("Text_update"_lang.c_str());
+                ImGui::Text("Text_Please"_lang.c_str());
             }
             else
-                ImGui::Text("You are on the latest version.");
+                ImGui::Text("Text_You"_lang.c_str());
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
+            if (ImGui::Button("OK_update"_lang.c_str(), ImVec2(120, 0))) {
                 if (!done) {
                     Net::GetLatestReleaseNRO(tag);
                     
@@ -52,7 +53,7 @@ namespace Popups {
             if ((*connection_status) && (*available) && (!done)) {
                 ImGui::SameLine(0.0f, 15.0f);
                 
-                if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                if (ImGui::Button("Cancel_update"_lang.c_str(), ImVec2(120, 0))) {
                     ImGui::CloseCurrentPopup();
                     *state = false;
                 }

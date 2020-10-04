@@ -5,7 +5,8 @@
 #include "net.h"
 #include "popups.h"
 #include "windows.h"
-
+#include "lang.hpp"
+using namespace lang::literals;
 namespace Windows {
 	static bool update_popup = false, network_status = false, update_available = false;
 	static std::string tag_name = std::string();
@@ -19,48 +20,66 @@ namespace Windows {
 	void SettingsWindow(void) {
 		Windows::SetupWindow();
 		
-		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-			if (ImGui::TreeNode("Sort Settings")) {
+		if (ImGui::Begin("Settings"_lang.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+			if (ImGui::TreeNode("Sort Settings"_lang.c_str())) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::RadioButton(" By name (ascending)", &config.sort, 0);
+				ImGui::RadioButton(" By name (ascending)"_lang.c_str(), &config.sort, 0);
 				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-				ImGui::RadioButton(" By name (descending)", &config.sort, 1);
+				ImGui::RadioButton(" By name (descending)"_lang.c_str(), &config.sort, 1);
 				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-				ImGui::RadioButton(" By size (largest first)", &config.sort, 2);
+				ImGui::RadioButton(" By size (largest first)"_lang.c_str(), &config.sort, 2);
 				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-				ImGui::RadioButton(" By size (smallest first)", &config.sort, 3);
+				ImGui::RadioButton(" By size (smallest first)"_lang.c_str(), &config.sort, 3);
 				ImGui::TreePop();
 			}
 			
 			Windows::Separator();
 			
-			if (ImGui::TreeNode("Image Viewer")) {
+			if (ImGui::TreeNode("Image_Viewer"_lang.c_str())) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Checkbox(" Display filename", &config.image_filename);
+				ImGui::Checkbox("Display_filename"_lang.c_str(), &config.image_filename);
 				ImGui::TreePop();
 			}
 			
 			Windows::Separator();
 			
-			if (ImGui::TreeNode("Developer Options")) {
+			if (ImGui::TreeNode("Developer_Options"_lang.c_str())) { 
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Checkbox(" Enable logs", &config.dev_options);
+				ImGui::Checkbox("Enable_logs"_lang.c_str(), &config.dev_options);
 				ImGui::TreePop();
 			}
-			
+
 			Windows::Separator();
 			
-			if (ImGui::TreeNode("About")) {
+			if (ImGui::TreeNode("Lanuage_Options"_lang.c_str())) { 
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Text("NX-Shell Version: v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
+			    auto cur_lang = lang::get_current_language(), prev_lang = cur_lang;
+				ImGui::RadioButton("English",    reinterpret_cast<int *>(&cur_lang), static_cast<int>(lang::Language::English));
+				ImGui::RadioButton("中文",        reinterpret_cast<int *>(&cur_lang), static_cast<int>(lang::Language::Chinese));
+				/*im::RadioButton("Français",   reinterpret_cast<int *>(&cur_lang), static_cast<int>(lang::Language::French));
+				im::RadioButton("Nederlands", reinterpret_cast<int *>(&cur_lang), static_cast<int>(lang::Language::Dutch));
+				im::RadioButton("Italiano",   reinterpret_cast<int *>(&cur_lang), static_cast<int>(lang::Language::Italian));
+				im::RadioButton("Deutsch",    reinterpret_cast<int *>(&cur_lang), static_cast<int>(lang::Language::German));
+				im::RadioButton("Español",    reinterpret_cast<int *>(&cur_lang), static_cast<int>(lang::Language::Spanish));*/
+				//change this when you add a new language :)
+				if (cur_lang != prev_lang)
+					lang::set_language(cur_lang);
+				ImGui::TreePop();
+			}
+
+			Windows::Separator();
+			
+			if (ImGui::TreeNode("About"_lang.c_str())) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Text("ImGui Version: %s",  ImGui::GetVersion());
+				ImGui::Text("Text_version"_lang.c_str(), VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Text("Author: Joel16");
+				ImGui::Text("ImGui_version"_lang.c_str(),  ImGui::GetVersion());
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Text("Banner: Preetisketch");
+				ImGui::Text("Author"_lang.c_str());
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				if (ImGui::Button("Check for Updates", ImVec2(250, 50))) {
+				ImGui::Text("Banner"_lang.c_str());
+				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+				if (ImGui::Button("Check_for_Updates"_lang.c_str(), ImVec2(250, 50))) {
 					tag_name = Net::GetLatestReleaseJSON();
 					network_status = Net::GetNetworkStatus();
 					update_available = Net::GetAvailableUpdate(tag_name);

@@ -5,12 +5,13 @@
 #include "imgui_internal.h"
 #include "log.h"
 #include "windows.h"
-
+#include "lang.hpp"
+using namespace lang::literals;
 namespace Windows {
     void FileBrowserWindow(bool *focus, bool *first_item) {
         Windows::SetupWindow();
         
-        if (ImGui::Begin("NX-Shell", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("NX_Shell"_lang.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             // Initially set default focus to next window (FS::DirList)
             if (!*focus) {
                 ImGui::SetNextWindowFocus();
@@ -111,7 +112,7 @@ namespace Windows {
                 }
             }
             else
-                ImGui::Text("No file entries");
+                ImGui::Text("No_file_entries"_lang.c_str());
             
             ImGui::EndChild();
         }

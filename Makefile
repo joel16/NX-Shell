@@ -41,7 +41,7 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	libs/imgui libs/libnsbmp source source/windows source/popups
 DATA		:=	data
-INCLUDES	:=	libs/imgui libs/libnsbmp include
+INCLUDES	:=	libs/imgui libs/libnsbmp include include libs/json-hpp/include
 ROMFS		:=	romfs
 
 VERSION_MAJOR := 3

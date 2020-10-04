@@ -8,7 +8,8 @@
 #include "imgui.h"
 #include "log.h"
 #include "popups.h"
-
+#include "lang.hpp"
+using namespace lang::literals;
 namespace ArchiveHelper {
     std::string ConstructPath(const char path[FS_MAX_PATH]) {
         std::string new_path = config.cwd;
@@ -124,16 +125,16 @@ namespace ArchiveHelper {
 
 namespace Popups {
     void ArchivePopup(void) {
-        Popups::SetupPopup("Archive");
+        Popups::SetupPopup("Archive"_lang.c_str());
         
-        if (ImGui::BeginPopupModal("Archive", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("This action may take a while");
-            std::string text = "Do you wish to extract " + item.selected_filename + "?";
+        if (ImGui::BeginPopupModal("Archive"_lang.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Text_This"_lang.c_str());
+            std::string text = "Text_Do"_lang + item.selected_filename + "?";
             ImGui::Text(text.c_str());
             
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
+            if (ImGui::Button("OK"_lang.c_str(), ImVec2(120, 0))) {
                 ImGui::EndPopup();
                 ImGui::PopStyleVar();
                 ImGui::Render();
@@ -152,7 +153,7 @@ namespace Popups {
             
             ImGui::SameLine(0.0f, 15.0f);
             
-            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            if (ImGui::Button("Cancel"_lang.c_str(), ImVec2(120, 0))) {
                 ImGui::CloseCurrentPopup();
                 item.state = MENU_STATE_HOME;
             }
