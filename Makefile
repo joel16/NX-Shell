@@ -63,9 +63,8 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 CFLAGS	+=	`sdl2-config --cflags`
 CFLAGS	+=	-DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO)
-CFLAGS	+=	-DIMGUI_IMPL_OPENGL_LOADER_GLAD
 
-CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-exceptions -fno-rtti
+CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-exceptions -fno-rtti -DIMGUI_IMPL_OPENGL_LOADER_GLAD
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
