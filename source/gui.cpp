@@ -32,11 +32,12 @@ namespace GUI {
 
 		item.state = MENU_STATE_HOME;
 		item.selected = 0;
-		item.file_count = FS::GetDirList(config.cwd, &item.entries);
-		if (item.file_count < 0)
-			return -1;
+		
+		Result ret = 0;
+		if (R_FAILED(ret = FS::GetDirList(config.cwd, item.entries)))
+			return ret;
 
-		item.checked.resize(item.file_count);
+		item.checked.resize(item.entries.size());
 		FS::GetUsedStorageSpace(&item.used_storage);
 		FS::GetTotalStorageSpace(&item.total_storage);
 
@@ -59,16 +60,13 @@ namespace GUI {
 					if (button == SDL_KEY_A) {
 						if (item.state == MENU_STATE_HOME) {
 							if (item.entries[item.selected].type == FsDirEntryType_Dir) {
-								if (item.file_count != 0) {
-									s64 value = FS::ChangeDirNext(item.entries[item.selected].name, &item.entries, item.file_count);
-									if (value >= 0) {
-										item.file_count = value;
-										
+								if (item.entries.size() != 0) {
+									if (R_SUCCEEDED(FS::ChangeDirNext(item.entries[item.selected].name, item.entries))) {
 										// Make a copy before resizing our vector.
 										if (item.checked_count > 1)
 											item.checked_copy = item.checked;
 											
-										item.checked.resize(item.file_count);
+										item.checked.resize(item.entries.size());
 										GImGui->NavId = 0;
 									}
 								}
@@ -77,15 +75,12 @@ namespace GUI {
 					}
 					else if (button == SDL_KEY_B) {
 						if (item.state == MENU_STATE_HOME) {
-							s64 value = FS::ChangeDirPrev(&item.entries, item.file_count);
-							if (value >= 0) {
-								item.file_count = value;
-								
+							if (R_SUCCEEDED(FS::ChangeDirPrev(item.entries))) {
 								// Make a copy before resizing our vector.
 								if (item.checked_count > 1)
 									item.checked_copy = item.checked;
 									
-								item.checked.resize(item.file_count);
+								item.checked.resize(item.entries.size());
 								GImGui->NavId = 0;
 							}
 						}
@@ -106,7 +101,7 @@ namespace GUI {
 						}
 						else if (item.state == MENU_STATE_SETTINGS) {
 							Config::Save(config);
-							item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+							FS::GetDirList(config.cwd, item.entries);
 							item.state = MENU_STATE_HOME;
 						}
 						else
@@ -136,7 +131,7 @@ namespace GUI {
 					}
 					else if (button == SDL_KEY_DRIGHT) {
 						if (item.state == MENU_STATE_HOME) {
-							ImGui::SetNavID(item.file_count - 1, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
+							ImGui::SetNavID(item.entries.size() - 1, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
 							ImGui::SetScrollHereY(1.0f);
 						}
 					}
@@ -200,7 +195,7 @@ namespace GUI {
 			SDL_GL_SwapWindow(window);
 		}
 
-		FS::FreeDirEntries(&item.entries, item.file_count);
+		item.entries.clear();
 		return 0;
 	}
 }

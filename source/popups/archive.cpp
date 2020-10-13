@@ -141,7 +141,7 @@ namespace Popups {
                 char path[FS_MAX_PATH + 1];
                 if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
                     ArchiveHelper::Extract(path);
-                    item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+                    FS::GetDirList(config.cwd, item.entries);
                     GUI::ResetCheckbox();
                 }
                 

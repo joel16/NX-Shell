@@ -36,7 +36,7 @@ namespace Popups {
 					for (long unsigned int i = 0; i < item.checked.size(); i++) {
 						if (item.checked.at(i)) {
 							if (R_FAILED(ret = FS::Delete(&item.entries[i]))) {
-								item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+								FS::GetDirList(config.cwd, item.entries);
 								GUI::ResetCheckbox();
 								break;
 							}
@@ -47,7 +47,7 @@ namespace Popups {
 					ret = FS::Delete(&item.entries[item.selected]);
 				
 				if (R_SUCCEEDED(ret)) {
-					item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+					FS::GetDirList(config.cwd, item.entries);
 					GUI::ResetCheckbox();
 				}
 

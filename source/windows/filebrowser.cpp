@@ -26,8 +26,8 @@ namespace Windows {
             ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Spacing
             
             ImGui::BeginChild("##FS::DirList");
-            if (item.file_count != 0) {
-                for (s64 i = 0; i < item.file_count; i++) {
+            if (item.entries.size() != 0) {
+                for (long unsigned int i = 0; i < item.entries.size(); i++) {
                     std::string filename = item.entries[i].name;
                     
                     if ((item.checked.at(i)) && (!item.checked_cwd.compare(config.cwd)))

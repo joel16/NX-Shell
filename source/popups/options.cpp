@@ -8,24 +8,26 @@
 
 namespace Popups {
     static void HandleMultipleCopy(Result (*func)()) {
-		s64 entry_count = 0;
-		FsDirectoryEntry *entries = nullptr;
+		Result ret = 0;
+		std::vector<FsDirectoryEntry> entries;
 		
-		entry_count = FS::GetDirList(item.checked_cwd.data(), &entries);
+		if (R_FAILED(ret = FS::GetDirList(item.checked_cwd.data(), entries)))
+			return;
+		
 		for (long unsigned int i = 0; i < item.checked_copy.size(); i++) {
 			if (item.checked_copy.at(i)) {
 				FS::Copy(&entries[i], item.checked_cwd);
 				if (R_FAILED((*func)())) {
-					item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+					FS::GetDirList(config.cwd, item.entries);
 					GUI::ResetCheckbox();
 					break;
 				}
 			}
 		}
-		
-		item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+
+		FS::GetDirList(config.cwd, item.entries);
 		GUI::ResetCheckbox();
-		FS::FreeDirEntries(&entries, entry_count);
+		entries.clear();
 	}
 
 	void OptionsPopup(void) {
@@ -61,7 +63,7 @@ namespace Popups {
 			if (ImGui::Button("Rename", ImVec2(200, 50))) {
 				std::string path = Keyboard::GetText("Enter name", item.entries[item.selected].name);
 				if (R_SUCCEEDED(FS::Rename(&item.entries[item.selected], path.c_str())))
-					item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+					FS::GetDirList(config.cwd, item.entries);
 				
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_HOME;
@@ -76,7 +78,7 @@ namespace Popups {
 				path.append(name);
 				
 				if (R_SUCCEEDED(fsFsCreateDirectory(fs, path.c_str()))) {
-					item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+					FS::GetDirList(config.cwd, item.entries);
 					GUI::ResetCheckbox();
 				}
 				
@@ -93,7 +95,7 @@ namespace Popups {
 				path.append(name);
 				
 				if (R_SUCCEEDED(fsFsCreateFile(fs, path.c_str(), 0, 0))) {
-					item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+					FS::GetDirList(config.cwd, item.entries);
 					GUI::ResetCheckbox();
 				}
 				
@@ -122,7 +124,7 @@ namespace Popups {
 						Popups::HandleMultipleCopy(&FS::Paste);
 					else {
 						if (R_SUCCEEDED(FS::Paste())) {
-							item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+							FS::GetDirList(config.cwd, item.entries);
 							GUI::ResetCheckbox();
 						}
 					}
@@ -146,7 +148,7 @@ namespace Popups {
 					if ((item.checked_count > 1) && (item.checked_cwd.compare(config.cwd) != 0))
 						Popups::HandleMultipleCopy(&FS::Move);
 					else if (R_SUCCEEDED(FS::Move())) {
-						item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+						FS::GetDirList(config.cwd, item.entries);
 						GUI::ResetCheckbox();
 					}
 				}
@@ -167,7 +169,7 @@ namespace Popups {
 			
 			if (ImGui::Button("Set archive bit", ImVec2(200, 50))) {
 				if (R_SUCCEEDED(FS::SetArchiveBit(&item.entries[item.selected]))) {
-					item.file_count = FS::RefreshEntries(&item.entries, item.file_count);
+					FS::GetDirList(config.cwd, item.entries);
 					GUI::ResetCheckbox();
 				}
 					

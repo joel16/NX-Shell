@@ -66,38 +66,43 @@ namespace FS {
 		return FileTypeNone;
 	}
 	
-	static int Sort(const void *p1, const void *p2) {
-		const FsDirectoryEntry *entryA = (reinterpret_cast<const FsDirectoryEntry*>(p1));
-		const FsDirectoryEntry *entryB = (reinterpret_cast<const FsDirectoryEntry*>(p2));
-		
-		if ((entryA->type == FsDirEntryType_Dir) && !(entryB->type == FsDirEntryType_Dir))
-			return -1;
-		else if (!(entryA->type == FsDirEntryType_Dir) && (entryB->type == FsDirEntryType_Dir))
-			return 1;
+	static bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
+		if ((entryA.type == FsDirEntryType_Dir) && !(entryB.type == FsDirEntryType_Dir))
+			return true;
+		else if (!(entryA.type == FsDirEntryType_Dir) && (entryB.type == FsDirEntryType_Dir))
+			return false;
 		else {
 			switch(config.sort) {
 				case 0: // Sort alphabetically (ascending - A to Z)
-					return strcasecmp(entryA->name, entryB->name);
+					if (strcasecmp(entryA.name, entryB.name) < 0)
+						return true;
+					
 					break;
 				
 				case 1: // Sort alphabetically (descending - Z to A)
-					return strcasecmp(entryB->name, entryA->name);
+					if (strcasecmp(entryB.name, entryA.name) < 0)
+						return true;
+					
 					break;
 				
 				case 2: // Sort by file size (largest first)
-					return entryA->file_size > entryB->file_size? -1 : entryA->file_size < entryB->file_size? 1 : 0;
+					if (entryB.file_size < entryA.file_size)
+						return true;
+					
 					break;
 					
 				case 3: // Sort by file size (smallest first)
-					return entryB->file_size > entryA->file_size? -1 : entryB->file_size < entryA->file_size? 1 : 0;
+					if (entryA.file_size < entryB.file_size)
+						return true;
+					
 					break;
 			}
 		}
 		
-		return 0;
+		return false;
 	}
 
-	s64 GetDirList(char path[FS_MAX_PATH], FsDirectoryEntry **entriesp) {
+	Result GetDirList(char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
 		FsDir dir;
 		Result ret = 0;
 		
@@ -111,44 +116,31 @@ namespace FS {
 			Log::Error("fsDirGetEntryCount(%s) failed: 0x%x\n", path, ret);
 			return ret;
 		}
-			
-		FsDirectoryEntry *entries = new FsDirectoryEntry[entry_count * sizeof(*entries)];
-		if (R_FAILED(ret = fsDirRead(&dir, nullptr, static_cast<size_t>(entry_count), entries))) {
+
+		entries.resize(entry_count);
+		if (R_FAILED(ret = fsDirRead(&dir, nullptr, static_cast<size_t>(entry_count), entries.data()))) {
 			Log::Error("fsDirRead(%s) failed: 0x%x\n", path, ret);
-			delete[] entries;
 			return ret;
 		}
-		
-		qsort(entries, entry_count, sizeof(FsDirectoryEntry), FS::Sort);
+
+		std::sort(entries.begin(), entries.end(), FS::Sort);
 		fsDirClose(&dir);
-		*entriesp = entries;
-		return entry_count;
+		return 0;
 	}
 
-	void FreeDirEntries(FsDirectoryEntry **entries, s64 entry_count) {
-		if (entry_count > 0)
-			delete[] (*entries);
-		
-		*entries = nullptr;
-	}
+	static Result ChangeDir(char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
+		Result ret = 0;
+		std::vector<FsDirectoryEntry> new_entries;
 
-	s64 RefreshEntries(FsDirectoryEntry **entries, s64 entry_count) {
-		FS::FreeDirEntries(entries, entry_count);
-		return FS::GetDirList(config.cwd, entries);
-	}
-
-	static s64 ChangeDir(char path[FS_MAX_PATH], FsDirectoryEntry **entries, s64 entry_count) {
-		FsDirectoryEntry *new_entries;
-		s64 num_entries = FS::GetDirList(path, &new_entries);
-		if (num_entries < 0)
-			return -1;
+		if (R_FAILED(ret = FS::GetDirList(path, new_entries)))
+			return ret;
 		
 		// Apply cd after successfully listing new directory
-		FS::FreeDirEntries(entries, entry_count);
+		entries.clear();
 		std::strncpy(config.cwd, path, FS_MAX_PATH);
 		Config::Save(config);
-		*entries = new_entries;
-		return num_entries;
+		entries = new_entries;
+		return 0;
 	}
 
 	static int GetPrevPath(char path[FS_MAX_PATH]) {
@@ -175,22 +167,22 @@ namespace FS {
 		return 0;
 	}
 
-	s64 ChangeDirNext(const char path[FS_MAX_PATH], FsDirectoryEntry **entries, s64 entry_count) {
+	Result ChangeDirNext(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
 		char new_cwd[FS_MAX_PATH + 1];
 		const char *sep = !std::strncmp(config.cwd, "/", 2) ? "" : "/"; // Don't append / if at /
 		
 		if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", config.cwd, sep, path)) > 0)
-			return FS::ChangeDir(new_cwd, entries, entry_count);
+			return FS::ChangeDir(new_cwd, entries);
 		
 		return 0;
 	}
 	
-	s64 ChangeDirPrev(FsDirectoryEntry **entries, s64 entry_count) {
+	Result ChangeDirPrev(std::vector<FsDirectoryEntry> &entries) {
 		char new_cwd[FS_MAX_PATH];
 		if (FS::GetPrevPath(new_cwd) < 0)
 			return -1;
 			
-		return FS::ChangeDir(new_cwd, entries, entry_count);
+		return FS::ChangeDir(new_cwd, entries);
 	}
 	
 	int ConstructPath(FsDirectoryEntry *entry, char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {		

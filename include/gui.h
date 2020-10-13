@@ -24,9 +24,8 @@ typedef struct {
     bool copy = false;
     bool move = false;
     int selected = 0;
-    int file_count = 0;
     std::string selected_filename;
-    FsDirectoryEntry *entries = nullptr;
+    std::vector<FsDirectoryEntry> entries;
     std::vector<bool> checked;
     std::vector<bool> checked_copy;
     std::string checked_cwd;
@@ -49,7 +48,7 @@ namespace GUI {
     inline void ResetCheckbox(void) {
 		item.checked.clear();
 		item.checked_copy.clear();
-		item.checked.resize(item.file_count);
+		item.checked.resize(item.entries.size());
 		item.checked.assign(item.checked.size(), false);
 		item.checked_cwd.clear();
 		item.checked_count = 0;

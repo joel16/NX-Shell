@@ -2,6 +2,7 @@
 #define NX_SHELL_FS_H
 
 #include <string>
+#include <vector>
 #include <switch.h>
 
 extern FsFileSystem *fs;
@@ -20,11 +21,9 @@ namespace FS {
     bool DirExists(const char path[FS_MAX_PATH]);
     std::string GetFileExt(const std::string &filename);
     FileType GetFileType(const std::string &filename);
-    s64 GetDirList(char path[FS_MAX_PATH], FsDirectoryEntry **entriesp);
-    void FreeDirEntries(FsDirectoryEntry **entries, s64 entry_count);
-    s64 RefreshEntries(FsDirectoryEntry **entries, s64 entry_count);
-    s64 ChangeDirNext(const char path[FS_MAX_PATH], FsDirectoryEntry **entries, s64 entry_count);
-    s64 ChangeDirPrev(FsDirectoryEntry **entries, s64 entry_count);
+    Result GetDirList(char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries);
+    Result ChangeDirNext(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries);
+    Result ChangeDirPrev(std::vector<FsDirectoryEntry> &entries);
     Result GetTimeStamp(FsDirectoryEntry *entry, FsTimeStampRaw *timestamp);
     Result Rename(FsDirectoryEntry *entry, const char filename[FS_MAX_PATH]);
     Result Delete(FsDirectoryEntry *entry);
