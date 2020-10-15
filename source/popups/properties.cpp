@@ -14,7 +14,7 @@ namespace Popups {
 		Popups::SetupPopup("Properties");
 		
 		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			std::string name_text = "Name: " + item.selected_filename;
+			std::string name_text = "Name: " + std::string(item.entries[item.selected].name);
 			ImGui::Text(name_text.c_str());
 			
 			if (item.entries[item.selected].type == FsDirEntryType_File) {
@@ -59,7 +59,7 @@ namespace Popups {
 		Popups::SetupPopup("Properties");
 		
 		if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			std::string name_text = "Name: " + item.selected_filename;
+			std::string name_text = "Name: " + std::string(item.entries[item.selected].name);
 			ImGui::Text(name_text.c_str());
 			
 			std::string width_text = "Width: ";

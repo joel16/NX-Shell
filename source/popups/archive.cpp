@@ -128,7 +128,7 @@ namespace Popups {
         
         if (ImGui::BeginPopupModal("Archive", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("This action may take a while");
-            std::string text = "Do you wish to extract " + item.selected_filename + "?";
+            std::string text = "Do you wish to extract " + std::string(item.entries[item.selected].name) + "?";
             ImGui::Text(text.c_str());
             
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -139,7 +139,7 @@ namespace Popups {
                 ImGui::Render();
                 
                 char path[FS_MAX_PATH + 1];
-                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
+                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.entries[item.selected].name)) > 0) {
                     ArchiveHelper::Extract(path);
                     FS::GetDirList(config.cwd, item.entries);
                     GUI::ResetCheckbox();

@@ -45,6 +45,7 @@ namespace Windows {
                     
                     ImGui::SameLine();
                     if (ImGui::Selectable(filename.c_str())) {
+                        item.selected = i;
                         char path[FS_MAX_PATH + 1];
 
                         switch(file_type) {
@@ -53,14 +54,14 @@ namespace Windows {
                                 break;
                                 
                             case FileTypeImage:
-                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
+                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.entries[item.selected].name)) > 0) {
                                     Textures::LoadImageFile(path, &item.texture);
                                     item.state = MENU_STATE_IMAGEVIEWER;
                                 }
                                 break;
 
                             case FileTypeText:
-                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.selected_filename.c_str())) > 0) {
+                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.entries[item.selected].name)) > 0) {
                                     Log::Exit();
 
                                     FsFile file;
@@ -104,10 +105,8 @@ namespace Windows {
                     if (!ImGui::IsAnyItemFocused())
                         GImGui->NavId = GImGui->CurrentWindow->DC.LastItemId;
                         
-                    if (ImGui::IsItemHovered()) {
+                    if (ImGui::IsItemHovered())
                         item.selected = i;
-                        item.selected_filename = item.entries[item.selected].name;
-                    }
                 }
             }
             else

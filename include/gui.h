@@ -20,11 +20,8 @@ enum MENU_STATES {
 };
 
 typedef struct {
-    int state = 0;
-    bool copy = false;
-    bool move = false;
+    MENU_STATES state = MENU_STATE_HOME;
     int selected = 0;
-    std::string selected_filename;
     std::vector<FsDirectoryEntry> entries;
     std::vector<bool> checked;
     std::vector<bool> checked_copy;

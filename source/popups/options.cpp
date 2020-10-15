@@ -7,6 +7,7 @@
 #include "popups.h"
 
 namespace Popups {
+	static bool copy = false, move = false;
     static void HandleMultipleCopy(Result (*func)()) {
 		Result ret = 0;
 		std::vector<FsDirectoryEntry> entries;
@@ -47,8 +48,8 @@ namespace Popups {
 			
 			if (ImGui::Button("Clear all", ImVec2(200, 50))) {
 				GUI::ResetCheckbox();
-				item.copy = false;
-				item.move = false;
+				copy = false;
+				move = false;
 			}
 
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -105,14 +106,14 @@ namespace Popups {
 			
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 			
-			if (ImGui::Button(!item.copy? "Copy" : "Paste", ImVec2(200, 50))) {
-				if (!item.copy) {
+			if (ImGui::Button(!copy? "Copy" : "Paste", ImVec2(200, 50))) {
+				if (!copy) {
 					if ((item.checked_count >= 1) && (item.checked_cwd.compare(config.cwd) != 0))
 						GUI::ResetCheckbox();
 					if (item.checked_count <= 1)
 						FS::Copy(&item.entries[item.selected], config.cwd);
 						
-					item.copy = !item.copy;
+					copy = !copy;
 					item.state = MENU_STATE_HOME;
 				}
 				else {
@@ -129,7 +130,7 @@ namespace Popups {
 						}
 					}
 
-					item.copy = !item.copy;
+					copy = !copy;
 					item.state = MENU_STATE_HOME;
 					return;
 				}
@@ -137,8 +138,8 @@ namespace Popups {
 			
 			ImGui::SameLine(0.0f, 15.0f);
 			
-			if (ImGui::Button(!item.move? "Move" : "Paste", ImVec2(200, 50))) {
-				if (!item.move) {
+			if (ImGui::Button(!move? "Move" : "Paste", ImVec2(200, 50))) {
+				if (!move) {
 					if ((item.checked_count >= 1) && (item.checked_cwd.compare(config.cwd) != 0))
 						GUI::ResetCheckbox();
 					if (item.checked_count <= 1)
@@ -153,7 +154,7 @@ namespace Popups {
 					}
 				}
 				
-				item.move = !item.move;
+				move = !move;
 				ImGui::CloseCurrentPopup();
 				item.state = MENU_STATE_HOME;
 			}

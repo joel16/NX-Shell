@@ -22,7 +22,7 @@ namespace Popups {
 				ImGui::EndChild();
 			}
 			else {
-				std::string text = "Do you wish to delete " + item.selected_filename + "?";
+				std::string text = "Do you wish to delete " + std::string(item.entries[item.selected].name) + "?";
 				ImGui::Text(text.c_str());
 			}
 			
