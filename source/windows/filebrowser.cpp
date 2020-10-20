@@ -22,7 +22,7 @@ namespace Windows {
             
             // Draw storage bar
             ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
-            ImGui::ProgressBar(static_cast<float>(item.used_storage) / static_cast<float>(item.total_storage), ImVec2(1280.0f, 6.0f));
+            ImGui::ProgressBar(static_cast<float>(item.used_storage) / static_cast<float>(item.total_storage), ImVec2(1265.0f, 6.0f), "");
             ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Spacing
             
             ImGui::BeginChild("##FS::DirList");
