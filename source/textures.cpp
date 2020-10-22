@@ -3,6 +3,9 @@
 // BMP
 #include <libnsbmp.h>
 
+// BMP
+#include "libnsgif.h"
+
 // JPEG
 #include <turbojpeg.h>
 
@@ -38,8 +41,7 @@
 Tex folder_icon, file_icons[5], check_icon, uncheck_icon;
 
 namespace BMP {
-	static void *bitmap_create(int width, int height, unsigned int state) {
-		(void) state;  /* unused */
+	static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
 		/* ensure a stupidly large (>50Megs or so) bitmap is not created */
 		if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
 			return nullptr;
@@ -52,8 +54,7 @@ namespace BMP {
 		return static_cast<unsigned char *>(bitmap);
 	}
 	
-	static size_t bitmap_get_bpp(void *bitmap) {
-		(void) bitmap;  /* unused */
+	static size_t bitmap_get_bpp([[maybe_unused]] void *bitmap) {
 		return BYTES_PER_PIXEL;
 	}
 	
@@ -63,9 +64,44 @@ namespace BMP {
 	}
 }
 
+namespace GIF {
+	static void *bitmap_create(int width, int height) {
+		/* ensure a stupidly large bitmap is not created */
+		if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
+			return nullptr;
+			
+		return std::calloc(width * height, BYTES_PER_PIXEL);
+	}
+	
+	static void bitmap_set_opaque([[maybe_unused]] void *bitmap, [[maybe_unused]] bool opaque) {
+		assert(bitmap);
+	}
+	
+	static bool bitmap_test_opaque([[maybe_unused]] void *bitmap) {
+		assert(bitmap);
+		return false;
+	}
+	
+	static unsigned char *bitmap_get_buffer(void *bitmap) {
+		assert(bitmap);
+		return static_cast<unsigned char *>(bitmap);
+	}
+	
+	static void bitmap_destroy(void *bitmap) {
+		assert(bitmap);
+		std::free(bitmap);
+	}
+	
+	static void bitmap_modified([[maybe_unused]] void *bitmap) {
+		assert(bitmap);
+		return;
+	}
+}
+
 namespace Textures {
 	typedef enum ImageType {
 		ImageTypeBMP,
+		ImageTypeGIF,
 		ImageTypeJPEG,
 		ImageTypePNG,
 		ImageTypeWEBP,
@@ -192,6 +228,64 @@ namespace Textures {
 		bmp_finalise(&bmp);
 		return ret;
 	}
+
+	static bool LoadImageGIF(unsigned char **data, s64 *size, std::vector<Tex> &textures) {
+		gif_bitmap_callback_vt bitmap_callbacks = {
+			GIF::bitmap_create,
+			GIF::bitmap_destroy,
+			GIF::bitmap_get_buffer,
+			GIF::bitmap_set_opaque,
+			GIF::bitmap_test_opaque,
+			GIF::bitmap_modified
+		};
+		
+		bool ret = false;
+		gif_animation gif;
+		gif_result code = GIF_OK;
+		gif_create(&gif, &bitmap_callbacks);
+		
+		do {
+			code = gif_initialise(&gif, *size, *data);
+			if (code != GIF_OK && code != GIF_WORKING) {
+				Log::Error("gif_initialise failed: %d\n", code);
+				gif_finalise(&gif);
+				return ret;
+			}
+		} while (code != GIF_OK);
+		
+		bool gif_is_animated = gif.frame_count > 1;
+		
+		if (gif_is_animated) {
+			textures.resize(gif.frame_count);
+			
+			for (unsigned int i = 0; i < gif.frame_count; i++) {
+				code = gif_decode_frame(&gif, i);
+				if (code != GIF_OK) {
+					Log::Error("gif_decode_frame failed: %d\n", code);
+					return false;
+				}
+				
+				textures[i].width = gif.width;
+				textures[i].height = gif.height;
+				textures[i].delay = gif.frames->frame_delay;
+				ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, &textures[i], nullptr);
+			}
+		}
+		else {
+			code = gif_decode_frame(&gif, 0);
+			if (code != GIF_OK) {
+				Log::Error("gif_decode_frame failed: %d\n", code);
+				return false;
+			}
+			
+			textures[0].width = gif.width;
+			textures[0].height = gif.height;
+			ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, &textures[0], nullptr);
+		}
+		
+		gif_finalise(&gif);
+		return ret;
+	}
 	
 	static bool LoadImageJPEG(unsigned char **data, s64 *size, Tex *texture) {
 		tjhandle jpeg = tjInitDecompress();
@@ -248,10 +342,12 @@ namespace Textures {
 
 	ImageType GetImageType(const std::string &filename) {
 		std::string ext = FS::GetFileExt(filename);
-
+		
 		if (!ext.compare(".BMP"))
 			return ImageTypeBMP;
-		if ((!ext.compare(".JPG")) || (!ext.compare(".JPEG")))
+		else if (!ext.compare(".GIF"))
+			return ImageTypeGIF;
+		else if ((!ext.compare(".JPG")) || (!ext.compare(".JPEG")))
 			return ImageTypeJPEG;
 		else if (!ext.compare(".PNG"))
 			return ImageTypePNG;
@@ -261,7 +357,7 @@ namespace Textures {
 		return ImageTypeOther;
 	}
 
-	bool LoadImageFile(const char path[FS_MAX_PATH], Tex *texture) {
+	bool LoadImageFile(const char path[FS_MAX_PATH], std::vector<Tex> &textures) {
 		bool ret = false;
 		unsigned char *data = nullptr;
 		s64 size = 0;
@@ -271,26 +367,33 @@ namespace Textures {
 			return ret;
 		}
 
+		// Resize to 1 initially. If the file is a GIF it will be resized accordingly.
+		textures.resize(1);
+
 		ImageType type = GetImageType(path);
 		switch(type) {
 			case ImageTypeBMP:
-				ret = Textures::LoadImageBMP(&data, &size, texture);
+				ret = Textures::LoadImageBMP(&data, &size, &textures[0]);
+				break;
+
+			case ImageTypeGIF:
+				ret = Textures::LoadImageGIF(&data, &size, textures);
 				break;
 			
 			case ImageTypeJPEG:
-				ret = Textures::LoadImageJPEG(&data, &size, texture);
+				ret = Textures::LoadImageJPEG(&data, &size, &textures[0]);
 				break;
 
 			case ImageTypePNG:
-				ret = Textures::LoadImagePNG(&data, &size, texture);
+				ret = Textures::LoadImagePNG(&data, &size, &textures[0]);
 				break;
 
 			case ImageTypeWEBP:
-				ret = Textures::LoadImageWEBP(&data, &size, texture);
+				ret = Textures::LoadImageWEBP(&data, &size, &textures[0]);
 				break;
 
 			default:
-				ret = Textures::LoadImageOther(&data, &size, texture);
+				ret = Textures::LoadImageOther(&data, &size, &textures[0]);
 				break;
 		}
 

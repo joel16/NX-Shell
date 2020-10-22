@@ -90,7 +90,11 @@ namespace GUI {
 							if (tex_properties)
 								tex_properties = false;
 							else {
-								Textures::Free(&item.texture);
+								for (long unsigned int i = 0; i < item.textures.size(); i++)
+									Textures::Free(&item.textures[i]);
+									
+								item.textures.clear();
+								item.frame_count = 0;
 								item.state = MENU_STATE_HOME;
 							}
 						}

@@ -29,7 +29,8 @@ typedef struct {
     int checked_count = 0;
     s64 used_storage = 0;
     s64 total_storage = 0;
-    Tex texture;
+    std::vector<Tex> textures;
+    long unsigned int frame_count = 0;
 } MenuItem;
 
 typedef struct {

@@ -55,7 +55,7 @@ namespace Windows {
                                 
                             case FileTypeImage:
                                 if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.entries[item.selected].name)) > 0) {
-                                    Textures::LoadImageFile(path, &item.texture);
+                                    Textures::LoadImageFile(path, item.textures);
                                     item.state = MENU_STATE_IMAGEVIEWER;
                                 }
                                 break;

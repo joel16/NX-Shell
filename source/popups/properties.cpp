@@ -63,12 +63,12 @@ namespace Popups {
 			ImGui::Text(name_text.c_str());
 			
 			std::string width_text = "Width: ";
-			width_text.append(std::to_string(item.texture.width));
+			width_text.append(std::to_string(item.textures[0].width));
 			width_text.append("px");
 			ImGui::Text(width_text.c_str());
 			
 			std::string height_text = "Height: ";
-			height_text.append(std::to_string(item.texture.height));
+			height_text.append(std::to_string(item.textures[0].height));
 			height_text.append("px");
 			ImGui::Text(height_text.c_str());
 			
