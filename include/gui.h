@@ -9,7 +9,7 @@
 #include "textures.h"
 
 enum MENU_STATES {
-    MENU_STATE_HOME,
+    MENU_STATE_FILEBROWSER,
     MENU_STATE_OPTIONS,
     MENU_STATE_DELETE,
     MENU_STATE_PROPERTIES,
@@ -20,7 +20,7 @@ enum MENU_STATES {
 };
 
 typedef struct {
-    MENU_STATES state = MENU_STATE_HOME;
+    MENU_STATES state = MENU_STATE_FILEBROWSER;
     int selected = 0;
     std::vector<FsDirectoryEntry> entries;
     std::vector<bool> checked;

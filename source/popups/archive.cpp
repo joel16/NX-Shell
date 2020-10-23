@@ -146,7 +146,7 @@ namespace Popups {
                 }
                 
                 ImGui::CloseCurrentPopup();
-                item.state = MENU_STATE_HOME;
+                item.state = MENU_STATE_FILEBROWSER;
                 return;
             }
             
@@ -154,7 +154,7 @@ namespace Popups {
             
             if (ImGui::Button("Cancel", ImVec2(120, 0))) {
                 ImGui::CloseCurrentPopup();
-                item.state = MENU_STATE_HOME;
+                item.state = MENU_STATE_FILEBROWSER;
             }
         }
         

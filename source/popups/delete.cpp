@@ -53,7 +53,7 @@ namespace Popups {
 
 				Log::Exit();
 				ImGui::CloseCurrentPopup();
-				item.state = MENU_STATE_HOME;
+				item.state = MENU_STATE_FILEBROWSER;
 			}
 			
 			ImGui::SameLine(0.0f, 15.0f);

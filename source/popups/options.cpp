@@ -67,7 +67,7 @@ namespace Popups {
 					FS::GetDirList(config.cwd, item.entries);
 				
 				ImGui::CloseCurrentPopup();
-				item.state = MENU_STATE_HOME;
+				item.state = MENU_STATE_FILEBROWSER;
 			}
 			
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -84,7 +84,7 @@ namespace Popups {
 				}
 				
 				ImGui::CloseCurrentPopup();
-				item.state = MENU_STATE_HOME;
+				item.state = MENU_STATE_FILEBROWSER;
 			}
 			
 			ImGui::SameLine(0.0f, 15.0f);
@@ -101,7 +101,7 @@ namespace Popups {
 				}
 				
 				ImGui::CloseCurrentPopup();
-				item.state = MENU_STATE_HOME;
+				item.state = MENU_STATE_FILEBROWSER;
 			}
 			
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -114,7 +114,7 @@ namespace Popups {
 						FS::Copy(&item.entries[item.selected], config.cwd);
 						
 					copy = !copy;
-					item.state = MENU_STATE_HOME;
+					item.state = MENU_STATE_FILEBROWSER;
 				}
 				else {
 					ImGui::EndPopup();
@@ -131,7 +131,7 @@ namespace Popups {
 					}
 
 					copy = !copy;
-					item.state = MENU_STATE_HOME;
+					item.state = MENU_STATE_FILEBROWSER;
 					return;
 				}
 			}
@@ -156,7 +156,7 @@ namespace Popups {
 				
 				move = !move;
 				ImGui::CloseCurrentPopup();
-				item.state = MENU_STATE_HOME;
+				item.state = MENU_STATE_FILEBROWSER;
 			}
 			
 			ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -175,7 +175,7 @@ namespace Popups {
 				}
 					
 				ImGui::CloseCurrentPopup();
-				item.state = MENU_STATE_HOME;
+				item.state = MENU_STATE_FILEBROWSER;
 			}
 		}
 		

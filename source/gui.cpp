@@ -30,7 +30,7 @@ namespace GUI {
 	int RenderLoop(void) {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-		item.state = MENU_STATE_HOME;
+		item.state = MENU_STATE_FILEBROWSER;
 		item.selected = 0;
 		
 		Result ret = 0;
@@ -58,7 +58,7 @@ namespace GUI {
 				if (event.type == SDL_JOYBUTTONDOWN) {
 					Uint8 button = event.jbutton.button;
 					if (button == SDL_KEY_A) {
-						if (item.state == MENU_STATE_HOME) {
+						if (item.state == MENU_STATE_FILEBROWSER) {
 							if (item.entries[item.selected].type == FsDirEntryType_Dir) {
 								if (item.entries.size() != 0) {
 									if (R_SUCCEEDED(FS::ChangeDirNext(item.entries[item.selected].name, item.entries))) {
@@ -74,7 +74,7 @@ namespace GUI {
 						}
 					}
 					else if (button == SDL_KEY_B) {
-						if (item.state == MENU_STATE_HOME) {
+						if (item.state == MENU_STATE_FILEBROWSER) {
 							if (R_SUCCEEDED(FS::ChangeDirPrev(item.entries))) {
 								// Make a copy before resizing our vector.
 								if (item.checked_count > 1)
@@ -95,30 +95,30 @@ namespace GUI {
 									
 								item.textures.clear();
 								item.frame_count = 0;
-								item.state = MENU_STATE_HOME;
+								item.state = MENU_STATE_FILEBROWSER;
 							}
 						}
 						else if (item.state == MENU_STATE_TEXTREADER) {
 							text_reader.buf_size = 0;
 							delete[] text_reader.buf;
-							item.state = MENU_STATE_HOME;
+							item.state = MENU_STATE_FILEBROWSER;
 						}
 						else if (item.state == MENU_STATE_SETTINGS) {
 							Config::Save(config);
 							FS::GetDirList(config.cwd, item.entries);
-							item.state = MENU_STATE_HOME;
+							item.state = MENU_STATE_FILEBROWSER;
 						}
 						else
-							item.state = MENU_STATE_HOME;
+							item.state = MENU_STATE_FILEBROWSER;
 					}
 					else if (button == SDL_KEY_X) {
-						if (item.state == MENU_STATE_HOME)
+						if (item.state == MENU_STATE_FILEBROWSER)
 							item.state = MENU_STATE_OPTIONS;
 						else if (item.state == MENU_STATE_IMAGEVIEWER)
 							tex_properties = true;
 					}
 					else if (button == SDL_KEY_Y) {
-						if (item.state == MENU_STATE_HOME) {
+						if (item.state == MENU_STATE_FILEBROWSER) {
 							if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
 								GUI::ResetCheckbox();
 								
@@ -128,13 +128,13 @@ namespace GUI {
 						}
 					}
 					else if (button == SDL_KEY_DLEFT) {
-						if (item.state == MENU_STATE_HOME) {
+						if (item.state == MENU_STATE_FILEBROWSER) {
 							ImGui::SetNavID(0, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
 							ImGui::SetItemDefaultFocus();
 						}
 					}
 					else if (button == SDL_KEY_DRIGHT) {
-						if (item.state == MENU_STATE_HOME) {
+						if (item.state == MENU_STATE_FILEBROWSER) {
 							ImGui::SetNavID(item.entries.size() - 1, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
 							ImGui::SetScrollHereY(1.0f);
 						}

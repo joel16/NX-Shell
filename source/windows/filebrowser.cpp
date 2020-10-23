@@ -45,7 +45,6 @@ namespace Windows {
                     
                     ImGui::SameLine();
                     if (ImGui::Selectable(filename.c_str())) {
-                        item.selected = i;
                         char path[FS_MAX_PATH + 1];
 
                         switch(file_type) {
@@ -102,7 +101,7 @@ namespace Windows {
                         *first_item = false;
                     }
                     
-                    if (!ImGui::IsAnyItemFocused())
+                    if (!ImGui::IsAnyItemFocused() && item.state == MENU_STATE_FILEBROWSER)
                         GImGui->NavId = GImGui->CurrentWindow->DC.LastItemId;
                         
                     if (ImGui::IsItemHovered())
