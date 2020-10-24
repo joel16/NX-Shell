@@ -126,9 +126,14 @@ namespace Services {
 		// Setup Platform/Renderer bindings
 		ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 		ImGui_ImplOpenGL3_Init(glsl_version);
-		
-		ImFont *font = io.Fonts->AddFontFromFileTTF("romfs:/NotoSans-Regular.ttf", 35.0f);
-		IM_ASSERT(font != nullptr);
+
+		ImFontConfig font_cfg;
+		font_cfg.FontDataOwnedByAtlas = false;
+		io.Fonts->AddFontFromFileTTF("romfs:/NotoSans-Regular.ttf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
+		font_cfg.MergeMode = true;
+		io.Fonts->AddFontFromFileTTF("romfs:/NotoSansCJKjp-Regular.otf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesJapanese());
+		io.Fonts->AddFontFromFileTTF("romfs:/NotoSansCJKkr-Regular.otf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
+		io.Fonts->AddFontFromFileTTF("romfs:/NotoSansCJKsc-Regular.otf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 		Services::SetDefaultTheme();
 		Textures::Init();
 		romfsExit();
