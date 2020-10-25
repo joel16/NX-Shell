@@ -11,7 +11,7 @@ namespace Windows {
         Windows::SetupWindow();
         
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGuiWindowFlags_ filename_flag = !config.image_filename? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
+        ImGuiWindowFlags_ filename_flag = !cfg.image_filename? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
         
         if (ImGui::Begin(item.entries[item.selected].name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | filename_flag)) {
             if ((item.textures[0].width <= 1280) && (item.textures[0].height <= 720))

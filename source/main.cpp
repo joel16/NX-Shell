@@ -1,6 +1,12 @@
 #include <cstring>
 #include <switch.h>
 
+// Font data
+#include "NotoSans_ttf.h"
+#include "NotoSansCJKjp_otf.h"
+#include "NotoSansCJKkr_otf.h"
+#include "NotoSansCJKsc_otf.h"
+
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
@@ -129,11 +135,11 @@ namespace Services {
 
 		ImFontConfig font_cfg;
 		font_cfg.FontDataOwnedByAtlas = false;
-		io.Fonts->AddFontFromFileTTF("romfs:/NotoSans-Regular.ttf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
+		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSans_ttf), NotoSans_ttf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
 		font_cfg.MergeMode = true;
-		io.Fonts->AddFontFromFileTTF("romfs:/NotoSansCJKjp-Regular.otf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesJapanese());
-		io.Fonts->AddFontFromFileTTF("romfs:/NotoSansCJKkr-Regular.otf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
-		io.Fonts->AddFontFromFileTTF("romfs:/NotoSansCJKsc-Regular.otf", 35.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSansCJKjp_otf), NotoSansCJKjp_otf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesJapanese());
+		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSansCJKkr_otf), NotoSansCJKkr_otf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
+		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSansCJKsc_otf), NotoSansCJKsc_otf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 		Services::SetDefaultTheme();
 		Textures::Init();
 		romfsExit();
@@ -162,7 +168,7 @@ namespace Services {
 
 		socketInitializeDefault();
 		
-		if (config.dev_options)
+		if (cfg.dev_options)
 			nxlinkStdio();
 
 		Log::Init();

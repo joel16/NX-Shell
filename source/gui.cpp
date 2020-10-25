@@ -34,7 +34,7 @@ namespace GUI {
 		item.selected = 0;
 		
 		Result ret = 0;
-		if (R_FAILED(ret = FS::GetDirList(config.cwd, item.entries)))
+		if (R_FAILED(ret = FS::GetDirList(cfg.cwd, item.entries)))
 			return ret;
 
 		item.checked.resize(item.entries.size());
@@ -104,8 +104,8 @@ namespace GUI {
 							item.state = MENU_STATE_FILEBROWSER;
 						}
 						else if (item.state == MENU_STATE_SETTINGS) {
-							Config::Save(config);
-							FS::GetDirList(config.cwd, item.entries);
+							Config::Save(cfg);
+							FS::GetDirList(cfg.cwd, item.entries);
 							item.state = MENU_STATE_FILEBROWSER;
 						}
 						else
@@ -119,10 +119,10 @@ namespace GUI {
 					}
 					else if (button == SDL_KEY_Y) {
 						if (item.state == MENU_STATE_FILEBROWSER) {
-							if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
+							if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(cfg.cwd) != 0))
 								GUI::ResetCheckbox();
 								
-							item.checked_cwd = config.cwd;
+							item.checked_cwd = cfg.cwd;
 							item.checked.at(item.selected) = !item.checked.at(item.selected);
 							item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
 						}

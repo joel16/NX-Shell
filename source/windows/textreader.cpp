@@ -1,4 +1,3 @@
-#include "config.h"
 #include "gui.h"
 #include "imgui.h"
 #include "windows.h"

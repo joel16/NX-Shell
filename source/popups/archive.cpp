@@ -6,12 +6,13 @@
 #include "fs.h"
 #include "gui.h"
 #include "imgui.h"
+#include "language.h"
 #include "log.h"
 #include "popups.h"
 
 namespace ArchiveHelper {
     std::string ConstructPath(const char path[FS_MAX_PATH]) {
-        std::string new_path = config.cwd;
+        std::string new_path = cfg.cwd;
         new_path.append("/");
         new_path.append(std::filesystem::path(path).stem());
         new_path.append("/");
@@ -90,7 +91,7 @@ namespace ArchiveHelper {
             
             offset += bytes_read;
             std::memset(buf, 0, buf_size);
-            Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(entry.st_size), "Extracting:", filename.c_str());
+            Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(entry.st_size), strings[cfg.lang][Lang::ArchiveExtracting], filename.c_str());
         }
         
         delete[] buf;
@@ -124,24 +125,24 @@ namespace ArchiveHelper {
 
 namespace Popups {
     void ArchivePopup(void) {
-        Popups::SetupPopup("Archive");
+        Popups::SetupPopup(strings[cfg.lang][Lang::ArchiveTitle]);
         
-        if (ImGui::BeginPopupModal("Archive", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("This action may take a while");
-            std::string text = "Do you wish to extract " + std::string(item.entries[item.selected].name) + "?";
+        if (ImGui::BeginPopupModal(strings[cfg.lang][Lang::ArchiveTitle], nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text(strings[cfg.lang][Lang::ArchiveMessage]);
+            std::string text = strings[cfg.lang][Lang::ArchivePrompt] + std::string(item.entries[item.selected].name) + "?";
             ImGui::Text(text.c_str());
             
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
+            if (ImGui::Button(strings[cfg.lang][Lang::ButtonOK], ImVec2(120, 0))) {
                 ImGui::EndPopup();
                 ImGui::PopStyleVar();
                 ImGui::Render();
                 
                 char path[FS_MAX_PATH + 1];
-                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.entries[item.selected].name)) > 0) {
+                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, item.entries[item.selected].name)) > 0) {
                     ArchiveHelper::Extract(path);
-                    FS::GetDirList(config.cwd, item.entries);
+                    FS::GetDirList(cfg.cwd, item.entries);
                     GUI::ResetCheckbox();
                 }
                 
@@ -152,7 +153,7 @@ namespace Popups {
             
             ImGui::SameLine(0.0f, 15.0f);
             
-            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            if (ImGui::Button(strings[cfg.lang][Lang::ButtonCancel], ImVec2(120, 0))) {
                 ImGui::CloseCurrentPopup();
                 item.state = MENU_STATE_FILEBROWSER;
             }

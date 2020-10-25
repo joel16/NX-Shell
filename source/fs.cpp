@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "fs.h"
+#include "language.h"
 #include "log.h"
 #include "popups.h"
 
@@ -72,7 +73,7 @@ namespace FS {
 		else if (!(entryA.type == FsDirEntryType_Dir) && (entryB.type == FsDirEntryType_Dir))
 			return false;
 		else {
-			switch(config.sort) {
+			switch(cfg.sort) {
 				case 0: // Sort alphabetically (ascending - A to Z)
 					if (strcasecmp(entryA.name, entryB.name) < 0)
 						return true;
@@ -137,24 +138,24 @@ namespace FS {
 		
 		// Apply cd after successfully listing new directory
 		entries.clear();
-		std::strncpy(config.cwd, path, FS_MAX_PATH);
-		Config::Save(config);
+		std::strncpy(cfg.cwd, path, FS_MAX_PATH);
+		Config::Save(cfg);
 		entries = new_entries;
 		return 0;
 	}
 
 	static int GetPrevPath(char path[FS_MAX_PATH]) {
-		if (std::strlen(config.cwd) <= 1 && config.cwd[0] == '/')
+		if (std::strlen(cfg.cwd) <= 1 && cfg.cwd[0] == '/')
 			return -1;
 			
 		// Remove upmost directory
 		bool copy = false;
 		int len = 0;
-		for (ssize_t i = std::strlen(config.cwd); i >= 0; i--) {
-			if (config.cwd[i] == '/')
+		for (ssize_t i = std::strlen(cfg.cwd); i >= 0; i--) {
+			if (cfg.cwd[i] == '/')
 				copy = true;
 			if (copy) {
-				path[i] = config.cwd[i];
+				path[i] = cfg.cwd[i];
 				len++;
 			}
 		}
@@ -169,9 +170,9 @@ namespace FS {
 
 	Result ChangeDirNext(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
 		char new_cwd[FS_MAX_PATH + 1];
-		const char *sep = !std::strncmp(config.cwd, "/", 2) ? "" : "/"; // Don't append / if at /
+		const char *sep = !std::strncmp(cfg.cwd, "/", 2) ? "" : "/"; // Don't append / if at /
 		
-		if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", config.cwd, sep, path)) > 0)
+		if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", cfg.cwd, sep, path)) > 0)
 			return FS::ChangeDir(new_cwd, entries);
 		
 		return 0;
@@ -187,11 +188,11 @@ namespace FS {
 	
 	int ConstructPath(FsDirectoryEntry *entry, char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {		
 		if (entry) {
-			if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", config.cwd, !std::strncmp(config.cwd, "/", 2) ? "" : "/", entry? entry->name : "")) > 0)
+			if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", entry? entry->name : "")) > 0)
 				return 0;
 		}
 		else {
-			if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", config.cwd, !std::strncmp(config.cwd, "/", 2) ? "" : "/", filename[0] != '\0'? filename : "")) > 0)
+			if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", filename[0] != '\0'? filename : "")) > 0)
 				return 0;
 		}
 		
@@ -329,7 +330,7 @@ namespace FS {
 			}
 			
 			offset += bytes_read;
-			Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(size), "Copying:", filename.c_str());
+			Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(size), strings[cfg.lang][Lang::OptionsCopying], filename.c_str());
 		} while(offset < size);
 		
 		delete[] buf;

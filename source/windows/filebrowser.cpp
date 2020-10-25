@@ -18,7 +18,7 @@ namespace Windows {
             }
             
             // Display current working directory
-            ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), config.cwd);
+            ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), cfg.cwd);
             
             // Draw storage bar
             ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
@@ -30,7 +30,7 @@ namespace Windows {
                 for (long unsigned int i = 0; i < item.entries.size(); i++) {
                     std::string filename = item.entries[i].name;
                     
-                    if ((item.checked.at(i)) && (!item.checked_cwd.compare(config.cwd)))
+                    if ((item.checked.at(i)) && (!item.checked_cwd.compare(cfg.cwd)))
                         ImGui::Image(reinterpret_cast<ImTextureID>(check_icon.id), ImVec2(check_icon.width, check_icon.height));
                     else
                         ImGui::Image(reinterpret_cast<ImTextureID>(uncheck_icon.id), ImVec2(uncheck_icon.width, uncheck_icon.height));
@@ -53,14 +53,14 @@ namespace Windows {
                                 break;
                                 
                             case FileTypeImage:
-                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.entries[item.selected].name)) > 0) {
+                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, item.entries[item.selected].name)) > 0) {
                                     Textures::LoadImageFile(path, item.textures);
                                     item.state = MENU_STATE_IMAGEVIEWER;
                                 }
                                 break;
 
                             case FileTypeText:
-                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", config.cwd, item.entries[item.selected].name)) > 0) {
+                                if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, item.entries[item.selected].name)) > 0) {
                                     Log::Exit();
 
                                     FsFile file;

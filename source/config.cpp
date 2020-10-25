@@ -6,19 +6,19 @@
 #include "fs.h"
 #include "log.h"
 
-#define CONFIG_VERSION 1
+#define CONFIG_VERSION 2
 
-config_t config;
+config_t cfg;
 
 namespace Config {
-    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"sort\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d,\n\t\"last_dir\": \"%s\"\n}";
+    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"sort\": %d,\n\t\"lang\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d,\n\t\"last_dir\": \"%s\"\n}";
     static int config_version_holder = 0;
     static const int buf_size = 128 + FS_MAX_PATH;
     
     int Save(config_t config) {
         Result ret = 0;
         char *buf = new char[buf_size];
-        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.dev_options, config.image_filename, config.cwd);
+        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.lang, config.dev_options, config.image_filename, config.cwd);
         
         // Delete and re-create the file, we don't care about the return value here.
         fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
@@ -45,6 +45,7 @@ namespace Config {
     
     static void SetDefault(config_t *config) {
         config->sort = 0;
+        config->lang = 1;
         config->dev_options = false;
         config->image_filename = false;
         std::strcpy(config->cwd, "/");
@@ -59,8 +60,8 @@ namespace Config {
             fsFsCreateDirectory(fs, "/switch/NX-Shell");
             
         if (!FS::FileExists("/switch/NX-Shell/config.json")) {
-            Config::SetDefault(&config);
-            return Config::Save(config);
+            Config::SetDefault(&cfg);
+            return Config::Save(cfg);
         }
         
         FsFile file;
@@ -96,25 +97,25 @@ namespace Config {
         config_version_holder = json_integer_value(config_ver);
         
         json_t *sort = json_object_get(root, "sort");
-        config.sort = json_integer_value(sort);
+        cfg.sort = json_integer_value(sort);
         
         json_t *dev_options = json_object_get(root, "dev_options");
-        config.dev_options = json_integer_value(dev_options);
+        cfg.dev_options = json_integer_value(dev_options);
 
         json_t *image_filename = json_object_get(root, "image_filename");
-        config.image_filename = json_integer_value(image_filename);
+        cfg.image_filename = json_integer_value(image_filename);
         
         json_t *last_dir = json_object_get(root, "last_dir");
-        std::strcpy(config.cwd, json_string_value(last_dir));
+        std::strcpy(cfg.cwd, json_string_value(last_dir));
         
-        if (!FS::DirExists(config.cwd))
-            std::strcpy(config.cwd, "/");
+        if (!FS::DirExists(cfg.cwd))
+            std::strcpy(cfg.cwd, "/");
             
         // Delete config file if config file is updated. This will rarely happen.
         if (config_version_holder < CONFIG_VERSION) {
             fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
-            Config::SetDefault(&config);
-            return Config::Save(config);
+            Config::SetDefault(&cfg);
+            return Config::Save(cfg);
         }
         
         json_decref(root);

@@ -8,7 +8,7 @@ namespace Log {
     static s64 offset = 0;
     
     void Init(void) {
-        if (!config.dev_options)
+        if (!cfg.dev_options)
             return;
         
         if (!FS::FileExists("/switch/NX-Shell/debug.log"))
@@ -34,7 +34,7 @@ namespace Log {
     }
     
     void Error(const char *data, ...) {
-        if (!config.dev_options)
+        if (!cfg.dev_options)
             return;
          
         char buf[256 + FS_MAX_PATH];
@@ -55,7 +55,7 @@ namespace Log {
     }
     
     void Exit(void) {
-        if (!config.dev_options)
+        if (!cfg.dev_options)
             return;
         
         fsFileClose(&log_file);
