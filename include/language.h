@@ -48,6 +48,7 @@ namespace Lang {
         // SettingsWindow
         SettingsTitle,
         SettingsSortTitle,
+        SettingsLanguageTitle,
         SettingsImageViewTitle,
         SettingsDevOptsTitle,
         SettingsAboutTitle,

@@ -22,22 +22,69 @@ namespace Windows {
 		
 		if (ImGui::Begin(strings[cfg.lang][Lang::SettingsTitle], nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsSortTitle])) {
+				const char *sort_options[] = {
+					strings[cfg.lang][Lang::SettingsSortNameAsc],
+					strings[cfg.lang][Lang::SettingsSortNameDesc],
+					strings[cfg.lang][Lang::SettingsSortSizeLarge],
+					strings[cfg.lang][Lang::SettingsSortSizeSmall]
+				};
+				
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::RadioButton(strings[cfg.lang][Lang::SettingsSortNameAsc], &cfg.sort, 0);
-				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-				ImGui::RadioButton(strings[cfg.lang][Lang::SettingsSortNameDesc], &cfg.sort, 1);
-				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-				ImGui::RadioButton(strings[cfg.lang][Lang::SettingsSortSizeLarge], &cfg.sort, 2);
-				ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-				ImGui::RadioButton(strings[cfg.lang][Lang::SettingsSortSizeSmall], &cfg.sort, 3);
+
+				const int max_sort = 4;
+				for (int i = 0; i < max_sort; i++) {
+					if (ImGui::RadioButton(sort_options[i], &cfg.sort, i)) {
+						Config::Save(cfg);
+						FS::GetDirList(cfg.cwd, item.entries);
+					}
+
+					if (i != (max_sort - 1))
+						ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
+				}
+
 				ImGui::TreePop();
 			}
 			
 			Windows::Separator();
+
+			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsLanguageTitle])) {
+				const char *languages[] = {
+					" Japanese",
+					" English",
+					" French",
+					" German",
+					" Italian",
+					" Spanish",
+					" Simplified Chinese",
+					" Korean",
+					" Dutch",
+					" Portuguese",
+					" Russian",
+					" Traditional Chinese"
+				};
+
+				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+				
+				const int max_lang = 12;
+				for (int i = 0; i < max_lang; i++) {
+					if (ImGui::RadioButton(languages[i], &cfg.lang, i))
+						Config::Save(cfg);
+					
+					if (i != (max_lang - 1))
+						ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
+				}
+
+				ImGui::TreePop();
+			}
+
+			Windows::Separator();
 			
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsImageViewTitle])) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Checkbox(strings[cfg.lang][Lang::SettingsImageViewFilenameToggle], &cfg.image_filename);
+
+				if (ImGui::Checkbox(strings[cfg.lang][Lang::SettingsImageViewFilenameToggle], &cfg.image_filename))
+					Config::Save(cfg);
+				
 				ImGui::TreePop();
 			}
 			
@@ -45,7 +92,10 @@ namespace Windows {
 			
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsDevOptsTitle])) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				ImGui::Checkbox(strings[cfg.lang][Lang::SettingsDevOptsLogsToggle], &cfg.dev_options);
+
+				if (ImGui::Checkbox(strings[cfg.lang][Lang::SettingsDevOptsLogsToggle], &cfg.dev_options))
+					Config::Save(cfg);
+				
 				ImGui::TreePop();
 			}
 			

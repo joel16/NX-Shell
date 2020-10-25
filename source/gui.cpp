@@ -103,11 +103,8 @@ namespace GUI {
 							delete[] text_reader.buf;
 							item.state = MENU_STATE_FILEBROWSER;
 						}
-						else if (item.state == MENU_STATE_SETTINGS) {
-							Config::Save(cfg);
-							FS::GetDirList(cfg.cwd, item.entries);
+						else if (item.state == MENU_STATE_SETTINGS)
 							item.state = MENU_STATE_FILEBROWSER;
-						}
 						else
 							item.state = MENU_STATE_FILEBROWSER;
 					}

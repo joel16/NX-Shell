@@ -43,6 +43,7 @@ static const char *strings_jp[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -106,6 +107,7 @@ static const char *strings_en[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -170,6 +172,7 @@ static const char *strings_fr[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -234,6 +237,7 @@ static const char *strings_de[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -298,6 +302,7 @@ static const char *strings_it[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -362,6 +367,7 @@ static const char *strings_es[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -426,6 +432,7 @@ static const char *strings_sc[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -490,6 +497,7 @@ static const char *strings_ko[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -554,6 +562,7 @@ static const char *strings_nl[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -618,6 +627,7 @@ static const char *strings_pt[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -682,6 +692,7 @@ static const char *strings_ru[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",
@@ -746,6 +757,7 @@ static const char *strings_tw[] {
 
     "Settings",
     "Sort Settings",
+    "Language",
     "Image Viewer",
     "Developer Options",
     "About",

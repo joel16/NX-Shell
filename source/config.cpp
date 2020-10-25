@@ -98,6 +98,9 @@ namespace Config {
         
         json_t *sort = json_object_get(root, "sort");
         cfg.sort = json_integer_value(sort);
+
+        json_t *lang = json_object_get(root, "lang");
+        cfg.lang = json_integer_value(lang);
         
         json_t *dev_options = json_object_get(root, "dev_options");
         cfg.dev_options = json_integer_value(dev_options);
