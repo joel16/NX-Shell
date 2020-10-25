@@ -72,6 +72,9 @@ namespace Lang {
         UpdateRestart,
         UpdateNotAvailable,
 
+        // Keyboard
+        KeyboardEmpty,
+
         // Max
         Max
     } StringID;

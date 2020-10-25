@@ -64,7 +64,9 @@ static const char *strings_jp[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 static const char *strings_en[] {
@@ -128,7 +130,9 @@ static const char *strings_en[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: French
@@ -193,7 +197,9 @@ static const char *strings_fr[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: German
@@ -258,7 +264,9 @@ static const char *strings_de[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Italian
@@ -323,7 +331,9 @@ static const char *strings_it[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Spanish
@@ -388,7 +398,9 @@ static const char *strings_es[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Simplified Chinese ("Chinese")
@@ -453,7 +465,9 @@ static const char *strings_sc[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Korean
@@ -518,7 +532,9 @@ static const char *strings_ko[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Dutch
@@ -583,7 +599,9 @@ static const char *strings_nl[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Portuguese
@@ -648,7 +666,9 @@ static const char *strings_pt[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Russian
@@ -713,7 +733,9 @@ static const char *strings_ru[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 // TODO: Traditional Chinese ("Taiwanese")
@@ -778,7 +800,9 @@ static const char *strings_tw[] {
     "Do you wish to download and install NX-Shell version ",
     "Update was successful.",
     "Please exit and rerun the application.",
-    "You are on the latest version."
+    "You are on the latest version.",
+
+    "The name cannot be empty."
 };
 
 const char **strings[Lang::Max] = {
