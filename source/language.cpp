@@ -244,7 +244,7 @@ static const char *strings_de[] {
     "Sortiereinstellung",
     "Sprache",
     "Bildanzeige",
-    "Entwickler Optionen",
+    "Entwickleroptionen",
     "Über",
     "Nach Updates suchen",
     " Nach Name (aufsteigend)",
