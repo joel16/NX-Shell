@@ -376,7 +376,7 @@ static const char *strings_es[] {
     "Extrayendo:",
 
     "Ajustes",
-    "Ordenar Ajustes",
+    "Ajustes de organización",
     "Idioma",
     "Visualizador de Imagen",
     "Opciones de Desarrollador",
