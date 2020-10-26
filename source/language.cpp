@@ -336,6 +336,7 @@ static const char *strings_it[] {
     "The name cannot be empty."
 };
 
+//  Spanish
 static const char *strings_es[] {
     "Aceptar",
     "Cancelar",
