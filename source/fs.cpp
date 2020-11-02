@@ -294,9 +294,9 @@ namespace FS {
 			fsFileClose(&src_handle);
 			return ret;
 		}
-			
-		if (!FS::FileExists(dest_path))
-			fsFsCreateFile(fs, dest_path, size, 0);
+
+		// This may fail or not, but we don't care -> create the file if it doesn't exist, otherwise continue.
+		fsFsCreateFile(fs, dest_path, size, 0);
 			
 		if (R_FAILED(ret = fsFsOpenFile(fs, dest_path, FsOpenMode_Write, &dest_handle))) {
 			Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", dest_path, ret);
@@ -348,7 +348,7 @@ namespace FS {
 			return ret;
 		}
 			
-		// This may fail or not, but we don't care -> make the dir if it doesn't exist otherwise it fails.
+		// This may fail or not, but we don't care -> make the dir if it doesn't exist, otherwise continue.
 		fsFsCreateDirectory(fs, dest_path);
 		
 		s64 entry_count = 0;
