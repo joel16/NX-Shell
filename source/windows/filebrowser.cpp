@@ -41,9 +41,10 @@ namespace Windows {
                     if (item.entries[i].type == FsDirEntryType_Dir)
                         ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(folder_icon.width, folder_icon.height));
                     else
-                        ImGui::Image(reinterpret_cast<ImTextureID>(file_icons[file_type].id), ImVec2(40.0f, 40.0f));
+                        ImGui::Image(reinterpret_cast<ImTextureID>(file_icons[file_type].id), ImVec2(file_icons[0].width, file_icons[0].height));
                     
                     ImGui::SameLine();
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
                     if (ImGui::Selectable(filename.c_str())) {
                         char path[FS_MAX_PATH + 1];
 

@@ -1,12 +1,6 @@
 #include <cstring>
 #include <switch.h>
 
-// Font data
-#include "NotoSans_ttf.h"
-#include "NotoSansCJKjp_otf.h"
-#include "NotoSansCJKkr_otf.h"
-#include "NotoSansCJKsc_otf.h"
-
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
@@ -133,15 +127,48 @@ namespace Services {
 		ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 		ImGui_ImplOpenGL3_Init(glsl_version);
 
+		Result ret = 0;
+		PlFontData standard, s_chinese, t_chinese, korean;
+		if (R_FAILED(ret = plGetSharedFontByType(&standard, PlSharedFontType_Standard))) {
+			Log::Error("plGetSharedFontByType(PlSharedFontType_Standard) failed: 0x%x\n", ret);
+			return ret;
+		}
+
+		if (R_FAILED(ret = plGetSharedFontByType(&s_chinese, PlSharedFontType_ChineseSimplified))) {
+			Log::Error("plGetSharedFontByType(PlSharedFontType_ChineseSimplified) failed: 0x%x\n", ret);
+			return ret;
+		}
+
+		if (R_FAILED(ret = plGetSharedFontByType(&t_chinese, PlSharedFontType_ChineseTraditional))) {
+			Log::Error("plGetSharedFontByType(PlSharedFontType_ChineseTraditional) failed: 0x%x\n", ret);
+			return ret;
+		}
+
+		if (R_FAILED(ret = plGetSharedFontByType(&korean, PlSharedFontType_KO))) {
+			Log::Error("plGetSharedFontByType(PlSharedFontType_KO) failed: 0x%x\n", ret);
+			return ret;
+		}
+		
+		unsigned char *pixels = nullptr;
+		int width = 0, height = 0, bpp = 0;
 		ImFontConfig font_cfg;
+		
 		font_cfg.FontDataOwnedByAtlas = false;
-		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSans_ttf), NotoSans_ttf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
+		io.Fonts->AddFontFromMemoryTTF(standard.address, standard.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
 		font_cfg.MergeMode = true;
-		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSansCJKjp_otf), NotoSansCJKjp_otf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesJapanese());
-		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSansCJKkr_otf), NotoSansCJKkr_otf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
-		io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t *>(NotoSansCJKsc_otf), NotoSansCJKsc_otf_size, 35.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+		
+		io.Fonts->AddFontFromMemoryTTF(s_chinese.address, s_chinese.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+		io.Fonts->AddFontFromMemoryTTF(korean.address, korean.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
+		io.Fonts->AddFontFromMemoryTTF(t_chinese.address, t_chinese.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
+		
+		// build font atlas
+		io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height, &bpp);
+		io.Fonts->Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight;
+		io.Fonts->Build();
+		
 		Services::SetDefaultTheme();
 		Textures::Init();
+		plExit();
 		romfsExit();
 		return 0;
 	}
@@ -184,6 +211,11 @@ namespace Services {
 			return ret;
 		}
 
+		if (R_FAILED(ret = plInitialize(PlServiceType_User))) {
+			Log::Error("plInitialize(PlServiceType_User) failed: 0x%x\n", ret);
+			return ret;
+		}
+
 		return 0;
 	}
 	
@@ -210,8 +242,9 @@ int main(int, char *argv[]) {
 	
 	if (R_FAILED(ret = GUI::RenderLoop()))
 		return ret;
-
+		
 	Services::ExitImGui();
 	Services::Exit();
+	
 	return 0;
 }
