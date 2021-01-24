@@ -63,9 +63,9 @@ namespace GUI {
 								if (item.entries.size() != 0) {
 									if (R_SUCCEEDED(FS::ChangeDirNext(item.entries[item.selected].name, item.entries))) {
 										// Make a copy before resizing our vector.
-										if (item.checked_count > 1)
+										if ((item.checked_count > 1) && (item.checked_copy.empty()))
 											item.checked_copy = item.checked;
-											
+										
 										item.checked.resize(item.entries.size());
 										GImGui->NavId = 0;
 									}
