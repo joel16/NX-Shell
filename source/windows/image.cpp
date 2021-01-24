@@ -14,12 +14,13 @@ namespace Windows {
         ImGuiWindowFlags_ filename_flag = !cfg.image_filename? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
         
         if (ImGui::Begin(item.entries[item.selected].name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | filename_flag)) {
-            if ((item.textures[0].width <= 1280) && (item.textures[0].height <= 720))
-                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(item.textures[0].width, item.textures[0].height)) * 0.5f);
+            if (((item.textures[0].width * item.zoom_factor) <= 1280) && ((item.textures[0].height * item.zoom_factor) <= 720))
+                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2((item.textures[0].width * item.zoom_factor), (item.textures[0].height * item.zoom_factor))) * 0.5f);
                 
             if (item.textures.size() > 1) {
                 svcSleepThread(item.textures[item.frame_count].delay * 10000000);
-                ImGui::Image(reinterpret_cast<ImTextureID>(item.textures[item.frame_count].id), ImVec2(item.textures[item.frame_count].width, item.textures[item.frame_count].height));
+                ImGui::Image(reinterpret_cast<ImTextureID>(item.textures[item.frame_count].id), (ImVec2((item.textures[item.frame_count].width * item.zoom_factor), 
+                    (item.textures[item.frame_count].height * item.zoom_factor))));
                 item.frame_count++;
                 
                 // Reset frame counter
@@ -27,7 +28,7 @@ namespace Windows {
                     item.frame_count = 0;
             }
             else
-                ImGui::Image(reinterpret_cast<ImTextureID>(item.textures[0].id), ImVec2(item.textures[0].width, item.textures[0].height));
+                ImGui::Image(reinterpret_cast<ImTextureID>(item.textures[0].id), ImVec2((item.textures[0].width * item.zoom_factor), (item.textures[0].height * item.zoom_factor)));
         }
         
         Windows::ExitWindow();

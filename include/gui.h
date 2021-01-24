@@ -31,6 +31,7 @@ typedef struct {
     s64 total_storage = 0;
     std::vector<Tex> textures;
     long unsigned int frame_count = 0;
+    float zoom_factor = 1.0f;
 } MenuItem;
 
 typedef struct {
