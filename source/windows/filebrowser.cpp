@@ -24,8 +24,7 @@ namespace Windows {
             ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
             ImGui::ProgressBar(static_cast<float>(item.used_storage) / static_cast<float>(item.total_storage), ImVec2(1265.0f, 6.0f), "");
             ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Spacing
-            
-            ImGui::BeginChild("##FS::DirList");
+
             if (item.entries.size() != 0) {
                 for (long unsigned int i = 0; i < item.entries.size(); i++) {
                     std::string filename = item.entries[i].name;
@@ -111,8 +110,6 @@ namespace Windows {
             }
             else
                 ImGui::Text("No file entries");
-            
-            ImGui::EndChild();
         }
         
         Windows::ExitWindow();

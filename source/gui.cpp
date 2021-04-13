@@ -128,13 +128,11 @@ namespace GUI {
 					}
 					else if (button == SDL_KEY_DLEFT) {
 						if (item.state == MENU_STATE_FILEBROWSER) {
-							ImGui::SetNavID(0, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
 							ImGui::SetItemDefaultFocus();
 						}
 					}
 					else if (button == SDL_KEY_DRIGHT) {
 						if (item.state == MENU_STATE_FILEBROWSER) {
-							ImGui::SetNavID(item.entries.size() - 1, ImGui::GetCurrentWindow()->DC.NavLayerCurrent, ImGui::GetCurrentWindow()->GetID("NX-Shell"));
 							ImGui::SetScrollHereY(1.0f);
 						}
 					}
