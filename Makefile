@@ -39,7 +39,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	libs/imgui libs/libnsbmp libs/libnsgif source source/windows source/popups
+SOURCES		:=	libs/imgui libs/imgui/misc/freetype libs/libnsbmp libs/libnsgif source source/windows source/popups
 DATA		:=	data
 INCLUDES	:=	libs/imgui libs/libnsbmp libs/libnsgif include
 ROMFS		:=	romfs
@@ -61,15 +61,16 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 		$(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
-CFLAGS	+=	`sdl2-config --cflags`
+CFLAGS	+=	`sdl2-config --cflags` `freetype-config --cflags`
 CFLAGS	+=	-DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO)
 
-CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-exceptions -fno-rtti -DIMGUI_IMPL_OPENGL_LOADER_GLAD
+CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-exceptions -fno-rtti -DIMGUI_IMPL_OPENGL_LOADER_GLAD \
+		-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_ENABLE_FREETYPE
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=	`curl-config --libs` -lzzip -ljansson -lturbojpeg -ljpeg -lpng -lwebp \
+LIBS	:=	`curl-config --libs` `freetype-config --libs` -lzzip -ljansson -lturbojpeg -ljpeg -lpng -lwebp \
 		`sdl2-config --libs` -lglad -lEGL -lglapi -ldrm_nouveau -lnx -lm -lz
 
 #---------------------------------------------------------------------------------
