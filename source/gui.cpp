@@ -119,12 +119,14 @@ namespace GUI {
 					}
 					else if (button == SDL_KEY_Y) {
 						if (item.state == MENU_STATE_FILEBROWSER) {
-							if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
-								GUI::ResetCheckbox();
+							if (item.selected < static_cast<int>(item.checked.size())) {
+								if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(config.cwd) != 0))
+									GUI::ResetCheckbox();
 								
-							item.checked_cwd = config.cwd;
-							item.checked.at(item.selected) = !item.checked.at(item.selected);
-							item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
+								item.checked_cwd = config.cwd;
+								item.checked.at(item.selected) = !item.checked.at(item.selected);
+								item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
+							}
 						}
 					}
 					else if (button == SDL_KEY_DLEFT) {
