@@ -1,4 +1,5 @@
 #include <cstring>
+#include <string>
 
 // BMP
 #include <libnsbmp.h>
@@ -31,14 +32,16 @@
 #include <switch.h>
 
 #include "fs.h"
+#include "gui.h"
 #include "imgui.h"
+#include "imgui_deko3d.h"
 #include "log.h"
 #include "textures.h"
 
 #define BYTES_PER_PIXEL 4
 #define MAX_IMAGE_BYTES (48 * 1024 * 1024)
 
-Tex folder_icon, file_icons[5], check_icon, uncheck_icon;
+Tex folder_icon, file_icons[NUM_FILE_ICONS], check_icon, uncheck_icon;
 
 namespace BMP {
 	static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
@@ -107,8 +110,10 @@ namespace Textures {
 		ImageTypeWEBP,
 		ImageTypeOther
 	} ImageType;
+
+    static u32 counter = 1;
 	
-	static Result ReadFile(const char path[FS_MAX_PATH], unsigned char **buffer, s64 *size) {
+	static Result ReadFile(const char path[FS_MAX_PATH], unsigned char **buffer, s64 &size) {
 		Result ret = 0;
 		FsFile file;
 		
@@ -117,23 +122,23 @@ namespace Textures {
 			return ret;
 		}
 		
-		if (R_FAILED(ret = fsFileGetSize(&file, size))) {
+		if (R_FAILED(ret = fsFileGetSize(&file, &size))) {
 			Log::Error("fsFileGetSize(%s) failed: 0x%x\n", path, ret);
 			fsFileClose(&file);
 			return ret;
 		}
 
-		*buffer = new unsigned char[*size];
+		*buffer = new unsigned char[size];
 
 		u64 bytes_read = 0;
-		if (R_FAILED(ret = fsFileRead(&file, 0, *buffer, static_cast<u64>(*size), FsReadOption_None, &bytes_read))) {
+		if (R_FAILED(ret = fsFileRead(&file, 0, *buffer, static_cast<u64>(size), FsReadOption_None, &bytes_read))) {
 			Log::Error("fsFileRead(%s) failed: 0x%x\n", path, ret);
 			fsFileClose(&file);
 			return ret;
 		}
 		
-		if (bytes_read != static_cast<u64>(*size)) {
-			Log::Error("bytes_read(%llu) does not match file size(%llu)\n", bytes_read, *size);
+		if (bytes_read != static_cast<u64>(size)) {
+			Log::Error("bytes_read(%llu) does not match file size(%llu)\n", bytes_read, size);
 			fsFileClose(&file);
 			return -1;
 		}
@@ -142,26 +147,54 @@ namespace Textures {
 		return 0;
 	}
 
-	static bool LoadImage(unsigned char *data, GLint format, Tex *texture, void (*free_func)(void *)) {
-		// Create a OpenGL texture identifier
-		glGenTextures(1, &texture->id);
-		glBindTexture(GL_TEXTURE_2D, texture->id);
-		
-		// Setup filtering parameters for display
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		
-		// Upload pixels into texture
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, texture->width, texture->height, 0, format, GL_UNSIGNED_BYTE, data);
-		
-		if (*free_func)
+	static bool LoadImage(unsigned char *data, DkImageFormat format, Tex &texture, void (*free_func)(void *)) {
+        int size = texture.width * texture.height * BYTES_PER_PIXEL;
+        texture.image_id = counter;
+
+        s_queue.waitIdle();
+        
+        dk::ImageLayout layout;
+        dk::ImageLayoutMaker{s_device}
+            .setFlags(0)
+            .setFormat(format)
+            .setDimensions(texture.width, texture.height)
+            .initialize(layout);
+            
+        auto memBlock = dk::MemBlockMaker{s_device, imgui::deko3d::align(size, DK_MEMBLOCK_ALIGNMENT)}
+            .setFlags(DkMemBlockFlags_CpuUncached | DkMemBlockFlags_GpuCached)
+            .create();
+        
+        s_imageMemBlock = dk::MemBlockMaker{s_device, imgui::deko3d::align(layout.getSize(), DK_MEMBLOCK_ALIGNMENT)}
+            .setFlags(DkMemBlockFlags_GpuCached | DkMemBlockFlags_Image)
+            .create();
+
+        std::memcpy(memBlock.getCpuAddr(), data, size);
+
+        dk::Image image;
+        image.initialize(layout, s_imageMemBlock, 0);
+        s_imageDescriptors[texture.image_id].initialize(image);
+        
+        dk::ImageView imageView(image);
+        
+        s_cmdBuf[0].copyBufferToImage({memBlock.getGpuAddr()}, imageView,
+            {0, 0, 0, static_cast<std::uint32_t>(texture.width), static_cast<std::uint32_t>(texture.height), 1});
+        
+        s_queue.submitCommands(s_cmdBuf[0].finishList());
+        
+        s_samplerDescriptors[texture.sampler_id].initialize(dk::Sampler{}
+            .setFilter(DkFilter_Linear, DkFilter_Linear)
+            .setWrapMode(DkWrapMode_ClampToEdge, DkWrapMode_ClampToEdge, DkWrapMode_ClampToEdge));
+
+        s_queue.waitIdle();
+        counter++;
+
+        if (*free_func)
 			free_func(data);
-		
+        
 		return true;
 	}
 	
-	static bool LoadImageRomfs(const std::string &path, Tex *texture) {
+	static bool LoadImageRomfs(const std::string &path, Tex &texture) {
 		bool ret = false;
 		png_image image;
 		std::memset(&image, 0, (sizeof image));
@@ -173,9 +206,9 @@ namespace Textures {
 			buffer = new png_byte[PNG_IMAGE_SIZE(image)];
 
 			if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
-				texture->width = image.width;
-				texture->height = image.height;
-				ret = Textures::LoadImage(buffer, GL_RGBA, texture, nullptr);
+				texture.width = image.width;
+				texture.height = image.height;
+				ret = Textures::LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture, nullptr);
 				delete[] buffer;
 				png_image_free(&image);
 			}
@@ -190,7 +223,7 @@ namespace Textures {
 		return ret;
 	}
 	
-	static bool LoadImageBMP(unsigned char **data, s64 *size, Tex *texture) {
+	static bool LoadImageBMP(unsigned char **data, s64 &size, Tex &texture) {
 		bmp_bitmap_callback_vt bitmap_callbacks = {
 			BMP::bitmap_create,
 			BMP::bitmap_destroy,
@@ -202,7 +235,7 @@ namespace Textures {
 		bmp_image bmp;
 		bmp_create(&bmp, &bitmap_callbacks);
 		
-		code = bmp_analyse(&bmp, *size, *data);
+		code = bmp_analyse(&bmp, size, *data);
 		if (code != BMP_OK) {
 			bmp_finalise(&bmp);
 			return false;
@@ -222,14 +255,14 @@ namespace Textures {
 			}
 		}
 		
-		texture->width = bmp.width;
-		texture->height = bmp.height;
-		bool ret = LoadImage(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
+		texture.width = bmp.width;
+		texture.height = bmp.height;
+		bool ret = LoadImage(static_cast<unsigned char *>(bmp.bitmap), DkImageFormat_RGBA8_Unorm, texture, nullptr);
 		bmp_finalise(&bmp);
 		return ret;
 	}
 
-	static bool LoadImageGIF(unsigned char **data, s64 *size, std::vector<Tex> &textures) {
+	static bool LoadImageGIF(unsigned char **data, s64 &size, std::vector<Tex> &textures) {
 		gif_bitmap_callback_vt bitmap_callbacks = {
 			GIF::bitmap_create,
 			GIF::bitmap_destroy,
@@ -245,7 +278,7 @@ namespace Textures {
 		gif_create(&gif, &bitmap_callbacks);
 		
 		do {
-			code = gif_initialise(&gif, *size, *data);
+			code = gif_initialise(&gif, size, *data);
 			if (code != GIF_OK && code != GIF_WORKING) {
 				Log::Error("gif_initialise failed: %d\n", code);
 				gif_finalise(&gif);
@@ -268,7 +301,7 @@ namespace Textures {
 				textures[i].width = gif.width;
 				textures[i].height = gif.height;
 				textures[i].delay = gif.frames->frame_delay;
-				ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, &textures[i], nullptr);
+				ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), DkImageFormat_RGBA8_Unorm, textures[i], nullptr);
 			}
 		}
 		else {
@@ -280,46 +313,46 @@ namespace Textures {
 			
 			textures[0].width = gif.width;
 			textures[0].height = gif.height;
-			ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, &textures[0], nullptr);
+			ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), DkImageFormat_RGBA8_Unorm, textures[0], nullptr);
 		}
 		
 		gif_finalise(&gif);
 		return ret;
 	}
 	
-	static bool LoadImageJPEG(unsigned char **data, s64 *size, Tex *texture) {
+	static bool LoadImageJPEG(unsigned char **data, s64 &size, Tex &texture) {
 		tjhandle jpeg = tjInitDecompress();
 		int jpegsubsamp = 0;
-		tjDecompressHeader2(jpeg, *data, *size, &texture->width, &texture->height, &jpegsubsamp);
-		unsigned char *buffer = new unsigned char[texture->width * texture->height * 3];
-		tjDecompress2(jpeg, *data, *size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT);
-		bool ret = LoadImage(buffer, GL_RGB, texture, nullptr);
+		tjDecompressHeader2(jpeg, *data, size, &texture.width, &texture.height, &jpegsubsamp);
+		unsigned char *buffer = new unsigned char[texture.width * texture.height * 4];
+		tjDecompress2(jpeg, *data, size, buffer, texture.width, 0, texture.height, TJPF_RGBA, TJFLAG_FASTDCT);
+		bool ret = LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture, nullptr);
 		tjDestroy(jpeg);
 		delete[] buffer;
 		return ret;
 	}
 
-	static bool LoadImageOther(unsigned char **data, s64 *size, Tex *texture) {
-		unsigned char *image = stbi_load_from_memory(*data, *size, &texture->width, &texture->height, nullptr, STBI_rgb_alpha);
-		bool ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
+	static bool LoadImageOther(unsigned char **data, s64 &size, Tex &texture) {
+		unsigned char *image = stbi_load_from_memory(*data, size, &texture.width, &texture.height, nullptr, STBI_rgb_alpha);
+		bool ret = Textures::LoadImage(image, DkImageFormat_RGBA8_Unorm, texture, nullptr);
 		return ret;
 	}
 
-	static bool LoadImagePNG(unsigned char **data, s64 *size, Tex *texture) {
+	static bool LoadImagePNG(unsigned char **data, s64 &size, Tex &texture) {
 		bool ret = false;
 		png_image image;
 		std::memset(&image, 0, (sizeof image));
 		image.version = PNG_IMAGE_VERSION;
 
-		if (png_image_begin_read_from_memory(&image, *data, *size) != 0) {
+		if (png_image_begin_read_from_memory(&image, *data, size) != 0) {
 			png_bytep buffer;
 			image.format = PNG_FORMAT_RGBA;
 			buffer = new png_byte[PNG_IMAGE_SIZE(image)];
 
 			if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
-				texture->width = image.width;
-				texture->height = image.height;
-				ret = Textures::LoadImage(buffer, GL_RGBA, texture, nullptr);
+				texture.width = image.width;
+				texture.height = image.height;
+				ret = Textures::LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture, nullptr);
 				delete[] buffer;
 				png_image_free(&image);
 			}
@@ -334,9 +367,9 @@ namespace Textures {
 		return ret;
 	}
 
-	static bool LoadImageWEBP(unsigned char **data, s64 *size, Tex *texture) {
-		*data = WebPDecodeRGBA(*data, *size, &texture->width, &texture->height);
-		bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
+	static bool LoadImageWEBP(unsigned char **data, s64 &size, Tex &texture) {
+		*data = WebPDecodeRGBA(*data, size, &texture.width, &texture.height);
+		bool ret = Textures::LoadImage(*data, DkImageFormat_RGBA8_Unorm, texture, nullptr);
 		return ret;
 	}
 
@@ -362,7 +395,7 @@ namespace Textures {
 		unsigned char *data = nullptr;
 		s64 size = 0;
 
-		if (R_FAILED(Textures::ReadFile(path, &data, &size))) {
+		if (R_FAILED(Textures::ReadFile(path, &data, size))) {
 			delete[] data;
 			return ret;
 		}
@@ -373,27 +406,27 @@ namespace Textures {
 		ImageType type = GetImageType(path);
 		switch(type) {
 			case ImageTypeBMP:
-				ret = Textures::LoadImageBMP(&data, &size, &textures[0]);
+				ret = Textures::LoadImageBMP(&data, size, textures[0]);
 				break;
 
 			case ImageTypeGIF:
-				ret = Textures::LoadImageGIF(&data, &size, textures);
+				ret = Textures::LoadImageGIF(&data, size, textures);
 				break;
 			
 			case ImageTypeJPEG:
-				ret = Textures::LoadImageJPEG(&data, &size, &textures[0]);
+				ret = Textures::LoadImageJPEG(&data, size, textures[0]);
 				break;
 
 			case ImageTypePNG:
-				ret = Textures::LoadImagePNG(&data, &size, &textures[0]);
+				ret = Textures::LoadImagePNG(&data, size, textures[0]);
 				break;
 
 			case ImageTypeWEBP:
-				ret = Textures::LoadImageWEBP(&data, &size, &textures[0]);
+				ret = Textures::LoadImageWEBP(&data, size, textures[0]);
 				break;
 
 			default:
-				ret = Textures::LoadImageOther(&data, &size, &textures[0]);
+				ret = Textures::LoadImageOther(&data, size, textures[0]);
 				break;
 		}
 
@@ -402,41 +435,38 @@ namespace Textures {
 	}
 	
 	void Init(void) {
-		bool image_ret = Textures::LoadImageRomfs("romfs:/folder.png", &folder_icon);
+        const std::string paths[NUM_FILE_ICONS] {
+            "romfs:/file.png",
+            "romfs:/archive.png",
+            "romfs:/image.png",
+            "romfs:/text.png"
+        };
+
+		bool image_ret = Textures::LoadImageRomfs("romfs:/folder.png", folder_icon);
 		IM_ASSERT(image_ret);
 
-		image_ret = Textures::LoadImageRomfs("romfs:/check.png", &check_icon);
+		image_ret = Textures::LoadImageRomfs("romfs:/check.png", check_icon);
 		IM_ASSERT(image_ret);
 
-		image_ret = Textures::LoadImageRomfs("romfs:/uncheck.png", &uncheck_icon);
+		image_ret = Textures::LoadImageRomfs("romfs:/uncheck.png", uncheck_icon);
 		IM_ASSERT(image_ret);
-
-		image_ret = Textures::LoadImageRomfs("romfs:/file.png", &file_icons[FileTypeNone]);
-		IM_ASSERT(image_ret);
-		
-		image_ret = Textures::LoadImageRomfs("romfs:/archive.png", &file_icons[FileTypeArchive]);
-		IM_ASSERT(image_ret);
-		
-		image_ret = Textures::LoadImageRomfs("romfs:/audio.png", &file_icons[FileTypeAudio]);
-		IM_ASSERT(image_ret);
-		
-		image_ret = Textures::LoadImageRomfs("romfs:/image.png", &file_icons[FileTypeImage]);
-		IM_ASSERT(image_ret);
-
-		image_ret = Textures::LoadImageRomfs("romfs:/text.png", &file_icons[FileTypeText]);
-		IM_ASSERT(image_ret);
+        
+        for (int i = 0; i < NUM_FILE_ICONS; i++) {
+            bool ret = Textures::LoadImageRomfs(paths[i], file_icons[i]);
+            IM_ASSERT(ret);
+        }
 	}
 	
 	void Free(Tex *texture) {
-		glDeleteTextures(1, &texture->id);
+		//glDeleteTextures(1, &texture->id);
 	}
 	
 	void Exit(void) {
-		for (int i = 0; i < NUM_FILE_ICONS; i++)
-			glDeleteTextures(1, &file_icons[i].id);
+		// for (int i = 0; i < NUM_FILE_ICONS; i++)
+		// 	glDeleteTextures(1, &file_icons[i].id);
 		
-		glDeleteTextures(1, &uncheck_icon.id);
-		glDeleteTextures(1, &check_icon.id);
-		glDeleteTextures(1, &folder_icon.id);
+		// glDeleteTextures(1, &uncheck_icon.id);
+		// glDeleteTextures(1, &check_icon.id);
+		// glDeleteTextures(1, &folder_icon.id);
 	}
 }

@@ -1,22 +1,21 @@
-#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <switch.h>
+#include <imgui.h>
 
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
 #include "log.h"
 #include "textures.h"
+#include "windows.h"
 
-SDL_Window *window = nullptr;
 char __application_path[FS_MAX_PATH];
 
 namespace Services {
-	SDL_GLContext gl_context;
-
-	void SetDefaultTheme(void) {
+    void SetDefaultTheme(void) {
 		ImGui::GetStyle().FrameRounding = 4.0f;
 		ImGui::GetStyle().GrabRounding = 4.0f;
 		
@@ -55,8 +54,8 @@ namespace Services {
 		colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 		colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
 		colors[ImGuiCol_Tab] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-		colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-		colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
+		colors[ImGuiCol_TabHovered] = ImVec4(0.00f, 0.50f, 0.50f, 1.0f);
+		colors[ImGuiCol_TabActive] = ImVec4(0.00f, 0.50f, 0.50f, 1.0f);
 		colors[ImGuiCol_TabUnfocused] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
 		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
 		colors[ImGuiCol_PlotLines] = ImVec4(0.00f, 0.50f, 0.50f, 1.0f);
@@ -70,181 +69,56 @@ namespace Services {
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	}
-	
-	int InitImGui(void) {
-		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-			Log::Error("Error: %s\n", SDL_GetError());
-			return -1;
-		}
-		
-		for (int i = 0; i < 2; i++) {
-			if (!SDL_JoystickOpen(i)) {
-				Log::Error("SDL_JoystickOpen: %s\n", SDL_GetError());
-				SDL_Quit();
-				return -1;
-			}
-		}
-		
-		// GL 3.0 + GLSL 130
-		const char *glsl_version = "#version 130";
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-		
-		// Create window with graphics context
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-		SDL_WindowFlags window_flags = static_cast<SDL_WindowFlags>(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-		window = SDL_CreateWindow("NX-Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
-		gl_context = SDL_GL_CreateContext(window);
-		SDL_GL_MakeCurrent(window, gl_context);
-		SDL_GL_SetSwapInterval(1); // Enable vsync
-		
-		// Initialize OpenGL loader
-		bool err = gladLoadGL() == 0;
-		if (err) {
-			Log::Error("Failed to initialize OpenGL loader!\n");
-			return -1;
-		}
-		
-		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-		io.IniFilename = nullptr;
-		io.MouseDrawCursor = false;
-		
-		// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
-		
-		// Setup Platform/Renderer bindings
-		ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-		ImGui_ImplOpenGL3_Init(glsl_version);
-
-		Result ret = 0;
-		PlFontData standard, s_chinese, t_chinese, korean;
-		if (R_FAILED(ret = plGetSharedFontByType(&standard, PlSharedFontType_Standard))) {
-			Log::Error("plGetSharedFontByType(PlSharedFontType_Standard) failed: 0x%x\n", ret);
-			return ret;
-		}
-
-		if (R_FAILED(ret = plGetSharedFontByType(&s_chinese, PlSharedFontType_ChineseSimplified))) {
-			Log::Error("plGetSharedFontByType(PlSharedFontType_ChineseSimplified) failed: 0x%x\n", ret);
-			return ret;
-		}
-
-		if (R_FAILED(ret = plGetSharedFontByType(&t_chinese, PlSharedFontType_ChineseTraditional))) {
-			Log::Error("plGetSharedFontByType(PlSharedFontType_ChineseTraditional) failed: 0x%x\n", ret);
-			return ret;
-		}
-
-		if (R_FAILED(ret = plGetSharedFontByType(&korean, PlSharedFontType_KO))) {
-			Log::Error("plGetSharedFontByType(PlSharedFontType_KO) failed: 0x%x\n", ret);
-			return ret;
-		}
-		
-		unsigned char *pixels = nullptr;
-		int width = 0, height = 0, bpp = 0;
-		ImFontConfig font_cfg;
-		
-		font_cfg.FontDataOwnedByAtlas = false;
-		io.Fonts->AddFontFromMemoryTTF(standard.address, standard.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
-		font_cfg.MergeMode = true;
-		
-		io.Fonts->AddFontFromMemoryTTF(s_chinese.address, s_chinese.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-		io.Fonts->AddFontFromMemoryTTF(korean.address, korean.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
-		io.Fonts->AddFontFromMemoryTTF(t_chinese.address, t_chinese.size, 24.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
-		
-		// build font atlas
-		io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height, &bpp);
-		io.Fonts->Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight;
-		io.Fonts->Build();
-		
-		Services::SetDefaultTheme();
-		Textures::Init();
-		plExit();
-		romfsExit();
-		return 0;
-	}
-	
-	void ExitImGui(void) {
-		Textures::Exit();
-
-		// Cleanup
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplSDL2_Shutdown();
-		ImGui::DestroyContext();
-		
-		SDL_GL_DeleteContext(gl_context);
-		SDL_DestroyWindow(window);
-		SDL_Quit();
-	}
-	
-	int Init(void) {
-		// FS
-		devices[0] = *fsdevGetDeviceFileSystem("sdmc");
+    int Init(void) {
+        devices[0] = *fsdevGetDeviceFileSystem("sdmc");
 		fs = &devices[0];
 
-		Config::Load();
+        Config::Load();
+        Log::Init();
+        plInitialize(PlServiceType_User);
+        romfsInit();
+        socketInitializeDefault();
+        nxlinkStdio();
 
-		socketInitializeDefault();
-		
-		if (cfg.dev_options)
-			nxlinkStdio();
+        if (!GUI::Init())
+            printf("Failed to init\n");
 
-		Log::Init();
+        Services::SetDefaultTheme();
+        Textures::Init();
+        plExit();
+        romfsExit();
+        return 0;
+    }
 
-		Result ret = 0;
-		if (R_FAILED(ret = romfsInit())) {
-			Log::Error("romfsInit() failed: 0x%x\n", ret);
-			return ret;
-		}
-
-		if (R_FAILED(ret = nifmInitialize(NifmServiceType_User))) {
-			Log::Error("nifmInitialize(NifmServiceType_User) failed: 0x%x\n", ret);
-			return ret;
-		}
-
-		if (R_FAILED(ret = plInitialize(PlServiceType_User))) {
-			Log::Error("plInitialize(PlServiceType_User) failed: 0x%x\n", ret);
-			return ret;
-		}
-
-		return 0;
-	}
-	
-	void Exit(void) {
-		nifmExit();
-		Log::Exit();
-		socketExit();
-	}
+    void Exit(void) {
+        Textures::Exit();
+        GUI::Exit();
+        socketExit();
+        Log::Exit();
+    }
 }
 
-int main(int, char *argv[]) {
-	Result ret = 0;
-	
-	// Strip "sdmc:" from application path
-	std::string __application_path_string = argv[0];
-	__application_path_string.erase(0, 5);
-	std::strcpy(__application_path, __application_path_string.c_str());
-	
-	if (R_FAILED(ret = Services::Init()))
-		return ret;
-	
-	if (R_FAILED(ret = Services::InitImGui()))
-		return ret;
-	
-	if (R_FAILED(ret = GUI::RenderLoop()))
-		return ret;
-		
-	Services::ExitImGui();
-	Services::Exit();
-	
-	return 0;
+int main(int argc, char* argv[]) {
+    Result ret = 0;
+    WindowData data;
+    
+    Services::Init();
+    
+    if (R_FAILED(ret = FS::GetDirList(cfg.cwd, data.entries))) {
+        Services::Exit();
+        return ret;
+    }
+
+    data.checked.resize(data.entries.size());
+    FS::GetUsedStorageSpace(data.used_storage);
+    FS::GetTotalStorageSpace(data.total_storage);
+
+    while (GUI::Loop()) {
+        Windows::MainWindow(data);
+        GUI::Render();
+    }
+
+    Services::Exit();
+    return 0;
 }

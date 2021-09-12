@@ -1,14 +1,14 @@
 #ifndef NX_SHELL_TEXTURES_H
 #define NX_SHELL_TEXTURES_H
 
-#include <glad/glad.h>
-#include <string>
+#include <switch.h>
 #include <vector>
 
-#define NUM_FILE_ICONS 5
+#define NUM_FILE_ICONS 4
 
 typedef struct {
-    GLuint id = 0;
+    u32 image_id = 1;
+    u32 sampler_id = 1;
     int width = 0;
     int height = 0;
     int delay = 0;

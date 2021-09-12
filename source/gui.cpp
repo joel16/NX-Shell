@@ -1,221 +1,209 @@
-#include <algorithm>
-#include <iostream>
+#include <imgui.h>
+#include <switch.h>
 
-#include "config.h"
-#include "fs.h"
 #include "gui.h"
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
-#include "popups.h"
-#include "windows.h"
+#include "imgui_deko3d.h"
+#include "imgui_nx.h"
 
-// Global var used across windows/popups
-MenuItem item;
+constexpr auto MAX_SAMPLERS = 2;
+constexpr auto MAX_IMAGES = 8;
+constexpr auto FB_NUM = 2u;
+constexpr auto CMDBUF_SIZE = 1024 * 1024;
+unsigned s_width = 1920;
+unsigned s_height = 1080;
+dk::UniqueDevice s_device;
+dk::UniqueMemBlock s_depthMemBlock;
+dk::Image s_depthBuffer;
+dk::UniqueMemBlock s_fbMemBlock;
+dk::Image s_frameBuffers[FB_NUM];
+dk::UniqueMemBlock s_cmdMemBlock[FB_NUM];
+dk::UniqueCmdBuf s_cmdBuf[FB_NUM];
+dk::UniqueMemBlock s_imageMemBlock;
+dk::UniqueMemBlock s_descriptorMemBlock;
+dk::SamplerDescriptor *s_samplerDescriptors = nullptr;
+dk::ImageDescriptor *s_imageDescriptors   = nullptr;
+
+dk::UniqueQueue s_queue;
+dk::UniqueSwapchain s_swapchain;
+
+namespace Deko3D {
+    void RebuildSwapchain(unsigned const width_, unsigned const height_) {
+        // destroy old swapchain
+        s_swapchain = nullptr;
+        
+        // create new depth buffer image layout
+        dk::ImageLayout depthLayout;
+        dk::ImageLayoutMaker{s_device}
+            .setFlags(DkImageFlags_UsageRender | DkImageFlags_HwCompression)
+            .setFormat(DkImageFormat_Z24S8)
+            .setDimensions(width_, height_)
+            .initialize(depthLayout);
+            
+        auto const depthAlign = depthLayout.getAlignment();
+        auto const depthSize  = depthLayout.getSize();
+        
+        // create depth buffer memblock
+        if (!s_depthMemBlock) {
+            s_depthMemBlock = dk::MemBlockMaker{s_device,
+            imgui::deko3d::align(depthSize, std::max<unsigned> (depthAlign, DK_MEMBLOCK_ALIGNMENT))}
+                .setFlags(DkMemBlockFlags_GpuCached | DkMemBlockFlags_Image)
+                .create();
+        }
+        
+        s_depthBuffer.initialize(depthLayout, s_depthMemBlock, 0);
+        
+        // create framebuffer image layout
+        dk::ImageLayout fbLayout;
+        dk::ImageLayoutMaker{s_device}
+            .setFlags(DkImageFlags_UsageRender | DkImageFlags_UsagePresent | DkImageFlags_HwCompression)
+            .setFormat(DkImageFormat_RGBA8_Unorm)
+            .setDimensions(width_, height_)
+            .initialize(fbLayout);
+            
+        auto const fbAlign = fbLayout.getAlignment();
+        auto const fbSize  = fbLayout.getSize();
+        
+        // create framebuffer memblock
+        if (!s_fbMemBlock) {
+            s_fbMemBlock = dk::MemBlockMaker{s_device, imgui::deko3d::align(FB_NUM * fbSize, std::max<unsigned> (fbAlign, DK_MEMBLOCK_ALIGNMENT))}
+                .setFlags(DkMemBlockFlags_GpuCached | DkMemBlockFlags_Image)
+                .create();
+        }
+        
+        // initialize swapchain images
+        std::array<DkImage const *, FB_NUM> swapchainImages;
+        for (unsigned i = 0; i < FB_NUM; ++i) {
+            swapchainImages[i] = &s_frameBuffers[i];
+            s_frameBuffers[i].initialize(fbLayout, s_fbMemBlock, i * fbSize);
+        }
+        
+        // create swapchain
+        s_swapchain = dk::SwapchainMaker{s_device, nwindowGetDefault(), swapchainImages}.create();
+    }
+    
+    void Init(void) {
+        // create deko3d device
+        s_device = dk::DeviceMaker{}.create();
+        
+        // initialize swapchain with maximum resolution
+        Deko3D::RebuildSwapchain(1920, 1080);
+        
+        // create memblocks for each image slot
+        for (std::size_t i = 0; i < FB_NUM; ++i) {
+            // create command buffer memblock
+            s_cmdMemBlock[i] = dk::MemBlockMaker{s_device, imgui::deko3d::align(CMDBUF_SIZE, DK_MEMBLOCK_ALIGNMENT)}
+                .setFlags(DkMemBlockFlags_CpuUncached | DkMemBlockFlags_GpuCached)
+                .create();
+                
+            // create command buffer
+            s_cmdBuf[i] = dk::CmdBufMaker{s_device}.create();
+            s_cmdBuf[i].addMemory(s_cmdMemBlock[i], 0, s_cmdMemBlock[i].getSize());
+        }
+        
+        // create image/sampler memblock
+        static_assert(sizeof(dk::ImageDescriptor)   == DK_IMAGE_DESCRIPTOR_ALIGNMENT);
+        static_assert(sizeof(dk::SamplerDescriptor) == DK_SAMPLER_DESCRIPTOR_ALIGNMENT);
+        static_assert(DK_IMAGE_DESCRIPTOR_ALIGNMENT == DK_SAMPLER_DESCRIPTOR_ALIGNMENT);
+        s_descriptorMemBlock = dk::MemBlockMaker{s_device, imgui::deko3d::align((MAX_SAMPLERS + MAX_IMAGES) * sizeof(dk::ImageDescriptor), DK_MEMBLOCK_ALIGNMENT)}
+            .setFlags(DkMemBlockFlags_CpuUncached | DkMemBlockFlags_GpuCached)
+            .create();
+            
+        // get cpu address for descriptors
+        s_samplerDescriptors = static_cast<dk::SamplerDescriptor *> (s_descriptorMemBlock.getCpuAddr());
+        s_imageDescriptors = reinterpret_cast<dk::ImageDescriptor *> (&s_samplerDescriptors[MAX_SAMPLERS]);
+        
+        // create queue
+        s_queue = dk::QueueMaker{s_device}.setFlags(DkQueueFlags_Graphics).create();
+        dk::UniqueCmdBuf &cmdBuf = s_cmdBuf[0];
+        
+        // bind image/sampler descriptors
+        cmdBuf.bindSamplerDescriptorSet(s_descriptorMemBlock.getGpuAddr(), MAX_SAMPLERS);
+        cmdBuf.bindImageDescriptorSet(s_descriptorMemBlock.getGpuAddr() + MAX_SAMPLERS * sizeof(dk::SamplerDescriptor), MAX_IMAGES);
+        s_queue.submitCommands(cmdBuf.finishList());
+        s_queue.waitIdle();
+        cmdBuf.clear();
+    }
+    
+    void Exit(void) {
+        // clean up all of the deko3d objects
+        s_imageMemBlock = nullptr;
+        s_descriptorMemBlock = nullptr;
+        
+        for (unsigned i = 0; i < FB_NUM; ++i) {
+            s_cmdBuf[i] = nullptr;
+            s_cmdMemBlock[i] = nullptr;
+        }
+        
+        s_queue = nullptr;
+        s_swapchain = nullptr;
+        s_fbMemBlock = nullptr;
+        s_depthMemBlock = nullptr;
+        s_device = nullptr;
+    }
+}
 
 namespace GUI {
-	enum SDL_KEYS {
-		SDL_KEY_A, SDL_KEY_B, SDL_KEY_X, SDL_KEY_Y,
-		SDL_KEY_LSTICK, SDL_KEY_RSTICK,
-		SDL_KEY_L, SDL_KEY_R,
-		SDL_KEY_ZL, SDL_KEY_ZR,
-		SDL_KEY_PLUS, SDL_KEY_MINUS,
-		SDL_KEY_DLEFT, SDL_KEY_DUP, SDL_KEY_DRIGHT, SDL_KEY_DDOWN,
-		SDL_KEY_LSTICK_LEFT, SDL_KEY_LSTICK_UP, SDL_KEY_LSTICK_RIGHT, SDL_KEY_LSTICK_DOWN,
-		SDL_KEY_RSTICK_LEFT, SDL_KEY_RSTICK_UP, SDL_KEY_RSTICK_RIGHT, SDL_KEY_RSTICK_DOWN,
-		SDL_KEY_SL_LEFT, SDL_KEY_SR_LEFT, SDL_KEY_SL_RIGHT, SDL_KEY_SR_RIGHT
-	};
-
-	int RenderLoop(void) {
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-		item.state = MENU_STATE_FILEBROWSER;
-		item.selected = 0;
-		
-		Result ret = 0;
-		if (R_FAILED(ret = FS::GetDirList(cfg.cwd, item.entries)))
-			return ret;
-
-		item.checked.resize(item.entries.size());
-		FS::GetUsedStorageSpace(&item.used_storage);
-		FS::GetTotalStorageSpace(&item.total_storage);
-
-		// Main loop
-		bool done = false, focus = false, first_item = true, tex_properties = false;
-
-		while (!done) {
-			// Start the Dear ImGui frame
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplSDL2_NewFrame(window);
-			ImGui::NewFrame();
-			
-			Windows::FileBrowserWindow(&focus, &first_item);
-
-			SDL_Event event;
-			while (SDL_PollEvent(&event)) {
-				ImGui_ImplSDL2_ProcessEvent(&event);
-				if (event.type == SDL_JOYBUTTONDOWN) {
-					Uint8 button = event.jbutton.button;
-
-					if (button == SDL_KEY_A) {
-						if (item.state == MENU_STATE_FILEBROWSER) {
-							if (item.entries[item.selected].type == FsDirEntryType_Dir) {
-								if (item.entries.size() != 0) {
-									if (R_SUCCEEDED(FS::ChangeDirNext(item.entries[item.selected].name, item.entries))) {
-										// Make a copy before resizing our vector.
-										if ((item.checked_count > 1) && (item.checked_copy.empty()))
-											item.checked_copy = item.checked;
-										
-										item.checked.resize(item.entries.size());
-										GImGui->NavId = 0;
-									}
-								}
-							}
-						}
-					}
-					else if (button == SDL_KEY_B) {
-						if (item.state == MENU_STATE_FILEBROWSER) {
-							if (R_SUCCEEDED(FS::ChangeDirPrev(item.entries))) {
-								// Make a copy before resizing our vector.
-								if (item.checked_count > 1)
-									item.checked_copy = item.checked;
-									
-								item.checked.resize(item.entries.size());
-								GImGui->NavId = 0;
-							}
-						}
-						else if ((item.state == MENU_STATE_PROPERTIES) || (item.state == MENU_STATE_DELETE))
-							item.state = MENU_STATE_OPTIONS;
-						else if (item.state == MENU_STATE_IMAGEVIEWER) {
-							if (tex_properties)
-								tex_properties = false;
-							else {
-								for (long unsigned int i = 0; i < item.textures.size(); i++)
-									Textures::Free(&item.textures[i]);
-									
-								item.textures.clear();
-								item.frame_count = 0;
-								item.zoom_factor = 1.0f;
-								item.state = MENU_STATE_FILEBROWSER;
-							}
-						}
-						else if (item.state == MENU_STATE_TEXTREADER) {
-							text_reader.buf_size = 0;
-							delete[] text_reader.buf;
-							item.state = MENU_STATE_FILEBROWSER;
-						}
-						else if (item.state == MENU_STATE_SETTINGS)
-							item.state = MENU_STATE_FILEBROWSER;
-						else
-							item.state = MENU_STATE_FILEBROWSER;
-					}
-					else if (button == SDL_KEY_X) {
-						if (item.state == MENU_STATE_FILEBROWSER)
-							item.state = MENU_STATE_OPTIONS;
-						else if (item.state == MENU_STATE_IMAGEVIEWER)
-							tex_properties = true;
-					}
-					else if (button == SDL_KEY_Y) {
-						if (item.state == MENU_STATE_FILEBROWSER) {
-							if (item.selected < static_cast<int>(item.checked.size())) {
-								if ((!item.checked_cwd.empty()) && (item.checked_cwd.compare(cfg.cwd) != 0))
-									GUI::ResetCheckbox();
-								
-								item.checked_cwd = cfg.cwd;
-								item.checked.at(item.selected) = !item.checked.at(item.selected);
-								item.checked_count = std::count(item.checked.begin(), item.checked.end(), true);
-							}
-						}
-					}
-					else if (button == SDL_KEY_DLEFT) {
-						if (item.state == MENU_STATE_FILEBROWSER) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					else if (button == SDL_KEY_DRIGHT) {
-						if (item.state == MENU_STATE_FILEBROWSER) {
-							ImGui::SetScrollHereY(1.0f);
-						}
-					}
-					else if (button == SDL_KEY_MINUS)
-						item.state = MENU_STATE_SETTINGS;
-					else if (button == SDL_KEY_PLUS)
-						done = true;
-					// TODO fix this so that it's continous or just scrap SDL events
-					else if (button == SDL_KEY_LSTICK_DOWN) {
-						if (item.state == MENU_STATE_IMAGEVIEWER) {
-							item.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
-							
-							if (item.zoom_factor < 0.1f)
-								item.zoom_factor = 0.1f;
-						}
-					}
-					else if (button == SDL_KEY_LSTICK_UP) {
-						if (item.state == MENU_STATE_IMAGEVIEWER) {
-							item.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
-							
-							if (item.zoom_factor > 5.0f)
-								item.zoom_factor = 5.0f;
-						}
-					}
-				}
-				
-				if (event.type == SDL_QUIT)
-					done = true;
-				
-				if ((event.type == SDL_WINDOWEVENT) && (event.window.event == SDL_WINDOWEVENT_CLOSE) && (event.window.windowID == SDL_GetWindowID(window)))
-					done = true;
-			}
-
-			switch (item.state) {
-				// Popups
-				case MENU_STATE_ARCHIVEEXTRACT:
-					Popups::ArchivePopup();
-					break;
-
-				case MENU_STATE_DELETE:
-					Popups::DeletePopup();
-					break;
-				
-				case MENU_STATE_OPTIONS:
-					Popups::OptionsPopup();
-					break;
-				
-				case MENU_STATE_PROPERTIES:
-					Popups::FilePropertiesPopup();
-					break;
-
-				// Windows
-				case MENU_STATE_IMAGEVIEWER:
-					Windows::ImageWindow();
-					if (tex_properties)
-						Popups::ImageProperties(&tex_properties);
-					
-					break;
-					
-				case MENU_STATE_SETTINGS:
-					Windows::SettingsWindow();
-					break;
-
-				case MENU_STATE_TEXTREADER:
-					Windows::TextReaderWindow();
-					break;
-				
-				default:
-					break;
-			}
-			
-			// Rendering
-			ImGui::Render();
-			glViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
-			glClearColor(0.00f, 0.00f, 0.00f, 1.00f);
-			glClear(GL_COLOR_BUFFER_BIT);
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-			SDL_GL_SwapWindow(window);
-		}
-
-		item.entries.clear();
-		return 0;
-	}
+    bool Init(void) {
+        ImGui::CreateContext();
+        if (!imgui::nx::init())
+            return false;
+            
+        Deko3D::Init();
+        imgui::deko3d::init(s_device, s_queue, s_cmdBuf[0], s_samplerDescriptors[0], s_imageDescriptors[0], dkMakeTextureHandle(0, 0), FB_NUM);
+        return true;
+    }
+    
+    bool Loop(void) {
+        if (!appletMainLoop())
+            return false;
+            
+        u64 down = imgui::nx::newFrame();
+        ImGui::NewFrame();
+        
+        return !(down & HidNpadButton_Plus);
+    }
+    
+    void Render(void) {
+        ImGui::Render();
+        
+        ImGuiIO &io = ImGui::GetIO();
+        if (s_width != io.DisplaySize.x || s_height != io.DisplaySize.y) {
+            s_width  = io.DisplaySize.x;
+            s_height = io.DisplaySize.y;
+            Deko3D::RebuildSwapchain(s_width, s_height);
+        }
+        
+        // get image from queue
+        const int slot = s_queue.acquireImage(s_swapchain);
+        dk::UniqueCmdBuf &cmdBuf = s_cmdBuf[slot];
+        cmdBuf.clear();
+        
+        // bind frame/depth buffers and clear them
+        dk::ImageView colorTarget{s_frameBuffers[slot]};
+        dk::ImageView depthTarget{s_depthBuffer};
+        cmdBuf.bindRenderTargets(&colorTarget, &depthTarget);
+        cmdBuf.setScissors(0, DkScissor{0, 0, s_width, s_height});
+        cmdBuf.clearColor(0, DkColorMask_RGBA, 0.0f, 0.0f, 0.0f, 1.0f);
+        cmdBuf.clearDepthStencil(true, 1.0f, 0xFF, 0);
+        s_queue.submitCommands(cmdBuf.finishList());
+        
+        imgui::deko3d::render(s_device, s_queue, cmdBuf, slot);
+        
+        // wait for fragments to be completed before discarding depth/stencil buffer
+        cmdBuf.barrier(DkBarrier_Fragments, 0);
+        cmdBuf.discardDepthStencil();
+        
+        // present image
+        s_queue.presentImage(s_swapchain, slot);
+    }
+    
+    void Exit(void) {
+        imgui::nx::exit();
+        
+        // wait for queue to be idle
+        s_queue.waitIdle();
+        
+        imgui::deko3d::exit();
+        Deko3D::Exit();
+    }
 }

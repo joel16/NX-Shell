@@ -5,9 +5,9 @@
 #include "language.h"
 #include "net.h"
 #include "popups.h"
-#include "windows.h"
+#include "tabs.h"
 
-namespace Windows {
+namespace Tabs {
 	static bool update_popup = false, network_status = false, update_available = false;
 	static std::string tag_name = std::string();
 
@@ -17,10 +17,8 @@ namespace Windows {
 		ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 	}
 	
-	void SettingsWindow(void) {
-		Windows::SetupWindow();
-		
-		if (ImGui::Begin(strings[cfg.lang][Lang::SettingsTitle], nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+	void Settings(WindowData &data) {
+		if (ImGui::BeginTabItem("Settings")) {
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsSortTitle])) {
 				const char *sort_options[] = {
 					strings[cfg.lang][Lang::SettingsSortNameAsc],
@@ -35,7 +33,7 @@ namespace Windows {
 				for (int i = 0; i < max_sort; i++) {
 					if (ImGui::RadioButton(sort_options[i], &cfg.sort, i)) {
 						Config::Save(cfg);
-						FS::GetDirList(cfg.cwd, item.entries);
+						FS::GetDirList(cfg.cwd, data.entries);
 					}
 
 					if (i != (max_sort - 1))
@@ -45,7 +43,7 @@ namespace Windows {
 				ImGui::TreePop();
 			}
 			
-			Windows::Separator();
+			ImGui::Separator();
 
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsLanguageTitle])) {
 				const char *languages[] = {
@@ -77,7 +75,7 @@ namespace Windows {
 				ImGui::TreePop();
 			}
 
-			Windows::Separator();
+			ImGui::Separator();
 			
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsImageViewTitle])) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -88,7 +86,7 @@ namespace Windows {
 				ImGui::TreePop();
 			}
 			
-			Windows::Separator();
+			ImGui::Separator();
 			
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsDevOptsTitle])) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -99,7 +97,7 @@ namespace Windows {
 				ImGui::TreePop();
 			}
 			
-			Windows::Separator();
+			ImGui::Separator();
 			
 			if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsAboutTitle])) {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -111,19 +109,21 @@ namespace Windows {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 				ImGui::Text("%s: Preetisketch", strings[cfg.lang][Lang::SettingsAboutBanner]);
 				ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-				if (ImGui::Button(strings[cfg.lang][Lang::SettingsCheckForUpdates], ImVec2(250, 50))) {
+				
+                if (ImGui::Button(strings[cfg.lang][Lang::SettingsCheckForUpdates], ImVec2(250, 50))) {
 					tag_name = Net::GetLatestReleaseJSON();
 					network_status = Net::GetNetworkStatus();
 					update_available = Net::GetAvailableUpdate(tag_name);
 					update_popup = true;
 				}
+
 				ImGui::TreePop();
 			}
-		}
 
-		if (update_popup)
-			Popups::UpdatePopup(&update_popup, &network_status, &update_available, tag_name);
-		
-		Windows::ExitWindow();
+            ImGui::EndTabItem();
+        }
+
+		// if (update_popup)
+		// 	Popups::UpdatePopup(&update_popup, &network_status, &update_available, tag_name);
 	}
 }

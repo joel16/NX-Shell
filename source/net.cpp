@@ -26,7 +26,7 @@ namespace Net {
     bool GetAvailableUpdate(const std::string &tag) {
         if (tag.empty())
             return false;
-        
+            
         int current_ver = ((VERSION_MAJOR * 100) + (VERSION_MINOR * 10) + VERSION_MICRO);
 
         std::string tag_name = tag;

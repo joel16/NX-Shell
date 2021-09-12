@@ -1,13 +1,39 @@
-*~
-*.exe
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
 *.o
-test
-tahoma12.c
-tahoma24.c
-*.zip
-build
-*.elf
-*.nso
-*.pfs0
-*.nacp
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# NX-Shell
 *.nro
+*.elf
+*.nacp
+build/
+res/shaders

@@ -15,7 +15,7 @@ namespace Config {
     static int config_version_holder = 0;
     static const int buf_size = 128 + FS_MAX_PATH;
     
-    int Save(config_t config) {
+    int Save(config_t &config) {
         Result ret = 0;
         char *buf = new char[buf_size];
         u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.lang, config.dev_options, config.image_filename, config.cwd);
@@ -43,12 +43,12 @@ namespace Config {
         return 0;
     }
     
-    static void SetDefault(config_t *config) {
-        config->sort = 0;
-        config->lang = 1;
-        config->dev_options = false;
-        config->image_filename = false;
-        std::strcpy(config->cwd, "/");
+    static void SetDefault(config_t &config) {
+        config.sort = 0;
+        config.lang = 1;
+        config.dev_options = false;
+        config.image_filename = false;
+        std::strncpy(config.cwd, "/", 2);
     }
     
     int Load(void) {
@@ -60,7 +60,7 @@ namespace Config {
             fsFsCreateDirectory(fs, "/switch/NX-Shell");
             
         if (!FS::FileExists("/switch/NX-Shell/config.json")) {
-            Config::SetDefault(&cfg);
+            Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
         
@@ -117,7 +117,7 @@ namespace Config {
         // Delete config file if config file is updated. This will rarely happen.
         if (config_version_holder < CONFIG_VERSION) {
             fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
-            Config::SetDefault(&cfg);
+            Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
         
