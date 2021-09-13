@@ -118,6 +118,7 @@ namespace FS {
         Result ret = 0;
         s64 read_entries = 0;
         const std::string cwd = path;
+        entries.clear();
         
         if (strncmp(path, "/", std::strlen(path))) {
             FsDirectoryEntry entry;
