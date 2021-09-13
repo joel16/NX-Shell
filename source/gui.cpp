@@ -153,14 +153,14 @@ namespace GUI {
         return true;
     }
     
-    bool Loop(void) {
+    bool Loop(u64 &key) {
         if (!appletMainLoop())
             return false;
             
-        u64 down = imgui::nx::newFrame();
+        key = imgui::nx::newFrame();
         ImGui::NewFrame();
         
-        return !(down & HidNpadButton_Plus);
+        return !(key & HidNpadButton_Plus);
     }
     
     void Render(void) {

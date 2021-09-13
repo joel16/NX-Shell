@@ -102,6 +102,8 @@ namespace Services {
 int main(int argc, char* argv[]) {
     Result ret = 0;
     WindowData data;
+    u64 key = 0;
+
     Services::Init();
     
     if (R_FAILED(ret = FS::GetDirList(cfg.cwd, data.entries))) {
@@ -109,12 +111,12 @@ int main(int argc, char* argv[]) {
         return ret;
     }
     
-    data.checked.resize(data.entries.size());
+    data.checkbox_data.checked.resize(data.entries.size());
     FS::GetUsedStorageSpace(data.used_storage);
     FS::GetTotalStorageSpace(data.total_storage);
     
-    while (GUI::Loop()) {
-        Windows::MainWindow(data);
+    while (GUI::Loop(key)) {
+        Windows::MainWindow(data, key);
         GUI::Render();
     }
     

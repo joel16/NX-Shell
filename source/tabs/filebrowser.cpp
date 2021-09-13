@@ -36,9 +36,9 @@ namespace Tabs {
                     ImGui::TableNextColumn();
                     ImGui::PushID(i);
                     if (ImGui::ImageButton(imgui::deko3d::makeTextureID(
-                        data.checked.at(i)? dkMakeTextureHandle(check_icon.image_id, check_icon.sampler_id) : dkMakeTextureHandle(uncheck_icon.image_id, uncheck_icon.sampler_id)),
+                        data.checkbox_data.checked.at(i)? dkMakeTextureHandle(check_icon.image_id, check_icon.sampler_id) : dkMakeTextureHandle(uncheck_icon.image_id, uncheck_icon.sampler_id)),
                         tex_size, ImVec2(0, 0), ImVec2(1, 1), 0)) {
-                        data.checked.at(i) = !data.checked.at(i);
+                        data.checkbox_data.checked.at(i) = !data.checkbox_data.checked.at(i);
                     }
                     ImGui::PopID();
 
@@ -57,17 +57,17 @@ namespace Tabs {
                             if (!strncmp(data.entries[i].name, "..", sizeof(data.entries[i].name))) {
                                 if (R_SUCCEEDED(FS::ChangeDirPrev(data.entries))) {
                                     // Make a copy before resizing our vector.
-                                    if (data.checked_count > 1)
-                                        data.checked_copy = data.checked;
+                                    if (data.checkbox_data.count > 1)
+                                        data.checkbox_data.checked_copy = data.checkbox_data.checked;
                                         
-                                    data.checked.resize(data.entries.size());
+                                    data.checkbox_data.checked.resize(data.entries.size());
                                 }
                             }
                             else if (R_SUCCEEDED(FS::ChangeDirNext(data.entries[i].name, data.entries))) {
-                                if ((data.checked_count > 1) && (data.checked_copy.empty()))
-                                    data.checked_copy = data.checked;
+                                if ((data.checkbox_data.count > 1) && (data.checkbox_data.checked_copy.empty()))
+                                    data.checkbox_data.checked_copy = data.checkbox_data.checked;
                                 
-                                data.checked.resize(data.entries.size());
+                                data.checkbox_data.checked.resize(data.entries.size());
                             }
 
                             // Reset navigation ID -- TODO: Scroll to top

@@ -6,28 +6,36 @@
 
 #include "imgui.h"
 
+enum WINDOW_STATES {
+    WINDOW_STATE_FILEBROWSER,
+    WINDOW_STATE_SETTINGS,
+    WINDOW_STATE_OPTIONS,
+    WINDOW_STATE_DELETE,
+    WINDOW_STATE_PROPERTIES,
+    WINDOW_STATE_IMAGEVIEWER,
+    WINDOW_STATE_ARCHIVEEXTRACT,
+    WINDOW_STATE_TEXTREADER
+};
+
 typedef struct {
-    std::vector<FsDirectoryEntry> entries;
     std::vector<bool> checked;
     std::vector<bool> checked_copy;
-    int checked_count = 0;
+    std::string cwd;
+    int count = 0;
+} WindowCheckboxData;
+
+typedef struct {
+    WINDOW_STATES state = WINDOW_STATE_FILEBROWSER;
+    int selected = 0;
+    std::vector<FsDirectoryEntry> entries;
+    WindowCheckboxData checkbox_data;
     s64 used_storage = 0;
     s64 total_storage = 0;
 } WindowData;
 
 namespace Windows {
-    inline void SetupWindow(void) {
-        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    };
-    
-    inline void ExitWindow(void) {
-        ImGui::End();
-        ImGui::PopStyleVar();
-    };
-    
-    void MainWindow(WindowData &data);
+    void ResetCheckbox(WindowData &data);
+    void MainWindow(WindowData &data, u64 &key);
 }
 
 #endif

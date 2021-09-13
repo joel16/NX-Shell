@@ -12,7 +12,7 @@ extern dk::ImageDescriptor *s_imageDescriptors;
 
 namespace GUI {
     bool Init(void);
-    bool Loop(void);
+    bool Loop(u64 &key);
     void Render(void);
     void Exit(void);
 }

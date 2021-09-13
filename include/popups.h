@@ -1,7 +1,10 @@
 #ifndef NX_SHELL_POPUPS_H
 #define NX_SHELL_POPUPS_H
 
+#include <string>
+
 #include "imgui.h"
+#include "windows.h"
 
 namespace Popups {
     inline void SetupPopup(const char *id) {
@@ -19,7 +22,7 @@ namespace Popups {
     void DeletePopup(void);
     void FilePropertiesPopup(void);
     void ImageProperties(bool *state);
-    void OptionsPopup(void);
+    void OptionsPopup(WindowData &data);
     void ProgressPopup(float offset, float size, const std::string &title, const std::string &text);
     void UpdatePopup(bool *state, bool *connection_status, bool *available, const std::string &tag);
 }
