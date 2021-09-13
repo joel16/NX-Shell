@@ -111,7 +111,7 @@ namespace Textures {
         ImageTypeOther
     } ImageType;
 
-    static u32 counter = 1;
+    static u32 image_index = 1;
     
     static Result ReadFile(const char path[FS_MAX_PATH], unsigned char **buffer, s64 &size) {
         Result ret = 0;
@@ -147,9 +147,9 @@ namespace Textures {
         return 0;
     }
 
-    static bool LoadImage(unsigned char *data, DkImageFormat format, Tex &texture, void (*free_func)(void *)) {
+    static bool LoadImage(unsigned char *data, DkImageFormat format, Tex &texture) {
         int size = texture.width * texture.height * BYTES_PER_PIXEL;
-        texture.image_id = counter;
+        texture.image_id = image_index++;
 
         s_queue.waitIdle();
         
@@ -186,11 +186,6 @@ namespace Textures {
             .setWrapMode(DkWrapMode_ClampToEdge, DkWrapMode_ClampToEdge, DkWrapMode_ClampToEdge));
 
         s_queue.waitIdle();
-        counter++;
-
-        if (*free_func)
-            free_func(data);
-        
         return true;
     }
     
@@ -208,7 +203,7 @@ namespace Textures {
             if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
                 texture.width = image.width;
                 texture.height = image.height;
-                ret = Textures::LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture, nullptr);
+                ret = Textures::LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture);
                 delete[] buffer;
                 png_image_free(&image);
             }
@@ -257,7 +252,7 @@ namespace Textures {
         
         texture.width = bmp.width;
         texture.height = bmp.height;
-        bool ret = LoadImage(static_cast<unsigned char *>(bmp.bitmap), DkImageFormat_RGBA8_Unorm, texture, nullptr);
+        bool ret = LoadImage(static_cast<unsigned char *>(bmp.bitmap), DkImageFormat_RGBA8_Unorm, texture);
         bmp_finalise(&bmp);
         return ret;
     }
@@ -301,7 +296,7 @@ namespace Textures {
                 textures[i].width = gif.width;
                 textures[i].height = gif.height;
                 textures[i].delay = gif.frames->frame_delay;
-                ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), DkImageFormat_RGBA8_Unorm, textures[i], nullptr);
+                ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), DkImageFormat_RGBA8_Unorm, textures[i]);
             }
         }
         else {
@@ -313,7 +308,7 @@ namespace Textures {
             
             textures[0].width = gif.width;
             textures[0].height = gif.height;
-            ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), DkImageFormat_RGBA8_Unorm, textures[0], nullptr);
+            ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), DkImageFormat_RGBA8_Unorm, textures[0]);
         }
         
         gif_finalise(&gif);
@@ -326,7 +321,7 @@ namespace Textures {
         tjDecompressHeader2(jpeg, *data, size, &texture.width, &texture.height, &jpegsubsamp);
         unsigned char *buffer = new unsigned char[texture.width * texture.height * 4];
         tjDecompress2(jpeg, *data, size, buffer, texture.width, 0, texture.height, TJPF_RGBA, TJFLAG_FASTDCT);
-        bool ret = LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture, nullptr);
+        bool ret = LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture);
         tjDestroy(jpeg);
         delete[] buffer;
         return ret;
@@ -334,7 +329,7 @@ namespace Textures {
 
     static bool LoadImageOther(unsigned char **data, s64 &size, Tex &texture) {
         unsigned char *image = stbi_load_from_memory(*data, size, &texture.width, &texture.height, nullptr, STBI_rgb_alpha);
-        bool ret = Textures::LoadImage(image, DkImageFormat_RGBA8_Unorm, texture, nullptr);
+        bool ret = Textures::LoadImage(image, DkImageFormat_RGBA8_Unorm, texture);
         return ret;
     }
 
@@ -352,7 +347,7 @@ namespace Textures {
             if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
                 texture.width = image.width;
                 texture.height = image.height;
-                ret = Textures::LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture, nullptr);
+                ret = Textures::LoadImage(buffer, DkImageFormat_RGBA8_Unorm, texture);
                 delete[] buffer;
                 png_image_free(&image);
             }
@@ -369,7 +364,7 @@ namespace Textures {
 
     static bool LoadImageWEBP(unsigned char **data, s64 &size, Tex &texture) {
         *data = WebPDecodeRGBA(*data, size, &texture.width, &texture.height);
-        bool ret = Textures::LoadImage(*data, DkImageFormat_RGBA8_Unorm, texture, nullptr);
+        bool ret = Textures::LoadImage(*data, DkImageFormat_RGBA8_Unorm, texture);
         return ret;
     }
 
