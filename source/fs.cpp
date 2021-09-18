@@ -42,7 +42,7 @@ namespace FS {
         return false;
     }
 
-    Result GetFileSize(const char path[FS_MAX_PATH], s64 *size) {
+    Result GetFileSize(const char path[FS_MAX_PATH], s64 &size) {
         Result ret = 0;
         
         FsFile file;
@@ -51,7 +51,7 @@ namespace FS {
             return ret;
         }
         
-        if (R_FAILED(ret = fsFileGetSize(&file, size))) {
+        if (R_FAILED(ret = fsFileGetSize(&file, &size))) {
             Log::Error("fsFileGetSize(%s) failed: 0x%x\n", path, ret);
             fsFileClose(&file);
             return ret;
@@ -81,55 +81,22 @@ namespace FS {
         return FileTypeNone;
     }
     
-    static bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
-        if ((entryA.type == FsDirEntryType_Dir) && !(entryB.type == FsDirEntryType_Dir))
-            return true;
-        else if (!(entryA.type == FsDirEntryType_Dir) && (entryB.type == FsDirEntryType_Dir))
-            return false;
-        else {
-            switch(cfg.sort) {
-                case 0: // Sort alphabetically (ascending - A to Z)
-                    if (strcasecmp(entryA.name, entryB.name) < 0)
-                        return true;
-                    break;
-                
-                case 1: // Sort alphabetically (descending - Z to A)
-                    if (strcasecmp(entryB.name, entryA.name) < 0)
-                        return true;
-                    break;
-                
-                case 2: // Sort by file size (largest first)
-                    if (entryB.file_size < entryA.file_size)
-                        return true;
-                    break;
-                
-                case 3: // Sort by file size (smallest first)
-                    if (entryA.file_size < entryB.file_size)
-                        return true;
-                    break;
-            }
-        }
-        
-        return false;
-    }
-    
     Result GetDirList(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
         FsDir dir;
         Result ret = 0;
         s64 read_entries = 0;
         const std::string cwd = path;
         entries.clear();
-        
-        if (strncmp(path, "/", std::strlen(path))) {
-            FsDirectoryEntry entry;
-            std::strncpy(entry.name, "..", 3);
-            entry.type = FsDirEntryType_Dir;
-            entry.file_size = 0;
-            entries.push_back(entry);
-        }
+
+        // Create ".." entry
+        FsDirectoryEntry entry;
+        std::strncpy(entry.name, "..", 3);
+        entry.type = FsDirEntryType_Dir;
+        entry.file_size = 0;
+        entries.push_back(entry);
         
         if (R_FAILED(ret = fsFsOpenDirectory(fs, path, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, &dir))) {
-            Log::Error("fsFsOpenDirectory(%s) failed: 0x%x\n", path, ret);
+            Log::Error("GetDirListfsFsOpenDirectory(%s) failed: 0x%x\n", path, ret);
             return ret;
         }
         
@@ -146,8 +113,7 @@ namespace FS {
             
             entries.push_back(entry);
         }
-        
-        std::sort(entries.begin(), entries.end(), FS::Sort);
+
         fsDirClose(&dir);
         return 0;
     }
@@ -209,27 +175,28 @@ namespace FS {
         return FS::ChangeDir(new_cwd, entries);
     }
 
-    int ConstructPath(FsDirectoryEntry *entry, char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {		
-        if (entry) {
-            if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", entry? entry->name : "")) > 0)
-                return 0;
-        }
-        else {
-            if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", filename[0] != '\0'? filename : "")) > 0)
-                return 0;
-        }
+    static int BuildPath(FsDirectoryEntry &entry, char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {
+        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", entry.name? entry.name : "")) > 0)
+            return 0;
+            
+        return -1;
+    }
+
+    static int BuildPath(char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {
+        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", filename[0] != '\0'? filename : "")) > 0)
+            return 0;
         
         return -1;
     }
 
-    Result GetTimeStamp(FsDirectoryEntry *entry, FsTimeStampRaw *timestamp) {
+    Result GetTimeStamp(FsDirectoryEntry &entry, FsTimeStampRaw &timestamp) {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (FS::ConstructPath(entry, path, "") < 0)
+        if (R_FAILED(FS::BuildPath(entry, path, "")))
             return -1;
             
-        if (R_FAILED(ret = fsFsGetFileTimeStampRaw(fs, path, timestamp))) {
+        if (R_FAILED(ret = fsFsGetFileTimeStampRaw(fs, path, &timestamp))) {
             Log::Error("fsFsGetFileTimeStampRaw(%s) failed: 0x%x\n", path, ret);
             return ret;
         }
@@ -237,18 +204,18 @@ namespace FS {
         return 0;
     }
 
-    Result Rename(FsDirectoryEntry *entry, const char filename[FS_MAX_PATH]) {
+    Result Rename(FsDirectoryEntry &entry, const char filename[FS_MAX_PATH]) {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (FS::ConstructPath(entry, path, "") < 0)
+        if (FS::BuildPath(entry, path, "") < 0)
             return -1;
             
         char new_path[FS_MAX_PATH];
-        if (FS::ConstructPath(nullptr, new_path, filename) < 0)
+        if (FS::BuildPath(new_path, filename) < 0)
             return -1;
         
-        if (entry->type == FsDirEntryType_Dir) {
+        if (entry.type == FsDirEntryType_Dir) {
             if (R_FAILED(ret = fsFsRenameDirectory(fs, path, new_path))) {
                 Log::Error("fsFsRenameDirectory(%s, %s) failed: 0x%x\n", path, new_path, ret);
                 return ret;
@@ -264,14 +231,14 @@ namespace FS {
         return 0;
     }
     
-    Result Delete(FsDirectoryEntry *entry) {
+    Result Delete(FsDirectoryEntry &entry) {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (FS::ConstructPath(entry, path, "") < 0)
+        if (FS::BuildPath(entry, path, "") < 0)
             return -1;
             
-        if (entry->type == FsDirEntryType_Dir) {
+        if (entry.type == FsDirEntryType_Dir) {
             if (R_FAILED(ret = fsFsDeleteDirectoryRecursively(fs, path))) {
                 Log::Error("fsFsDeleteDirectoryRecursively(%s) failed: 0x%x\n", path, ret);
                 return ret;
@@ -287,11 +254,11 @@ namespace FS {
         return 0;
     }
 
-    Result SetArchiveBit(FsDirectoryEntry *entry) {
+    Result SetArchiveBit(FsDirectoryEntry &entry) {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (FS::ConstructPath(entry, path, "") < 0)
+        if (FS::BuildPath(entry, path, "") < 0)
             return -1;
             
         if (R_FAILED(ret = fsFsSetConcatenationFileAttribute(fs, path))) {
@@ -413,13 +380,13 @@ namespace FS {
         return 0;
     }
 
-    void Copy(FsDirectoryEntry *entry, const std::string &path) {
+    void Copy(FsDirectoryEntry &entry, const std::string &path) {
         std::string full_path = path;
         full_path.append("/");
-        full_path.append(entry->name);
+        full_path.append(entry.name);
         std::strcpy(fs_copy_struct.copy_path, full_path.c_str());
-        std::strcpy(fs_copy_struct.copy_filename, entry->name);
-        if (entry->type == FsDirEntryType_Dir)
+        std::strcpy(fs_copy_struct.copy_filename, entry.name);
+        if (entry.type == FsDirEntryType_Dir)
             fs_copy_struct.is_dir = true;
     }
 
@@ -427,7 +394,7 @@ namespace FS {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        FS::ConstructPath(nullptr, path, fs_copy_struct.copy_filename);
+        FS::BuildPath(path, fs_copy_struct.copy_filename);
         
         if (fs_copy_struct.is_dir) // Copy folder recursively
             ret = FS::CopyDir(fs_copy_struct.copy_path, path);
@@ -444,7 +411,7 @@ namespace FS {
         Result ret = 0;
 
         char path[FS_MAX_PATH];
-        FS::ConstructPath(nullptr, path, fs_copy_struct.copy_filename);
+        FS::BuildPath(path, fs_copy_struct.copy_filename);
         
         if (fs_copy_struct.is_dir) {
             if (R_FAILED(ret = fsFsRenameDirectory(fs, fs_copy_struct.copy_path, path))) {

@@ -19,32 +19,6 @@ namespace Tabs {
     
     void Settings(WindowData &data) {
         if (ImGui::BeginTabItem("Settings")) {
-            if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsSortTitle])) {
-                const char *sort_options[] = {
-                    strings[cfg.lang][Lang::SettingsSortNameAsc],
-                    strings[cfg.lang][Lang::SettingsSortNameDesc],
-                    strings[cfg.lang][Lang::SettingsSortSizeLarge],
-                    strings[cfg.lang][Lang::SettingsSortSizeSmall]
-                };
-                
-                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-
-                const int max_sort = 4;
-                for (int i = 0; i < max_sort; i++) {
-                    if (ImGui::RadioButton(sort_options[i], &cfg.sort, i)) {
-                        Config::Save(cfg);
-                        FS::GetDirList(cfg.cwd, data.entries);
-                    }
-
-                    if (i != (max_sort - 1))
-                        ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-                }
-
-                ImGui::TreePop();
-            }
-            
-            ImGui::Separator();
-
             if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsLanguageTitle])) {
                 const char *languages[] = {
                     " Japanese",

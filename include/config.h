@@ -5,7 +5,6 @@
 #include <switch.h>
 
 typedef struct {
-    int sort = 0;
     int lang = 1;
     bool dev_options = false;
     bool image_filename = false;

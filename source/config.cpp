@@ -6,19 +6,19 @@
 #include "fs.h"
 #include "log.h"
 
-#define CONFIG_VERSION 2
+#define CONFIG_VERSION 3
 
 config_t cfg;
 
 namespace Config {
-    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"sort\": %d,\n\t\"lang\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d,\n\t\"last_dir\": \"%s\"\n}";
+    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"lang\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d,\n\t\"last_dir\": \"%s\"\n}";
     static int config_version_holder = 0;
     static const int buf_size = 128 + FS_MAX_PATH;
     
     int Save(config_t &config) {
         Result ret = 0;
         char *buf = new char[buf_size];
-        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.sort, config.lang, config.dev_options, config.image_filename, config.cwd);
+        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.lang, config.dev_options, config.image_filename, config.cwd);
         
         // Delete and re-create the file, we don't care about the return value here.
         fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
@@ -44,7 +44,6 @@ namespace Config {
     }
     
     static void SetDefault(config_t &config) {
-        config.sort = 0;
         config.lang = 1;
         config.dev_options = false;
         config.image_filename = false;
@@ -95,9 +94,6 @@ namespace Config {
         
         json_t *config_ver = json_object_get(root, "config_ver");
         config_version_holder = json_integer_value(config_ver);
-        
-        json_t *sort = json_object_get(root, "sort");
-        cfg.sort = json_integer_value(sort);
 
         json_t *lang = json_object_get(root, "lang");
         cfg.lang = json_integer_value(lang);

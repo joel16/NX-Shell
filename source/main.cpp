@@ -119,7 +119,8 @@ int main(int argc, char* argv[]) {
         Windows::MainWindow(data, key);
         GUI::Render();
     }
-    
+
+    data.entries.clear();
     Services::Exit();
     return 0;
 }
