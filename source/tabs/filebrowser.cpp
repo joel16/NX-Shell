@@ -38,7 +38,7 @@ namespace Tabs {
                         break;
                         
                     case 2: // Size
-                        return descending? (entryA.file_size < entryB.file_size) : (entryB.file_size < entryA.file_size);
+                        return descending? (entryB.file_size < entryA.file_size) : (entryA.file_size < entryB.file_size);
                         break;
                         
                     default:
