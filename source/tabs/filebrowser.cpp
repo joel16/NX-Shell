@@ -11,6 +11,7 @@
 #include "utils.h"
 
 namespace Tabs {
+    static const u32 sampler_id = 1;
     static const ImVec2 tex_size = ImVec2(25, 25);
 
     static bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
@@ -83,47 +84,27 @@ namespace Tabs {
 
                     ImGui::TableNextColumn();
                     ImGui::PushID(i);
-                    if ((data.checkbox_data.checked.at(i)) && (!data.checkbox_data.cwd.compare(cfg.cwd))) {
-                        if (ImGui::ImageButton(imgui::deko3d::makeTextureID(dkMakeTextureHandle(check_icon.image_id, 1)), tex_size, ImVec2(0, 0), ImVec2(1, 1), 0)) {
-                            if (i < data.checkbox_data.checked.size()) {
-                                if ((!data.checkbox_data.cwd.empty()) && (data.checkbox_data.cwd.compare(cfg.cwd) != 0))
-                                    Windows::ResetCheckbox(data);
-                                    
-                                data.checkbox_data.cwd = cfg.cwd;
-                                data.checkbox_data.checked.at(i) = !data.checkbox_data.checked.at(i);
-                                data.checkbox_data.count = std::count(data.checkbox_data.checked.begin(), data.checkbox_data.checked.end(), true);
-                                printf("checkbox cwd: %s [%s] (%d)", data.checkbox_data.cwd.c_str(), data.entries[i].name, data.checkbox_data.count);
-                            }
-                        }
-                    }
-                    else {
-                        if (ImGui::ImageButton(imgui::deko3d::makeTextureID(dkMakeTextureHandle(uncheck_icon.image_id, 1)), tex_size, ImVec2(0, 0), ImVec2(1, 1), 0)) {
-                            if (i < data.checkbox_data.checked.size()) {
-                                if ((!data.checkbox_data.cwd.empty()) && (data.checkbox_data.cwd.compare(cfg.cwd) != 0))
-                                    Windows::ResetCheckbox(data);
-                                    
-                                data.checkbox_data.cwd = cfg.cwd;
-                                data.checkbox_data.checked.at(i) = !data.checkbox_data.checked.at(i);
-                                data.checkbox_data.count = std::count(data.checkbox_data.checked.begin(), data.checkbox_data.checked.end(), true);
-                                printf("checkbox cwd: %s [%s] (%d)", data.checkbox_data.cwd.c_str(), data.entries[i].name, data.checkbox_data.count);
-                            }
-                        }
-                    }
+                    
+                    if ((data.checkbox_data.checked.at(i)) && (!data.checkbox_data.cwd.compare(cfg.cwd)))
+                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(check_icon.image_id, sampler_id)), tex_size);
+                    else
+                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(uncheck_icon.image_id, sampler_id)), tex_size);
+                    
                     ImGui::PopID();
 
                     ImGui::TableNextColumn();
                     FileType file_type = FS::GetFileType(data.entries[i].name);
                     
                     if (data.entries[i].type == FsDirEntryType_Dir)
-                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(folder_icon.image_id, folder_icon.sampler_id)), tex_size);
+                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(folder_icon.image_id, sampler_id)), tex_size);
                     else
-                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(file_icons[file_type].image_id, file_icons[file_type].sampler_id)), tex_size);
+                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(file_icons[file_type].image_id, sampler_id)), tex_size);
                     
                     ImGui::SameLine();
 
                     if (ImGui::Selectable(data.entries[i].name, false)) {
                         if (data.entries[i].type == FsDirEntryType_Dir) {
-                            if (!strncmp(data.entries[i].name, "..", sizeof(data.entries[i].name))) {
+                            if (std::strncmp(data.entries[i].name, "..", 2) == 0) {
                                 if (R_SUCCEEDED(FS::ChangeDirPrev(data.entries))) {
                                     if ((data.checkbox_data.count > 1) && (data.checkbox_data.checked_copy.empty()))
                                         data.checkbox_data.checked_copy = data.checkbox_data.checked;
@@ -146,7 +127,13 @@ namespace Tabs {
                             ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs();
                             sorts_specs->SpecsDirty = true;
                         }
+                        else {
+                            
+                        }
                     }
+
+                    if (ImGui::IsItemHovered())
+                        data.selected = i;
 
                     ImGui::TableNextColumn();
                     if (data.entries[i].file_size != 0) {
@@ -154,9 +141,6 @@ namespace Tabs {
                         Utils::GetSizeString(size, static_cast<double>(data.entries[i].file_size));
                         ImGui::Text(size);
                     }
-                    
-                    if (ImGui::IsItemHovered())
-                        data.selected = i;
                 }
 
                 ImGui::EndTable();

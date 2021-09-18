@@ -92,7 +92,7 @@ void updateKeys(ImGuiIO &io_) {
         std::pair(ImGuiNavInput_Activate,  HidNpadButton_A),
         std::pair(ImGuiNavInput_Cancel,    HidNpadButton_B),
         std::pair(ImGuiNavInput_Input,     HidNpadButton_X),
-        std::pair(ImGuiNavInput_Menu,      HidNpadButton_Y),
+        //std::pair(ImGuiNavInput_Menu,      HidNpadButton_Y),
         std::pair(ImGuiNavInput_FocusPrev, HidNpadButton_L),
         std::pair(ImGuiNavInput_TweakSlow, HidNpadButton_L),
         std::pair(ImGuiNavInput_FocusNext, HidNpadButton_R),

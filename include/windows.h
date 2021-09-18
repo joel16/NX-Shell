@@ -21,12 +21,12 @@ typedef struct {
     std::vector<bool> checked;
     std::vector<bool> checked_copy;
     std::string cwd;
-    int count = 0;
+    u64 count = 0;
 } WindowCheckboxData;
 
 typedef struct {
     WINDOW_STATES state = WINDOW_STATE_FILEBROWSER;
-    int selected = 0;
+    u64 selected = 0;
     std::vector<FsDirectoryEntry> entries;
     WindowCheckboxData checkbox_data;
     s64 used_storage = 0;

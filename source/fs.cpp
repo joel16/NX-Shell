@@ -159,7 +159,7 @@ namespace FS {
     
     Result ChangeDirNext(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
         char new_cwd[FS_MAX_PATH + 1];
-        const char *sep = !std::strncmp(cfg.cwd, "/", 2) ? "" : "/"; // Don't append / if at /
+        const char *sep = (std::strncmp(cfg.cwd, "/", 2) == 0)?  "" : "/"; // Don't append / if at /
         
         if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", cfg.cwd, sep, path)) > 0)
             return FS::ChangeDir(new_cwd, entries);
@@ -176,14 +176,14 @@ namespace FS {
     }
 
     static int BuildPath(FsDirectoryEntry &entry, char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {
-        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", entry.name? entry.name : "")) > 0)
+        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, (std::strncmp(cfg.cwd, "/", 2) == 0)?  "" : "/", entry.name? entry.name : "")) > 0)
             return 0;
             
         return -1;
     }
 
     static int BuildPath(char path[FS_MAX_PATH + 1], const char filename[FS_MAX_PATH]) {
-        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, !std::strncmp(cfg.cwd, "/", 2) ? "" : "/", filename[0] != '\0'? filename : "")) > 0)
+        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, (std::strncmp(cfg.cwd, "/", 2) == 0)?  "" : "/", filename[0] != '\0'? filename : "")) > 0)
             return 0;
         
         return -1;

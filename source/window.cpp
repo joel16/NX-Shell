@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <cstring>
+
+#include "config.h"
 #include "imgui.h"
 #include "popups.h"
 #include "tabs.h"
@@ -39,13 +43,24 @@ namespace Windows {
             case WINDOW_STATE_OPTIONS:
                 Popups::OptionsPopup(data);
                 break;
-
+            
             default:
                 break;
         }
 
         if ((key & HidNpadButton_X) && (data.state == WINDOW_STATE_FILEBROWSER))
             data.state = WINDOW_STATE_OPTIONS;
+
+        if (key & HidNpadButton_Y) {
+            if ((!data.checkbox_data.cwd.empty()) && (data.checkbox_data.cwd.compare(cfg.cwd) != 0))
+                Windows::ResetCheckbox(data);
+            
+            if ((std::strncmp(data.entries[data.selected].name, "..", 2)) != 0) {
+                data.checkbox_data.cwd = cfg.cwd;
+                data.checkbox_data.checked.at(data.selected) = !data.checkbox_data.checked.at(data.selected);
+                data.checkbox_data.count = std::count(data.checkbox_data.checked.begin(), data.checkbox_data.checked.end(), true);
+            }
+        }
 
         if (key & HidNpadButton_B) {
             if (data.state == WINDOW_STATE_OPTIONS)
