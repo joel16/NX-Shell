@@ -17,10 +17,17 @@ enum WINDOW_STATES {
     WINDOW_STATE_TEXTREADER
 };
 
+enum FS_SORT_STATE {
+    FS_SORT_ALPHA_ASC,
+    FS_SORT_ALPHA_DESC,
+    FS_SORT_SIZE_ASC,
+    FS_SORT_SIZE_DESC
+};
+
 typedef struct {
     std::vector<bool> checked;
     std::vector<bool> checked_copy;
-    std::string cwd;
+    char cwd[FS_MAX_PATH + 1] = "";
     u64 count = 0;
 } WindowCheckboxData;
 
@@ -32,6 +39,12 @@ typedef struct {
     s64 used_storage = 0;
     s64 total_storage = 0;
 } WindowData;
+
+extern int sort;
+
+namespace FileBrowser {
+    bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB);
+}
 
 namespace Windows {
     void ResetCheckbox(WindowData &data);

@@ -24,7 +24,7 @@ namespace Windows {
         data.checkbox_data.checked_copy.clear();
         data.checkbox_data.checked.resize(data.entries.size());
         data.checkbox_data.checked.assign(data.checkbox_data.checked.size(), false);
-        data.checkbox_data.cwd.clear();
+        data.checkbox_data.cwd[0] = '\0';
         data.checkbox_data.count = 0;
     };
 
@@ -44,6 +44,10 @@ namespace Windows {
                 Popups::OptionsPopup(data);
                 break;
             
+            case WINDOW_STATE_DELETE:
+                Popups::DeletePopup(data);
+                break;
+
             default:
                 break;
         }
@@ -52,11 +56,11 @@ namespace Windows {
             data.state = WINDOW_STATE_OPTIONS;
 
         if (key & HidNpadButton_Y) {
-            if ((!data.checkbox_data.cwd.empty()) && (data.checkbox_data.cwd.compare(cfg.cwd) != 0))
+            if ((std::strlen(data.checkbox_data.cwd) != 0) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) != 0))
                 Windows::ResetCheckbox(data);
             
             if ((std::strncmp(data.entries[data.selected].name, "..", 2)) != 0) {
-                data.checkbox_data.cwd = cfg.cwd;
+                std::strcpy(data.checkbox_data.cwd, cfg.cwd);
                 data.checkbox_data.checked.at(data.selected) = !data.checkbox_data.checked.at(data.selected);
                 data.checkbox_data.count = std::count(data.checkbox_data.checked.begin(), data.checkbox_data.checked.end(), true);
             }
@@ -65,6 +69,8 @@ namespace Windows {
         if (key & HidNpadButton_B) {
             if (data.state == WINDOW_STATE_OPTIONS)
                 data.state = WINDOW_STATE_FILEBROWSER;
+            else if (data.state == WINDOW_STATE_DELETE)
+                data.state = WINDOW_STATE_OPTIONS;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Popups {
     };
 
     void ArchivePopup(void);
-    void DeletePopup(void);
+    void DeletePopup(WindowData &data);
     void FilePropertiesPopup(void);
     void ImageProperties(bool *state);
     void OptionsPopup(WindowData &data);

@@ -384,10 +384,14 @@ namespace FS {
         std::string full_path = path;
         full_path.append("/");
         full_path.append(entry.name);
-        std::strcpy(fs_copy_struct.copy_path, full_path.c_str());
-        std::strcpy(fs_copy_struct.copy_filename, entry.name);
-        if (entry.type == FsDirEntryType_Dir)
-            fs_copy_struct.is_dir = true;
+        
+        if ((std::strncmp(entry.name, "..", 2)) != 0) {
+            std::strcpy(fs_copy_struct.copy_path, full_path.c_str());
+            std::strcpy(fs_copy_struct.copy_filename, entry.name);
+            
+            if (entry.type == FsDirEntryType_Dir)
+                fs_copy_struct.is_dir = true;
+        }
     }
 
     Result Paste(void) {

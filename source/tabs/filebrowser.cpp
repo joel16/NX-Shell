@@ -10,11 +10,51 @@
 #include "textures.h"
 #include "utils.h"
 
+int sort = 0;
+
+namespace FileBrowser {
+    // Sort without using ImGuiTableSortSpecs
+    bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
+        // Make sure ".." stays at the top regardless of sort direction
+        if (strcasecmp(entryA.name, "..") == 0)
+            return true;
+        
+        if (strcasecmp(entryB.name, "..") == 0)
+            return false;
+        
+        if ((entryA.type == FsDirEntryType_Dir) && !(entryB.type == FsDirEntryType_Dir))
+            return true;
+        else if (!(entryA.type == FsDirEntryType_Dir) && (entryB.type == FsDirEntryType_Dir))
+            return false;
+
+        switch(sort) {
+            case FS_SORT_ALPHA_ASC:
+                return (strcasecmp(entryA.name, entryB.name) < 0);
+                break;
+
+            case FS_SORT_ALPHA_DESC:
+                return (strcasecmp(entryB.name, entryA.name) < 0);
+                break;
+
+            case FS_SORT_SIZE_ASC:
+                return (entryA.file_size < entryB.file_size);
+                break;
+
+            case FS_SORT_SIZE_DESC:
+                return (entryB.file_size < entryA.file_size);
+                break;
+        }
+
+        return false;
+    }
+}
+
 namespace Tabs {
     static const u32 sampler_id = 1;
     static const ImVec2 tex_size = ImVec2(25, 25);
 
-    static bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
+    // Sort using ImGuiTableSortSpecs
+    bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
         bool descending = false;
         ImGuiTableSortSpecs *table_sort_specs = ImGui::TableGetSortSpecs();
         
@@ -25,7 +65,8 @@ namespace Tabs {
             // Make sure ".." stays at the top regardless of sort direction
             if (strcasecmp(entryA.name, "..") == 0)
                 return true;
-            if(strcasecmp(entryB.name, "..") == 0)
+            
+            if (strcasecmp(entryB.name, "..") == 0)
                 return false;
             
             if ((entryA.type == FsDirEntryType_Dir) && !(entryB.type == FsDirEntryType_Dir))
@@ -35,10 +76,12 @@ namespace Tabs {
             else {
                 switch (column_sort_spec->ColumnIndex) {
                     case 1: // filename
+                        sort = descending? FS_SORT_ALPHA_DESC : FS_SORT_ALPHA_ASC;
                         return descending? (strcasecmp(entryB.name, entryA.name) < 0) : (strcasecmp(entryA.name, entryB.name) < 0);
                         break;
                         
                     case 2: // Size
+                        sort = descending? FS_SORT_SIZE_DESC : FS_SORT_SIZE_ASC;
                         return descending? (entryB.file_size < entryA.file_size) : (entryA.file_size < entryB.file_size);
                         break;
                         
@@ -74,7 +117,7 @@ namespace Tabs {
 
                 if (ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs()) {
                     if (sorts_specs->SpecsDirty) {
-                        std::sort(data.entries.begin(), data.entries.end(), Sort);
+                        std::sort(data.entries.begin(), data.entries.end(), Tabs::Sort);
                         sorts_specs->SpecsDirty = false;
                     }
                 }
@@ -85,7 +128,7 @@ namespace Tabs {
                     ImGui::TableNextColumn();
                     ImGui::PushID(i);
                     
-                    if ((data.checkbox_data.checked.at(i)) && (!data.checkbox_data.cwd.compare(cfg.cwd)))
+                    if ((data.checkbox_data.checked.at(i)) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) == 0))
                         ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(check_icon.image_id, sampler_id)), tex_size);
                     else
                         ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(uncheck_icon.image_id, sampler_id)), tex_size);
