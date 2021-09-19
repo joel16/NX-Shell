@@ -66,6 +66,7 @@ namespace Popups {
                     Windows::ResetCheckbox(data);
                 }
 
+                sort = -1;
                 Log::Init();
                 ImGui::CloseCurrentPopup();
                 data.state = WINDOW_STATE_FILEBROWSER;

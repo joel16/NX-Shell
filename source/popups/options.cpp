@@ -26,7 +26,7 @@ namespace Popups {
             
             if (data.checkbox_data.checked_copy.at(i)) {
                 FS::Copy(entries[i], data.checkbox_data.cwd);
-                
+
                 if (R_FAILED((*func)())) {
                     FS::GetDirList(cfg.cwd, data.entries);
                     Windows::ResetCheckbox(data);
@@ -37,6 +37,7 @@ namespace Popups {
 
         FS::GetDirList(cfg.cwd, data.entries);
         Windows::ResetCheckbox(data);
+        sort = -1;
         entries.clear();
     }
 
@@ -72,8 +73,10 @@ namespace Popups {
 
             if (ImGui::Button(strings[cfg.lang][Lang::OptionsRename], ImVec2(200, 50))) {
                 std::string path = Keyboard::GetText(strings[cfg.lang][Lang::OptionsRenamePrompt], data.entries[data.selected].name);
-                if (R_SUCCEEDED(FS::Rename(data.entries[data.selected], path.c_str())))
+                if (R_SUCCEEDED(FS::Rename(data.entries[data.selected], path.c_str()))) {
                     FS::GetDirList(cfg.cwd, data.entries);
+                    sort = -1;
+                }
                 
                 ImGui::CloseCurrentPopup();
                 data.state = WINDOW_STATE_FILEBROWSER;
@@ -89,6 +92,7 @@ namespace Popups {
                 if (R_SUCCEEDED(fsFsCreateDirectory(fs, path))) {
                     FS::GetDirList(cfg.cwd, data.entries);
                     Windows::ResetCheckbox(data);
+                    sort = -1;
                 }
                 
                 ImGui::CloseCurrentPopup();
@@ -105,6 +109,7 @@ namespace Popups {
                 if (R_SUCCEEDED(fsFsCreateFile(fs, path, 0, 0))) {
                     FS::GetDirList(cfg.cwd, data.entries);
                     Windows::ResetCheckbox(data);
+                    sort = -1;
                 }
                 
                 ImGui::CloseCurrentPopup();
@@ -134,6 +139,7 @@ namespace Popups {
                         if (R_SUCCEEDED(FS::Paste())) {
                             FS::GetDirList(cfg.cwd, data.entries);
                             Windows::ResetCheckbox(data);
+                            sort = -1;
                         }
                     }
 
@@ -159,6 +165,7 @@ namespace Popups {
                         if (R_SUCCEEDED(FS::Move())) {
                             FS::GetDirList(cfg.cwd, data.entries);
                             Windows::ResetCheckbox(data);
+                            sort = -1;
                         }
                     }
                 }
@@ -181,6 +188,7 @@ namespace Popups {
                 if (R_SUCCEEDED(FS::SetArchiveBit(data.entries[data.selected]))) {
                     FS::GetDirList(cfg.cwd, data.entries);
                     Windows::ResetCheckbox(data);
+                    sort = -1;
                 }
                     
                 ImGui::CloseCurrentPopup();

@@ -116,6 +116,9 @@ namespace Tabs {
                 ImGui::TableHeadersRow();
 
                 if (ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs()) {
+                    if (sort == -1)
+                        sorts_specs->SpecsDirty = true;
+                    
                     if (sorts_specs->SpecsDirty) {
                         std::sort(data.entries.begin(), data.entries.end(), Tabs::Sort);
                         sorts_specs->SpecsDirty = false;
