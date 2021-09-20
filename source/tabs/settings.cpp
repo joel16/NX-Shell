@@ -96,8 +96,8 @@ namespace Tabs {
 
             ImGui::EndTabItem();
         }
-
-        // if (update_popup)
-        // 	Popups::UpdatePopup(&update_popup, &network_status, &update_available, tag_name);
+        
+        if (update_popup)
+            Popups::UpdatePopup(update_popup, network_status, update_available, tag_name);
     }
 }

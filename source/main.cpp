@@ -71,16 +71,31 @@ namespace Services {
     }
     
     int Init(void) {
+        Result ret = 0;
+        
         devices[0] = *fsdevGetDeviceFileSystem("sdmc");
         fs = &devices[0];
         
         Config::Load();
         Log::Init();
-        plInitialize(PlServiceType_User);
-        romfsInit();
         socketInitializeDefault();
         nxlinkStdio();
+
+        if (R_FAILED(ret = romfsInit())) {
+            Log::Error("romfsInit() failed: 0x%x\n", ret);
+            return ret;
+        }
         
+        if (R_FAILED(ret = nifmInitialize(NifmServiceType_User))) {
+            Log::Error("nifmInitialize(NifmServiceType_User) failed: 0x%x\n", ret);
+            return ret;
+        }
+        
+        if (R_FAILED(ret = plInitialize(PlServiceType_User))) {
+            Log::Error("plInitialize(PlServiceType_User) failed: 0x%x\n", ret);
+            return ret;
+        }
+
         if (!GUI::Init())
             printf("Failed to init\n");
             
@@ -93,6 +108,7 @@ namespace Services {
     
     void Exit(void) {
         Textures::Exit();
+        nifmExit();
         GUI::Exit();
         socketExit();
         Log::Exit();
