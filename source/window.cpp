@@ -43,6 +43,10 @@ namespace Windows {
             case WINDOW_STATE_OPTIONS:
                 Popups::OptionsPopup(data);
                 break;
+
+            case WINDOW_STATE_PROPERTIES:
+                Popups::FilePropertiesPopup(data);
+                break;
             
             case WINDOW_STATE_DELETE:
                 Popups::DeletePopup(data);
@@ -67,10 +71,19 @@ namespace Windows {
         }
 
         if (key & HidNpadButton_B) {
-            if (data.state == WINDOW_STATE_OPTIONS)
-                data.state = WINDOW_STATE_FILEBROWSER;
-            else if (data.state == WINDOW_STATE_DELETE)
-                data.state = WINDOW_STATE_OPTIONS;
+            switch(data.state) {
+                case WINDOW_STATE_OPTIONS:
+                    data.state = WINDOW_STATE_FILEBROWSER;
+                    break;
+
+                case WINDOW_STATE_PROPERTIES:
+                case WINDOW_STATE_DELETE:
+                    data.state = WINDOW_STATE_OPTIONS;
+                    break;
+
+                default:
+                    break;
+            }
         }
     }
 }
