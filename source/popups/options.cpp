@@ -50,7 +50,7 @@ namespace Popups {
                     Windows::ResetCheckbox(data);
                 
                 std::strcpy(data.checkbox_data.cwd, cfg.cwd);
-                std::fill(data.checkbox_data.checked.begin(), data.checkbox_data.checked.end(), true);
+                std::fill(data.checkbox_data.checked.begin() + 1, data.checkbox_data.checked.end(), true);
                 data.checkbox_data.count = data.checkbox_data.checked.size();
             }
 
