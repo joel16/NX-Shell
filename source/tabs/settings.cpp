@@ -19,37 +19,38 @@ namespace Tabs {
     
     void Settings(WindowData &data) {
         if (ImGui::BeginTabItem("Settings")) {
-            if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsLanguageTitle])) {
-                const char *languages[] = {
-                    " Japanese",
-                    " English",
-                    " French",
-                    " German",
-                    " Italian",
-                    " Spanish",
-                    " Simplified Chinese",
-                    " Korean",
-                    " Dutch",
-                    " Portuguese",
-                    " Russian",
-                    " Traditional Chinese"
-                };
+            // Disable language settings for now (At least until it;s complete)
+            // if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsLanguageTitle])) {
+            //     const char *languages[] = {
+            //         " Japanese",
+            //         " English",
+            //         " French",
+            //         " German",
+            //         " Italian",
+            //         " Spanish",
+            //         " Simplified Chinese",
+            //         " Korean",
+            //         " Dutch",
+            //         " Portuguese",
+            //         " Russian",
+            //         " Traditional Chinese"
+            //     };
 
-                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+            //     ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 
-                const int max_lang = 12;
-                for (int i = 0; i < max_lang; i++) {
-                    if (ImGui::RadioButton(languages[i], &cfg.lang, i))
-                        Config::Save(cfg);
+            //     const int max_lang = 12;
+            //     for (int i = 0; i < max_lang; i++) {
+            //         if (ImGui::RadioButton(languages[i], &cfg.lang, i))
+            //             Config::Save(cfg);
                     
-                    if (i != (max_lang - 1))
-                        ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
-                }
+            //         if (i != (max_lang - 1))
+            //             ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Spacing
+            //     }
 
-                ImGui::TreePop();
-            }
+            //     ImGui::TreePop();
+            // }
 
-            ImGui::Separator();
+            // ImGui::Separator();
             
             if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsImageViewTitle])) {
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
