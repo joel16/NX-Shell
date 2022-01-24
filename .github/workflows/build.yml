@@ -1,0 +1,24 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ deko3d ]
+  pull_request:
+    branches: [ deko3d ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkita64:latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: make
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: NX-Shell.nro
+        path: NX-Shell.nro
