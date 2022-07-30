@@ -65,13 +65,18 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections $(ARCH) $(DEFINES)
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 CFLAGS	+=	`freetype-config --cflags`
 CFLAGS	+=	-DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO)
+CFLAGS  +=  -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_DEMO_WINDOWS
+CFLAGS  +=  -DIMGUI_DISABLE_DEBUG_TOOLS -DIMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS
+CFLAGS  +=  -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS -DIMGUI_DISABLE_WIN32_FUNCTIONS
+CFLAGS  +=  -DIMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION -DIMGUI_ENABLE_FREETYPE
 
 CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-exceptions -fno-rtti
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=	`curl-config --libs` `freetype-config --libs` -lturbojpeg -ljpeg -lpng -lwebp -ljansson -ldeko3dd -lnx
+LIBS	:=	`curl-config --libs` `freetype-config --libs` -lturbojpeg -ljpeg -lpng -lwebp -ljansson \
+            -lglad -lEGL -lglapi -ldrm_nouveau -lnx -lm -lz
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

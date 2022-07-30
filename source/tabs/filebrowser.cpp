@@ -4,7 +4,6 @@
 #include "config.h"
 #include "fs.h"
 #include "imgui.h"
-#include "imgui_deko3d.h"
 #include "imgui_internal.h"
 #include "tabs.h"
 #include "textures.h"
@@ -132,9 +131,9 @@ namespace Tabs {
                     ImGui::PushID(i);
                     
                     if ((data.checkbox_data.checked.at(i)) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) == 0))
-                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(check_icon.image_id, sampler_id)), tex_size);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(check_icon.id), tex_size);
                     else
-                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(uncheck_icon.image_id, sampler_id)), tex_size);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(uncheck_icon.id), tex_size);
                     
                     ImGui::PopID();
 
@@ -142,9 +141,9 @@ namespace Tabs {
                     FileType file_type = FS::GetFileType(data.entries[i].name);
                     
                     if (data.entries[i].type == FsDirEntryType_Dir)
-                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(folder_icon.image_id, sampler_id)), tex_size);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), tex_size);
                     else
-                        ImGui::Image(imgui::deko3d::makeTextureID(dkMakeTextureHandle(file_icons[file_type].image_id, sampler_id)), tex_size);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(file_icons[file_type].id), tex_size);
                     
                     ImGui::SameLine();
 
