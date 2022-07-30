@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ deko3d ]
+    branches: [ next-opengl3 ]
   pull_request:
-    branches: [ deko3d ]
+    branches: [ next-opengl3 ]
 
 jobs:
   build:
