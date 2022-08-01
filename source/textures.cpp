@@ -191,7 +191,7 @@ namespace Textures {
         
         texture.width = bmp.width;
         texture.height = bmp.height;
-        bool ret = Create(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture);
+        bool ret = Textures::Create(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture);
         bmp_finalise(&bmp);
         return ret;
     }
