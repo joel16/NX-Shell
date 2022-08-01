@@ -211,8 +211,8 @@ static u64 ImGui_ImplSwitch_UpdateGamepads(void) {
     MAP_BUTTON(ImGuiKey_GamepadR1,              HidNpadButton_R);
     MAP_ANALOG(ImGuiKey_GamepadLStickLeft,      r_stick.x, -thumb_dead_zone, -32768);
     MAP_ANALOG(ImGuiKey_GamepadLStickRight,     r_stick.x, +thumb_dead_zone, +32767);
-    MAP_ANALOG(ImGuiKey_GamepadLStickUp,        r_stick.y, -thumb_dead_zone, -32767);
-    MAP_ANALOG(ImGuiKey_GamepadLStickDown,      r_stick.y, +thumb_dead_zone, +32767);
+    MAP_ANALOG(ImGuiKey_GamepadLStickUp,        r_stick.y, +thumb_dead_zone, +32767);
+    MAP_ANALOG(ImGuiKey_GamepadLStickDown,      r_stick.y, -thumb_dead_zone, -32767);
     #undef MAP_BUTTON
     #undef MAP_ANALOG
 
