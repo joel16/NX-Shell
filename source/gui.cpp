@@ -103,9 +103,6 @@ namespace GUI {
         ImGuiIO &io = ImGui::GetIO();
         (void)io;
         
-        io.IniFilename = nullptr;
-        io.DisplaySize = ImVec2(1280.f, 720.f);
-        io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
         
         if (!InitEGL(nwindowGetDefault()))
