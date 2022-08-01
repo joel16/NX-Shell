@@ -299,7 +299,7 @@ namespace Textures {
         tjDecompressHeader2(jpeg, *data, size, &texture.width, &texture.height, &jpegsubsamp);
         unsigned char *buffer = new unsigned char[texture.width * texture.height * 3];
         tjDecompress2(jpeg, *data, size, buffer, texture.width, 0, texture.height, TJPF_RGB, TJFLAG_FASTDCT);
-        bool ret = Create(buffer, GL_RGB, texture);
+        bool ret = Textures::Create(buffer, GL_RGB, texture);
         tjDestroy(jpeg);
         delete[] buffer;
         return ret;
