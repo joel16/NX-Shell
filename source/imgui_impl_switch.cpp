@@ -100,6 +100,7 @@ bool ImGui_ImplSwitch_Init(const char *glsl_version) {
     ImGui_ImplSwitch_Data *bd = IM_NEW(ImGui_ImplSwitch_Data)();
     io.BackendRendererUserData = (void *)bd;
     io.BackendRendererName = "imgui_impl_switch";
+    io.IniFilename = nullptr;
 
     // Query for GL version (e.g. 320 for GL 3.2)
 #if !defined(IMGUI_IMPL_OPENGL_ES2)
