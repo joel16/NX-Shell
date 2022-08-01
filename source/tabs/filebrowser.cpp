@@ -173,7 +173,19 @@ namespace Tabs {
                             sorts_specs->SpecsDirty = true;
                         }
                         else {
-                            
+                            char path[FS_MAX_PATH + 1];
+
+                            switch (file_type) {
+                                case FileTypeImage:
+                                    if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, data.entries[i].name)) > 0) {
+                                        Textures::LoadImageFile(path, data.textures);
+                                        data.state = WINDOW_STATE_IMAGEVIEWER;
+                                    }
+                                    break;
+
+                                default:
+                                    break;
+                            }
                         }
                     }
 

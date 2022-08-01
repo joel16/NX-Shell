@@ -8,13 +8,13 @@
 #include "windows.hpp"
 
 namespace Windows {
-    static void SetupWindow(void) {
+    void SetupWindow(void) {
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     };
     
-    static void ExitWindow(void) {
+    void ExitWindow(void) {
         ImGui::End();
         ImGui::PopStyleVar();
     };
@@ -55,6 +55,10 @@ namespace Windows {
                 Popups::DeletePopup(data);
                 break;
 
+            case WINDOW_STATE_IMAGEVIEWER:
+                Windows::ImageViewer();
+                break;
+
             default:
                 break;
         }
@@ -76,6 +80,7 @@ namespace Windows {
         if (key & HidNpadButton_B) {
             switch(data.state) {
                 case WINDOW_STATE_OPTIONS:
+                case WINDOW_STATE_IMAGEVIEWER:
                     data.state = WINDOW_STATE_FILEBROWSER;
                     break;
 

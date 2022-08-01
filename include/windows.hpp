@@ -3,7 +3,7 @@
 #include <switch.h>
 #include <vector>
 
-#include "imgui.h"
+#include "textures.hpp"
 
 enum WINDOW_STATES {
     WINDOW_STATE_FILEBROWSER = 0,
@@ -37,6 +37,9 @@ typedef struct {
     WindowCheckboxData checkbox_data;
     s64 used_storage = 0;
     s64 total_storage = 0;
+    std::vector<Tex> textures;
+    long unsigned int frame_count = 0;
+    float zoom_factor = 1.0f;
 } WindowData;
 
 extern WindowData data;
@@ -47,6 +50,9 @@ namespace FileBrowser {
 }
 
 namespace Windows {
+    void SetupWindow(void);
+    void ExitWindow(void);
     void ResetCheckbox(WindowData &data);
     void MainWindow(WindowData &data, u64 &key, bool progress);
+    void ImageViewer(void);
 }
