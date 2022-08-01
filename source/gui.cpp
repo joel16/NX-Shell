@@ -105,7 +105,7 @@ namespace GUI {
         
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
         
-        if (!InitEGL(nwindowGetDefault()))
+        if (!GUI::InitEGL(nwindowGetDefault()))
             return false;
         
         gladLoadGL();
@@ -162,6 +162,6 @@ namespace GUI {
     
     void Exit(void) {
         ImGui_ImplSwitch_Shutdown();
-        ExitEGL();
+        GUI::ExitEGL();
     }
 }

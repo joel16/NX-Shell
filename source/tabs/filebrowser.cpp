@@ -107,7 +107,7 @@ namespace Tabs {
             
             if (ImGui::BeginTable("Directory List", 3, tableFlags)) {
                 // Make header always visible
-                ImGui::TableSetupScrollFreeze(0, 1);
+                // ImGui::TableSetupScrollFreeze(0, 1);
 
                 ImGui::TableSetupColumn("", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_NoHeaderLabel | ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_DefaultSort);
