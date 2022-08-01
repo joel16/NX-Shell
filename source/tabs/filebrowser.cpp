@@ -1,13 +1,13 @@
 #include <algorithm>
 #include <cstring>
 
-#include "config.h"
-#include "fs.h"
+#include "config.hpp"
+#include "fs.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "tabs.h"
-#include "textures.h"
-#include "utils.h"
+#include "tabs.hpp"
+#include "textures.hpp"
+#include "utils.hpp"
 
 int sort = 0;
 

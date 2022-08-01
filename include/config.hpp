@@ -1,6 +1,4 @@
-
-#ifndef NX_SHELL_CONFIG_H
-#define NX_SHELL_CONFIG_H
+#pragma once
 
 #include <switch.h>
 
@@ -17,5 +15,3 @@ namespace Config {
     int Save(config_t &config);
     int Load(void);
 }
-
-#endif

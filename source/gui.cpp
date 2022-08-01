@@ -4,10 +4,9 @@
 #include <cstdio>
 #include <switch.h>
 
-#include "gui.h"
-#include "imgui.h"
-#include "imgui_impl_switch.h"
-#include "log.h"
+#include "gui.hpp"
+#include "imgui_impl_switch.hpp"
+#include "log.hpp"
 
 namespace GUI {
     static EGLDisplay s_display = EGL_NO_DISPLAY;

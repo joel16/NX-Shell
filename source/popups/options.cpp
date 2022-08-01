@@ -2,15 +2,14 @@
 #include <cstring>
 #include <glad/glad.h>
 
-#include "config.h"
-#include "fs.h"
-#include "gui.h"
-#include "imgui.h"
-#include "imgui_impl_switch.h"
+#include "config.hpp"
+#include "fs.hpp"
+#include "gui.hpp"
+#include "imgui_impl_switch.hpp"
 #include "imgui_internal.h"
-#include "keyboard.h"
-#include "language.h"
-#include "popups.h"
+#include "keyboard.hpp"
+#include "language.hpp"
+#include "popups.hpp"
 
 namespace Popups {
     static bool copy = false, move = false;

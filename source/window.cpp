@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <cstring>
 
-#include "config.h"
+#include "config.hpp"
 #include "imgui.h"
-#include "popups.h"
-#include "tabs.h"
-#include "windows.h"
+#include "popups.hpp"
+#include "tabs.hpp"
+#include "windows.hpp"
 
 namespace Windows {
     static void SetupWindow(void) {

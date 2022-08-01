@@ -1,5 +1,4 @@
-#ifndef NX_SHELL_LANGUAGE_H
-#define NX_SHELL_LANGUAGE_H
+#pragma once
 
 namespace Lang {
     typedef enum {
@@ -81,5 +80,3 @@ namespace Lang {
 }
 
 extern const char **strings[Lang::Max];
-
-#endif

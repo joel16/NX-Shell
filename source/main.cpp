@@ -3,14 +3,14 @@
 #include <string.h>
 
 #include <switch.h>
-#include <imgui.h>
 
-#include "config.h"
-#include "fs.h"
-#include "gui.h"
-#include "log.h"
-#include "textures.h"
-#include "windows.h"
+#include "config.hpp"
+#include "fs.hpp"
+#include "gui.hpp"
+#include "imgui.h"
+#include "log.hpp"
+#include "textures.hpp"
+#include "windows.hpp"
 
 char __application_path[FS_MAX_PATH];
 WindowData data;

@@ -1,10 +1,10 @@
-#include "config.h"
-#include "fs.h"
-#include "gui.h"
+#include "config.hpp"
+#include "fs.hpp"
+#include "gui.hpp"
 #include "imgui.h"
-#include "language.h"
-#include "popups.h"
-#include "utils.h"
+#include "language.hpp"
+#include "popups.hpp"
+#include "utils.hpp"
 
 namespace Popups {
     static char *FormatDate(char *string, time_t timestamp) {

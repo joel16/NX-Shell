@@ -1,7 +1,7 @@
 #include <cstdarg>
 
-#include "config.h"
-#include "fs.h"
+#include "config.hpp"
+#include "fs.hpp"
 
 namespace Log {
     static FsFile log_file;

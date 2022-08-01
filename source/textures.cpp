@@ -31,12 +31,11 @@
 
 #include <switch.h>
 
-#include "fs.h"
-#include "gui.h"
-#include "imgui.h"
-#include "imgui_impl_switch.h"
-#include "log.h"
-#include "textures.h"
+#include "fs.hpp"
+#include "gui.hpp"
+#include "imgui_impl_switch.hpp"
+#include "log.hpp"
+#include "textures.hpp"
 
 #define BYTES_PER_PIXEL 4
 #define MAX_IMAGE_BYTES (48 * 1024 * 1024)

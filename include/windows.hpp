@@ -1,5 +1,4 @@
-#ifndef NX_SHELL_WINDOWS_H
-#define NX_SHELL_WINDOWS_H
+#pragma once
 
 #include <switch.h>
 #include <vector>
@@ -51,5 +50,3 @@ namespace Windows {
     void ResetCheckbox(WindowData &data);
     void MainWindow(WindowData &data, u64 &key, bool progress);
 }
-
-#endif

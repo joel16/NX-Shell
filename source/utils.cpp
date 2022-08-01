@@ -1,7 +1,5 @@
 #include <cstdio>
 
-#include "utils.h"
-
 namespace Utils {
     void GetSizeString(char *string, double size) {
         int i = 0;

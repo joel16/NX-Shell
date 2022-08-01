@@ -3,11 +3,11 @@
 #include <cstring>
 #include <filesystem>
 
-#include "config.h"
-#include "fs.h"
-#include "language.h"
-#include "log.h"
-#include "popups.h"
+#include "config.hpp"
+#include "fs.hpp"
+#include "language.hpp"
+#include "log.hpp"
+#include "popups.hpp"
 
 // Global vars
 FsFileSystem *fs;

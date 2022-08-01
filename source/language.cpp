@@ -1,6 +1,6 @@
 #include <switch.h>
 
-#include "language.h"
+#include "language.hpp"
 
 // TODO: Japanese
 static const char *strings_jp[] {

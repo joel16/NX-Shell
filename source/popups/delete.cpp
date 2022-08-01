@@ -1,12 +1,12 @@
 #include <algorithm>
 #include <cstring>
 
-#include "config.h"
-#include "fs.h"
+#include "config.hpp"
+#include "fs.hpp"
 #include "imgui.h"
-#include "language.h"
-#include "log.h"
-#include "popups.h"
+#include "language.hpp"
+#include "log.hpp"
+#include "popups.hpp"
 
 namespace Popups {
     void DeletePopup(WindowData &data) {

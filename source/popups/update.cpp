@@ -1,13 +1,13 @@
-#include "config.h"
-#include "fs.h"
-#include "gui.h"
+#include "config.hpp"
+#include "fs.hpp"
+#include "gui.hpp"
 #include "imgui.h"
-#include "language.h"
-#include "log.h"
-#include "net.h"
-#include "popups.h"
-#include "utils.h"
-#include "windows.h"
+#include "language.hpp"
+#include "log.hpp"
+#include "net.hpp"
+#include "popups.hpp"
+#include "utils.hpp"
+#include "windows.hpp"
 
 namespace Popups {
     static bool done = false;

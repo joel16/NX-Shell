@@ -1,10 +1,10 @@
 #include <cstring>
 #include <switch.h>
 
-#include "config.h"
-#include "keyboard.h"
-#include "language.h"
-#include "log.h"
+#include "config.hpp"
+#include "keyboard.hpp"
+#include "language.hpp"
+#include "log.hpp"
 
 namespace Keyboard {
     // Empty strings are invalid.

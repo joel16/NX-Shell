@@ -2,9 +2,9 @@
 #include <cstring>
 #include <jansson.h>
 
-#include "config.h"
-#include "fs.h"
-#include "log.h"
+#include "config.hpp"
+#include "fs.hpp"
+#include "log.hpp"
 
 #define CONFIG_VERSION 3
 

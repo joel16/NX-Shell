@@ -1,5 +1,4 @@
-#ifndef NX_SHELL_GUI_H
-#define NX_SHELL_GUI_H
+#pragma once
 
 namespace GUI {
     bool Init(void);
@@ -8,5 +7,3 @@ namespace GUI {
     void Render(void);
     void Exit(void);
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef NX_SHELL_TEXTURES_H
-#define NX_SHELL_TEXTURES_H
+#pragma once
 
 #include <glad/glad.h>
 #include <switch.h>
@@ -22,5 +21,3 @@ namespace Textures {
     void Init(void);
     void Exit(void);
 }
-
-#endif

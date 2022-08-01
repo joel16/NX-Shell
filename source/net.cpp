@@ -5,9 +5,9 @@
 #include <jansson.h>
 #include <switch.h>
 
-#include "fs.h"
-#include "log.h"
-#include "net.h"
+#include "fs.hpp"
+#include "log.hpp"
+#include "net.hpp"
 
 namespace Net {
     static s64 offset = 0;

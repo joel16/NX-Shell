@@ -1,11 +1,11 @@
 #include <glad/glad.h>
 #include <switch.h>
 
-#include "gui.h"
-#include "imgui_impl_switch.h"
-#include "log.h"
-#include "popups.h"
-#include "windows.h"
+#include "gui.hpp"
+#include "imgui_impl_switch.hpp"
+#include "log.hpp"
+#include "popups.hpp"
+#include "windows.hpp"
 
 // Todo maybe use a thread to run this?
 namespace Popups {

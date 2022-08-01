@@ -1,5 +1,4 @@
-#ifndef NX_SHELL_NET_H
-#define NX_SHELL_NET_H
+#pragma once
 
 #include <string>
 
@@ -9,5 +8,3 @@ namespace Net {
     std::string GetLatestReleaseJSON(void);
     void GetLatestReleaseNRO(const std::string &tag);
 }
-
-#endif

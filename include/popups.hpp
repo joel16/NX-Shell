@@ -1,10 +1,9 @@
-#ifndef NX_SHELL_POPUPS_H
-#define NX_SHELL_POPUPS_H
+#pragma once
 
 #include <string>
 
 #include "imgui.h"
-#include "windows.h"
+#include "windows.hpp"
 
 namespace Popups {
     inline void SetupPopup(const char *id) {
@@ -27,5 +26,3 @@ namespace Popups {
     void UpdatePopup(bool &state, bool &connection_status, bool &available, const std::string &tag);
     void ProgressBar(float offset, float size, const std::string &title, const std::string &text);
 }
-
-#endif

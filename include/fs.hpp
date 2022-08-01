@@ -1,5 +1,4 @@
-#ifndef NX_SHELL_FS_H
-#define NX_SHELL_FS_H
+#pragma once
 
 #include <string>
 #include <switch.h>
@@ -35,5 +34,3 @@ namespace FS {
     Result GetTotalStorageSpace(s64 &size);
     Result GetUsedStorageSpace(s64 &size);
 }
-
-#endif

@@ -1,11 +1,11 @@
-#include "config.h"
-#include "fs.h"
-#include "gui.h"
+#include "config.hpp"
+#include "fs.hpp"
+#include "gui.hpp"
 #include "imgui.h"
-#include "language.h"
-#include "net.h"
-#include "popups.h"
-#include "tabs.h"
+#include "language.hpp"
+#include "net.hpp"
+#include "popups.hpp"
+#include "tabs.hpp"
 
 namespace Tabs {
     static bool update_popup = false, network_status = false, update_available = false;
