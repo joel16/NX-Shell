@@ -28,7 +28,7 @@ namespace Windows {
         data.checkbox_data.count = 0;
     };
 
-    void MainWindow(WindowData &data, u64 &key) {
+    void MainWindow(WindowData &data, u64 &key, bool progress) {
         Windows::SetupWindow();
         if (ImGui::Begin("NX-Shell", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             if (ImGui::BeginTabBar("NX-Shell-tabs")) {
@@ -38,6 +38,9 @@ namespace Windows {
             }
         }
         Windows::ExitWindow();
+
+        if (progress)
+            return;
 
         switch (data.state) {
             case WINDOW_STATE_OPTIONS:

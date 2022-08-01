@@ -40,6 +40,7 @@ typedef struct {
     s64 total_storage = 0;
 } WindowData;
 
+extern WindowData data;
 extern int sort;
 
 namespace FileBrowser {
@@ -48,7 +49,7 @@ namespace FileBrowser {
 
 namespace Windows {
     void ResetCheckbox(WindowData &data);
-    void MainWindow(WindowData &data, u64 &key);
+    void MainWindow(WindowData &data, u64 &key, bool progress);
 }
 
 #endif

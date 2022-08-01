@@ -5,7 +5,9 @@
 
 #include "config.h"
 #include "fs.h"
+#include "language.h"
 #include "log.h"
+#include "popups.h"
 
 // Global vars
 FsFileSystem *fs;
@@ -320,7 +322,7 @@ namespace FS {
             }
             
             offset += bytes_read;
-            //Popups::ProgressPopup(static_cast<float>(offset), static_cast<float>(size), strings[cfg.lang][Lang::OptionsCopying], filename.c_str());
+            Popups::ProgressBar(static_cast<float>(offset), static_cast<float>(size), strings[cfg.lang][Lang::OptionsCopying], filename.c_str());
         } while(offset < size);
         
         delete[] buf;

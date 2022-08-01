@@ -13,6 +13,7 @@
 #include "windows.h"
 
 char __application_path[FS_MAX_PATH];
+WindowData data;
 
 namespace Services {
     void SetDefaultTheme(void) {
@@ -117,7 +118,6 @@ namespace Services {
 
 int main(int argc, char* argv[]) {
     Result ret = 0;
-    WindowData data;
     u64 key = 0;
 
     Services::Init();
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
     FS::GetTotalStorageSpace(data.total_storage);
     
     while (GUI::Loop(key)) {
-        Windows::MainWindow(data, key);
+        Windows::MainWindow(data, key, false);
         GUI::Render();
     }
 

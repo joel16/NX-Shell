@@ -94,6 +94,10 @@ namespace GUI {
         }
     }
 
+    bool SwapBuffers(void) {
+        return eglSwapBuffers(s_display, s_surface);
+    }
+
     bool Init(void) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -157,7 +161,7 @@ namespace GUI {
         glClearColor(0.00f, 0.00f, 0.00f, 1.00f);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplSwitch_RenderDrawData(ImGui::GetDrawData());
-        eglSwapBuffers(s_display, s_surface);
+        GUI::SwapBuffers();
     }
     
     void Exit(void) {

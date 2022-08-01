@@ -1,9 +1,12 @@
 #include <algorithm>
 #include <cstring>
+#include <glad/glad.h>
 
 #include "config.h"
 #include "fs.h"
+#include "gui.h"
 #include "imgui.h"
+#include "imgui_impl_switch.h"
 #include "imgui_internal.h"
 #include "keyboard.h"
 #include "language.h"
@@ -129,9 +132,9 @@ namespace Popups {
                     data.state = WINDOW_STATE_FILEBROWSER;
                 }
                 else {
-                    // ImGui::EndPopup();
-                    // ImGui::PopStyleVar();
-                    // ImGui::Render();
+                    ImGui::EndPopup();
+                    ImGui::PopStyleVar();
+                    ImGui::Render();
 
                     if ((data.checkbox_data.count > 1) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) != 0))
                         Popups::HandleMultipleCopy(data, &FS::Paste);
@@ -144,8 +147,9 @@ namespace Popups {
                     }
 
                     copy = !copy;
-                    ImGui::CloseCurrentPopup();
+                    //ImGui::CloseCurrentPopup();
                     data.state = WINDOW_STATE_FILEBROWSER;
+                    return;
                 }
             }
             
