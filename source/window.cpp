@@ -80,13 +80,22 @@ namespace Windows {
         if (key & HidNpadButton_B) {
             switch(data.state) {
                 case WINDOW_STATE_OPTIONS:
-                case WINDOW_STATE_IMAGEVIEWER:
                     data.state = WINDOW_STATE_FILEBROWSER;
                     break;
 
                 case WINDOW_STATE_PROPERTIES:
                 case WINDOW_STATE_DELETE:
                     data.state = WINDOW_STATE_OPTIONS;
+                    break;
+
+                case WINDOW_STATE_IMAGEVIEWER:
+                    for (long unsigned int i = 0; i < data.textures.size(); i++)
+                        Textures::Free(&data.textures[i]);
+                        
+                    data.textures.clear();
+                    data.frame_count = 0;
+                    data.zoom_factor = 1.0f;
+                    data.state = WINDOW_STATE_FILEBROWSER;
                     break;
 
                 default:
