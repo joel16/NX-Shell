@@ -37,6 +37,7 @@
 #include "imgui_impl_switch.hpp"
 #include "log.hpp"
 #include "textures.hpp"
+#include "windows.hpp"
 
 #define BYTES_PER_PIXEL 4
 #define MAX_IMAGE_BYTES (48 * 1024 * 1024)
@@ -439,10 +440,6 @@ namespace Textures {
     
     void Free(Tex &texture) {
         glDeleteTextures(1, &texture.id);
-        glViewport(0, 0, static_cast<int>(ImGui::GetIO().DisplaySize.x), static_cast<int>(ImGui::GetIO().DisplaySize.y));
-        glClearColor(0.00f, 0.00f, 0.00f, 1.00f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        GUI::SwapBuffers();
     }
     
     void Exit(void) {
@@ -452,5 +449,8 @@ namespace Textures {
         Textures::Free(uncheck_icon);
         Textures::Free(check_icon);
         Textures::Free(folder_icon);
+
+        for (unsigned int i = 0; i < data.textures.size(); i++)
+            Textures::Free(data.textures[i]);
     }
 }

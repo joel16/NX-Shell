@@ -11,9 +11,6 @@
 
 namespace ImageViewer {
     void ClearTextures(void) {
-        for (unsigned int i = 0; i < data.textures.size(); i++)
-            Textures::Free(data.textures[i]);
-        
         data.textures.clear();
         data.frame_count = 0;
     }
@@ -94,14 +91,12 @@ namespace ImageViewer {
             
             if (key & HidNpadButton_L) {
                 ImageViewer::ClearTextures();
-                svcSleepThread(10000000);
                 
                 if (!ImageViewer::HandlePrev())
                     data.state = WINDOW_STATE_FILEBROWSER;
             }
             else if (key & HidNpadButton_R) {
                 ImageViewer::ClearTextures();
-                svcSleepThread(10000000);
                 
                 if (!ImageViewer::HandleNext())
                     data.state = WINDOW_STATE_FILEBROWSER;
