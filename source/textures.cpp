@@ -41,7 +41,8 @@
 #define BYTES_PER_PIXEL 4
 #define MAX_IMAGE_BYTES (48 * 1024 * 1024)
 
-Tex folder_icon, file_icons[NUM_FILE_ICONS], check_icon, uncheck_icon;
+std::vector<Tex> file_icons;
+Tex folder_icon, check_icon, uncheck_icon;
 
 namespace BMP {
     static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
@@ -410,7 +411,9 @@ namespace Textures {
     }
     
     void Init(void) {
-        const std::string paths[NUM_FILE_ICONS] {
+        const int num_icons = 4;
+
+        const std::string paths[num_icons] {
             "romfs:/file.png",
             "romfs:/archive.png",
             "romfs:/image.png",
@@ -426,22 +429,28 @@ namespace Textures {
         image_ret = Textures::LoadImageRomfs("romfs:/uncheck.png", uncheck_icon);
         IM_ASSERT(image_ret);
         
-        for (int i = 0; i < NUM_FILE_ICONS; i++) {
+        file_icons.resize(num_icons);
+
+        for (int i = 0; i < num_icons; i++) {
             bool ret = Textures::LoadImageRomfs(paths[i], file_icons[i]);
             IM_ASSERT(ret);
         }
     }
     
-    void Free(Tex *texture) {
-        //glDeleteTextures(1, &texture->id);
+    void Free(Tex &texture) {
+        glDeleteTextures(1, &texture.id);
+        glViewport(0, 0, static_cast<int>(ImGui::GetIO().DisplaySize.x), static_cast<int>(ImGui::GetIO().DisplaySize.y));
+        glClearColor(0.00f, 0.00f, 0.00f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        GUI::SwapBuffers();
     }
     
     void Exit(void) {
-        // for (int i = 0; i < NUM_FILE_ICONS; i++)
-        // 	glDeleteTextures(1, &file_icons[i].id);
-        
-        // glDeleteTextures(1, &uncheck_icon.id);
-        // glDeleteTextures(1, &check_icon.id);
-        // glDeleteTextures(1, &folder_icon.id);
+        for (unsigned int i = 0; i < file_icons.size(); i++)
+            Textures::Free(file_icons[i]);
+
+        Textures::Free(uncheck_icon);
+        Textures::Free(check_icon);
+        Textures::Free(folder_icon);
     }
 }

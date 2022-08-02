@@ -4,8 +4,6 @@
 #include <switch.h>
 #include <vector>
 
-#define NUM_FILE_ICONS 4
-
 typedef struct {
     GLuint id = 0;
     int width = 0;
@@ -13,11 +11,12 @@ typedef struct {
     int delay = 0;
 } Tex;
 
-extern Tex folder_icon, file_icons[NUM_FILE_ICONS], check_icon, uncheck_icon;
+extern std::vector<Tex> file_icons;
+extern Tex folder_icon, check_icon, uncheck_icon;
 
 namespace Textures {
     bool LoadImageFile(const char path[FS_MAX_PATH], std::vector<Tex> &textures);
-    void Free(Tex *texture);
+    void Free(Tex &texture);
     void Init(void);
     void Exit(void);
 }

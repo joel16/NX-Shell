@@ -1,13 +1,117 @@
+#include <string>
+
 #include "config.hpp"
 #include "gui.hpp"
 #include "imgui.h"
+#include "popups.hpp"
 #include "windows.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 
+namespace ImageViewer {
+    void ClearTextures(void) {
+        for (unsigned int i = 0; i < data.textures.size(); i++)
+            Textures::Free(data.textures[i]);
+        
+        data.textures.clear();
+        data.frame_count = 0;
+    }
+
+    bool HandleScroll(int index) {
+        if (data.entries[index].type == FsDirEntryType_Dir)
+            return false;
+        else {
+            data.selected = index;
+            
+            char path[FS_MAX_PATH + 1];
+            if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, data.entries[index].name)) > 0) {
+                bool ret = Textures::LoadImageFile(path, data.textures);
+                IM_ASSERT(ret);
+                return ret;
+            }
+        }
+
+        return false;
+    }
+
+    bool HandlePrev(void) {
+        bool ret = false;
+
+        for (int i = data.selected - 1; i > 0; i--) {
+            std::string filename = data.entries[i].name;
+            if (filename.empty())
+                continue;
+                
+            if (!(ret = ImageViewer::HandleScroll(i)))
+                continue;
+            else
+                break;
+        }
+
+        return ret;
+    }
+
+    bool HandleNext(void) {
+        bool ret = false;
+
+        if (data.selected == data.entries.size())
+            return ret;
+        
+        for (unsigned int i = data.selected + 1; i < data.entries.size(); i++) {
+            if (!(ret = ImageViewer::HandleScroll(i)))
+                continue;
+            else
+                break;
+        }
+
+        return ret;
+    }
+
+    void HandleControls(u64 &key, bool &properties) {
+        if (key & HidNpadButton_X)
+            properties = !properties;
+        
+        if (key & HidNpadButton_StickLDown) {
+            data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
+            
+            if (data.zoom_factor < 0.1f)
+                data.zoom_factor = 0.1f;
+        }
+        else if (key & HidNpadButton_StickLUp) {
+            data.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
+            
+            if (data.zoom_factor > 5.0f)
+                data.zoom_factor = 5.0f;
+        }
+        
+        if (!properties) {
+            if (key & HidNpadButton_B) {
+                ImageViewer::ClearTextures();
+                data.zoom_factor = 1.0f;
+                data.state = WINDOW_STATE_FILEBROWSER;
+            }
+            
+            if (key & HidNpadButton_L) {
+                ImageViewer::ClearTextures();
+                svcSleepThread(10000000);
+                
+                if (!ImageViewer::HandlePrev())
+                    data.state = WINDOW_STATE_FILEBROWSER;
+            }
+            else if (key & HidNpadButton_R) {
+                ImageViewer::ClearTextures();
+                svcSleepThread(10000000);
+                
+                if (!ImageViewer::HandleNext())
+                    data.state = WINDOW_STATE_FILEBROWSER;
+            }
+        }
+    }
+}
+
 namespace Windows {
-    void ImageViewer(void) {
+    void ImageViewer(bool &properties) {
         Windows::SetupWindow();
         
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -30,6 +134,9 @@ namespace Windows {
             else
                 ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[0].id), ImVec2((data.textures[0].width * data.zoom_factor), (data.textures[0].height * data.zoom_factor)));
         }
+
+        if (properties)
+            Popups::ImageProperties(properties, data.textures[0]);
         
         Windows::ExitWindow();
         ImGui::PopStyleVar();

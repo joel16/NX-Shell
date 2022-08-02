@@ -20,7 +20,7 @@ namespace Popups {
     void ArchivePopup(void);
     void DeletePopup(WindowData &data);
     void FilePropertiesPopup(WindowData &data);
-    void ImageProperties(bool *state);
+    void ImageProperties(bool &state, Tex &texture);
     void OptionsPopup(WindowData &data);
     void ProgressPopup(float offset, float size, const std::string &title, const std::string &text);
     void UpdatePopup(bool &state, bool &connection_status, bool &available, const std::string &tag);

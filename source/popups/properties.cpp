@@ -56,4 +56,55 @@ namespace Popups {
         
         Popups::ExitPopup();
     }
+
+    void ImageProperties(bool &state, Tex &texture) {
+        Popups::SetupPopup(strings[cfg.lang][Lang::OptionsProperties]);
+
+        std::string new_width, new_height;
+        if (ImGui::BeginPopupModal("Properties", &state, ImGuiWindowFlags_AlwaysAutoResize)) {
+            std::string parent_text = "Parent: ";
+            parent_text.append(cfg.cwd);
+            ImGui::Text(parent_text.c_str());
+
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
+            std::string name_text = "Name: ";
+            name_text.append(data.entries[data.selected].name);
+            ImGui::Text(name_text.c_str());
+
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
+            char size[16];
+            Utils::GetSizeString(size, static_cast<double>(data.entries[data.selected].file_size));
+            std::string size_text = "Size: ";
+            size_text.append(size);
+            ImGui::Text(size_text.c_str());
+
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
+            std::string width_text = "Width: ";
+            width_text.append(std::to_string(texture.width));
+            width_text.append("px");
+            ImGui::Text(width_text.c_str());
+            /*ImGui::SameLine(0.0f, 10.0f);
+            if (ImGui::Button("Edit width"))
+                new_width = Keyboard::GetText("Enter width", std::to_string(texture.width));*/
+
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
+            std::string height_text = "Height: ";
+            height_text.append(std::to_string(texture.height));
+            height_text.append("px");
+            ImGui::Text(height_text.c_str());
+
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+            
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+                state = false;
+            }
+        }
+        
+        Popups::ExitPopup();
+    }
 }

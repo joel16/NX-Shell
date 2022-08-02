@@ -8,6 +8,8 @@
 #include "windows.hpp"
 
 namespace Windows {
+    static bool image_properties = false;
+
     void SetupWindow(void) {
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(1280.0f, 720.0f), ImGuiCond_Once);
@@ -56,7 +58,8 @@ namespace Windows {
                 break;
 
             case WINDOW_STATE_IMAGEVIEWER:
-                Windows::ImageViewer();
+                Windows::ImageViewer(image_properties);
+                ImageViewer::HandleControls(key, image_properties);
                 break;
 
             default:
@@ -89,13 +92,13 @@ namespace Windows {
                     break;
 
                 case WINDOW_STATE_IMAGEVIEWER:
-                    for (long unsigned int i = 0; i < data.textures.size(); i++)
-                        Textures::Free(&data.textures[i]);
-                        
-                    data.textures.clear();
-                    data.frame_count = 0;
-                    data.zoom_factor = 1.0f;
-                    data.state = WINDOW_STATE_FILEBROWSER;
+                    if (image_properties)
+                        image_properties = false;
+                    else {
+                        ImageViewer::ClearTextures();
+                        data.state = WINDOW_STATE_FILEBROWSER;
+                    }
+                    
                     break;
 
                 default:

@@ -49,10 +49,18 @@ namespace FileBrowser {
     bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB);
 }
 
+namespace ImageViewer {
+    void ClearTextures(void);
+    bool HandleScroll(int index);
+    bool HandlePrev(void);
+    bool HandleNext(void);
+    void HandleControls(u64 &key, bool &properties);
+}
+
 namespace Windows {
     void SetupWindow(void);
     void ExitWindow(void);
     void ResetCheckbox(WindowData &data);
     void MainWindow(WindowData &data, u64 &key, bool progress);
-    void ImageViewer(void);
+    void ImageViewer(bool &properties);
 }
