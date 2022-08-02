@@ -15,7 +15,7 @@ namespace Net {
     bool GetNetworkStatus(void) {
         Result ret = 0;
         NifmInternetConnectionStatus status;
-        if (R_FAILED(ret = nifmGetInternetConnectionStatus(nullptr, nullptr, &status))) {
+        if (R_FAILED(ret = nifmGetInternetConnectionStatus(nullptr, nullptr, std::addressof(status)))) {
             Log::Error("nifmGetInternetConnectionStatus() failed: 0x%x\n", ret);
             return false;
         }
@@ -56,13 +56,13 @@ namespace Net {
         curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, Net::WriteJSONData);
-        curl_easy_setopt(handle, CURLOPT_WRITEDATA, &json);
+        curl_easy_setopt(handle, CURLOPT_WRITEDATA, std::addressof(json));
         curl_easy_perform(handle);
         curl_easy_cleanup(handle);
         
         json_t *root;
         json_error_t error;
-        root = json_loads(json.c_str(), JSON_DECODE_ANY, &error);
+        root = json_loads(json.c_str(), JSON_DECODE_ANY, std::addressof(error));
         
         if (!root) {
             Log::Error("json_loads failed on line %d: %s\n", error.line, error.text);
@@ -89,7 +89,7 @@ namespace Net {
         if (!FS::FileExists(path))
             fsFsCreateFile(fs, path, 0, 0);
 
-        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Write | FsOpenMode_Append, &file))) {
+        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Write | FsOpenMode_Append, std::addressof(file)))) {
             Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
             return;
         }
@@ -103,13 +103,13 @@ namespace Net {
             curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
             curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
             curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, Net::WriteNROData);
-            curl_easy_setopt(handle, CURLOPT_WRITEDATA, &file);
+            curl_easy_setopt(handle, CURLOPT_WRITEDATA, std::addressof(file));
             curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
             curl_easy_perform(handle);
             curl_easy_cleanup(handle);
         }
         
-        fsFileClose(&file);
+        fsFileClose(std::addressof(file));
         offset = 0;
         return;
     }

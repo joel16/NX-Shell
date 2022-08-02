@@ -8,7 +8,7 @@
 
 namespace Popups {
     static char *FormatDate(char *string, time_t timestamp) {
-        strftime(string, 36, "%Y/%m/%d %H:%M:%S", localtime(&timestamp));
+        strftime(string, 36, "%Y/%m/%d %H:%M:%S", localtime(std::addressof(timestamp)));
         return string;
     }
 
@@ -61,9 +61,9 @@ namespace Popups {
         Popups::SetupPopup(strings[cfg.lang][Lang::OptionsProperties]);
 
         std::string new_width, new_height;
-        if (ImGui::BeginPopupModal("Properties", &state, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("Properties", std::addressof(state), ImGuiWindowFlags_AlwaysAutoResize)) {
             std::string parent_text = "Parent: ";
-            parent_text.append(cfg.cwd);
+            parent_text.append(cwd);
             ImGui::Text(parent_text.c_str());
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing

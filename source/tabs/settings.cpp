@@ -55,7 +55,7 @@ namespace Tabs {
             if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsImageViewTitle])) {
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
-                if (ImGui::Checkbox(strings[cfg.lang][Lang::SettingsImageViewFilenameToggle], &cfg.image_filename))
+                if (ImGui::Checkbox(strings[cfg.lang][Lang::SettingsImageViewFilenameToggle], std::addressof(cfg.image_filename)))
                     Config::Save(cfg);
                 
                 ImGui::TreePop();
@@ -66,7 +66,7 @@ namespace Tabs {
             if (ImGui::TreeNode(strings[cfg.lang][Lang::SettingsDevOptsTitle])) {
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
-                if (ImGui::Checkbox(strings[cfg.lang][Lang::SettingsDevOptsLogsToggle], &cfg.dev_options))
+                if (ImGui::Checkbox(strings[cfg.lang][Lang::SettingsDevOptsLogsToggle], std::addressof(cfg.dev_options)))
                     Config::Save(cfg);
                 
                 ImGui::TreePop();

@@ -5,7 +5,7 @@
 #include <vector>
 
 extern FsFileSystem *fs;
-extern FsFileSystem devices[4];
+extern std::vector<FsFileSystem> devices;
 
 typedef enum FileType {
     FileTypeNone,

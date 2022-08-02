@@ -21,9 +21,9 @@ namespace ImageViewer {
         else {
             data.selected = index;
             
-            char path[FS_MAX_PATH + 1];
-            if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, data.entries[index].name)) > 0) {
-                bool ret = Textures::LoadImageFile(path, data.textures);
+            char fs_path[FS_MAX_PATH + 1];
+            if ((std::snprintf(fs_path, FS_MAX_PATH, "%s/%s", cwd, data.entries[index].name)) > 0) {
+                bool ret = Textures::LoadImageFile(fs_path, data.textures);
                 IM_ASSERT(ret);
                 return ret;
             }

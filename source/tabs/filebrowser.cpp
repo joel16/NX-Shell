@@ -58,7 +58,7 @@ namespace Tabs {
         ImGuiTableSortSpecs *table_sort_specs = ImGui::TableGetSortSpecs();
         
         for (int i = 0; i < table_sort_specs->SpecsCount; ++i) {
-            const ImGuiTableColumnSortSpecs *column_sort_spec = &table_sort_specs->Specs[i];
+            const ImGuiTableColumnSortSpecs *column_sort_spec = std::addressof(table_sort_specs->Specs[i]);
             descending = (column_sort_spec->SortDirection == ImGuiSortDirection_Descending);
 
             // Make sure ".." stays at the top regardless of sort direction
@@ -96,7 +96,7 @@ namespace Tabs {
     void FileBrowser(WindowData &data) {
         if (ImGui::BeginTabItem("File Browser")) {
             // Display current working directory
-            ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), cfg.cwd);
+            ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), cwd);
             
             // Draw storage bar
             ImGui::ProgressBar(static_cast<float>(data.used_storage) / static_cast<float>(data.total_storage), ImVec2(1265.0f, 6.0f), "");
@@ -130,7 +130,7 @@ namespace Tabs {
                     ImGui::TableNextColumn();
                     ImGui::PushID(i);
                     
-                    if ((data.checkbox_data.checked.at(i)) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) == 0))
+                    if ((data.checkbox_data.checked.at(i)) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0))
                         ImGui::Image(reinterpret_cast<ImTextureID>(check_icon.id), tex_size);
                     else
                         ImGui::Image(reinterpret_cast<ImTextureID>(uncheck_icon.id), tex_size);
@@ -157,11 +157,14 @@ namespace Tabs {
                                     data.checkbox_data.checked.resize(data.entries.size());
                                 }
                             }
-                            else if (R_SUCCEEDED(FS::ChangeDirNext(data.entries[i].name, data.entries))) {
+                            else if ((FS::ChangeDirNext(data.entries[i].name, data.entries)) >= 0) {
                                 if ((data.checkbox_data.count > 1) && (data.checkbox_data.checked_copy.empty()))
                                     data.checkbox_data.checked_copy = data.checkbox_data.checked;
                                 
                                 data.checkbox_data.checked.resize(data.entries.size());
+                            }
+                            else {
+                                std::printf("ChangeDirNext failed?\n");
                             }
 
                             // Reset navigation ID -- TODO: Scroll to top
@@ -177,7 +180,7 @@ namespace Tabs {
 
                             switch (file_type) {
                                 case FileTypeImage:
-                                    if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, data.entries[i].name)) > 0) {
+                                    if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cwd, data.entries[i].name)) > 0) {
                                         Textures::LoadImageFile(path, data.textures);
                                         data.state = WINDOW_STATE_IMAGEVIEWER;
                                     }

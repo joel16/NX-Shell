@@ -11,7 +11,8 @@
 
 // Global vars
 FsFileSystem *fs;
-FsFileSystem devices[4];
+std::vector<FsFileSystem> devices;
+char cwd[FS_MAX_PATH] = "/";
 
 namespace FS {
     static int PREVIOUS_BROWSE_STATE = 0;
@@ -26,8 +27,8 @@ namespace FS {
 
     bool FileExists(const char path[FS_MAX_PATH]) {
         FsFile file;
-        if (R_SUCCEEDED(fsFsOpenFile(fs, path, FsOpenMode_Read, &file))) {
-            fsFileClose(&file);
+        if (R_SUCCEEDED(fsFsOpenFile(fs, path, FsOpenMode_Read, std::addressof(file)))) {
+            fsFileClose(std::addressof(file));
             return true;
         }
         
@@ -36,8 +37,8 @@ namespace FS {
     
     bool DirExists(const char path[FS_MAX_PATH]) {
         FsDir dir;
-        if (R_SUCCEEDED(fsFsOpenDirectory(fs, path, FsDirOpenMode_ReadDirs, &dir))) {
-            fsDirClose(&dir);
+        if (R_SUCCEEDED(fsFsOpenDirectory(fs, path, FsDirOpenMode_ReadDirs, std::addressof(dir)))) {
+            fsDirClose(std::addressof(dir));
             return true;
         }
         
@@ -48,18 +49,18 @@ namespace FS {
         Result ret = 0;
         
         FsFile file;
-        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, &file))) {
+        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, std::addressof(file)))) {
             Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
             return ret;
         }
         
-        if (R_FAILED(ret = fsFileGetSize(&file, &size))) {
+        if (R_FAILED(ret = fsFileGetSize(std::addressof(file), std::addressof(size)))) {
             Log::Error("fsFileGetSize(%s) failed: 0x%x\n", path, ret);
-            fsFileClose(&file);
+            fsFileClose(std::addressof(file));
             return ret;
         }
         
-        fsFileClose(&file);
+        fsFileClose(std::addressof(file));
         return 0;
     }
     
@@ -97,15 +98,15 @@ namespace FS {
         entry.file_size = 0;
         entries.push_back(entry);
         
-        if (R_FAILED(ret = fsFsOpenDirectory(fs, path, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, &dir))) {
+        if (R_FAILED(ret = fsFsOpenDirectory(fs, path, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, std::addressof(dir)))) {
             Log::Error("GetDirListfsFsOpenDirectory(%s) failed: 0x%x\n", path, ret);
             return ret;
         }
         
         while (true) {
             FsDirectoryEntry entry;
-            if (R_FAILED(ret = fsDirRead(&dir, &read_entries, 1, &entry))) {
-                fsDirClose(&dir);
+            if (R_FAILED(ret = fsDirRead(std::addressof(dir), &read_entries, 1, std::addressof(entry)))) {
+                fsDirClose(std::addressof(dir));
                 Log::Error("fsDirRead(%s) failed: 0x%x\n", path, ret);
                 return ret;
             }
@@ -116,7 +117,7 @@ namespace FS {
             entries.push_back(entry);
         }
 
-        fsDirClose(&dir);
+        fsDirClose(std::addressof(dir));
         return 0;
     }
     
@@ -129,24 +130,24 @@ namespace FS {
             
         // Apply cd after successfully listing new directory
         entries.clear();
-        std::strncpy(cfg.cwd, path, FS_MAX_PATH);
+        std::strncpy(cwd, path, FS_MAX_PATH - 1);
         Config::Save(cfg);
         entries = new_entries;
         return 0;
     }
     
     static int GetPrevPath(char path[FS_MAX_PATH]) {
-        if (std::strlen(cfg.cwd) <= 1 && cfg.cwd[0] == '/')
+        if (std::strlen(cwd) <= 1 && cwd[0] == '/')
             return -1;
             
         // Remove upmost directory
         bool copy = false;
         int len = 0;
-        for (ssize_t i = std::strlen(cfg.cwd); i >= 0; i--) {
-            if (cfg.cwd[i] == '/')
+        for (ssize_t i = std::strlen(cwd); i >= 0; i--) {
+            if (cwd[i] == '/')
                 copy = true;
             if (copy) {
-                path[i] = cfg.cwd[i];
+                path[i] = cwd[i];
                 len++;
             }
         }
@@ -161,14 +162,14 @@ namespace FS {
     
     Result ChangeDirNext(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
         char new_cwd[FS_MAX_PATH];
-        const char *sep = (std::strncmp(cfg.cwd, "/", 2) == 0)?  "" : "/"; // Don't append / if at /
+        const char *sep = (std::strncmp(cwd, "/", 2) == 0)?  "" : "/"; // Don't append / if at /
         
-        if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", cfg.cwd, sep, path)) > 0)
+        if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", cwd, sep, path)) > 0)
             return FS::ChangeDir(new_cwd, entries);
             
         return 0;
     }
-    
+
     Result ChangeDirPrev(std::vector<FsDirectoryEntry> &entries) {
         char new_cwd[FS_MAX_PATH];
         if (FS::GetPrevPath(new_cwd) < 0)
@@ -177,15 +178,15 @@ namespace FS {
         return FS::ChangeDir(new_cwd, entries);
     }
 
-    static int BuildPath(FsDirectoryEntry &entry, char path[FS_MAX_PATH], const char filename[FS_MAX_PATH]) {
-        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, (std::strncmp(cfg.cwd, "/", 2) == 0)?  "" : "/", entry.name)) > 0)
+    static int BuildPath(FsDirectoryEntry &entry, char path[FS_MAX_PATH]) {
+        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cwd, (std::strncmp(cwd, "/", 2) == 0)?  "" : "/", entry.name)) > 0)
             return 0;
             
         return -1;
     }
 
     static int BuildPath(char path[FS_MAX_PATH], const char filename[FS_MAX_PATH]) {
-        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cfg.cwd, (std::strncmp(cfg.cwd, "/", 2) == 0)?  "" : "/", filename[0] != '\0'? filename : "")) > 0)
+        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cwd, (std::strncmp(cwd, "/", 2) == 0)?  "" : "/", filename[0] != '\0'? filename : "")) > 0)
             return 0;
         
         return -1;
@@ -195,10 +196,10 @@ namespace FS {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (R_FAILED(FS::BuildPath(entry, path, "")))
+        if (R_FAILED(FS::BuildPath(entry, path)))
             return -1;
             
-        if (R_FAILED(ret = fsFsGetFileTimeStampRaw(fs, path, &timestamp))) {
+        if (R_FAILED(ret = fsFsGetFileTimeStampRaw(fs, path, std::addressof(timestamp)))) {
             Log::Error("fsFsGetFileTimeStampRaw(%s) failed: 0x%x\n", path, ret);
             return ret;
         }
@@ -210,7 +211,7 @@ namespace FS {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (FS::BuildPath(entry, path, "") < 0)
+        if (FS::BuildPath(entry, path) < 0)
             return -1;
             
         char new_path[FS_MAX_PATH];
@@ -237,7 +238,7 @@ namespace FS {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (FS::BuildPath(entry, path, "") < 0)
+        if (FS::BuildPath(entry, path) < 0)
             return -1;
             
         if (entry.type == FsDirEntryType_Dir) {
@@ -260,7 +261,7 @@ namespace FS {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        if (FS::BuildPath(entry, path, "") < 0)
+        if (FS::BuildPath(entry, path) < 0)
             return -1;
             
         if (R_FAILED(ret = fsFsSetConcatenationFileAttribute(fs, path))) {
@@ -275,24 +276,24 @@ namespace FS {
         Result ret = 0;
         FsFile src_handle, dest_handle;
         
-        if (R_FAILED(ret = fsFsOpenFile(&devices[PREVIOUS_BROWSE_STATE], src_path, FsOpenMode_Read, &src_handle))) {
+        if (R_FAILED(ret = fsFsOpenFile(std::addressof(devices[PREVIOUS_BROWSE_STATE]), src_path, FsOpenMode_Read, std::addressof(src_handle)))) {
             Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", src_path, ret);
             return ret;
         }
         
         s64 size = 0;
-        if (R_FAILED(ret = fsFileGetSize(&src_handle, &size))) {
+        if (R_FAILED(ret = fsFileGetSize(std::addressof(src_handle), std::addressof(size)))) {
             Log::Error("fsFileGetSize(%s) failed: 0x%x\n", src_path, ret);
-            fsFileClose(&src_handle);
+            fsFileClose(std::addressof(src_handle));
             return ret;
         }
 
         // This may fail or not, but we don't care -> create the file if it doesn't exist, otherwise continue.
         fsFsCreateFile(fs, dest_path, size, 0);
             
-        if (R_FAILED(ret = fsFsOpenFile(fs, dest_path, FsOpenMode_Write, &dest_handle))) {
+        if (R_FAILED(ret = fsFsOpenFile(fs, dest_path, FsOpenMode_Write, std::addressof(dest_handle)))) {
             Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", dest_path, ret);
-            fsFileClose(&src_handle);
+            fsFileClose(std::addressof(src_handle));
             return ret;
         }
         
@@ -305,19 +306,19 @@ namespace FS {
         do {
             std::memset(buf, 0, buf_size);
             
-            if (R_FAILED(ret = fsFileRead(&src_handle, offset, buf, buf_size, FsReadOption_None, &bytes_read))) {
+            if (R_FAILED(ret = fsFileRead(std::addressof(src_handle), offset, buf, buf_size, FsReadOption_None, std::addressof(bytes_read)))) {
                 Log::Error("fsFileRead(%s) failed: 0x%x\n", src_path, ret);
                 delete[] buf;
-                fsFileClose(&src_handle);
-                fsFileClose(&dest_handle);
+                fsFileClose(std::addressof(src_handle));
+                fsFileClose(std::addressof(dest_handle));
                 return ret;
             }
             
-            if (R_FAILED(ret = fsFileWrite(&dest_handle, offset, buf, bytes_read, FsWriteOption_Flush))) {
+            if (R_FAILED(ret = fsFileWrite(std::addressof(dest_handle), offset, buf, bytes_read, FsWriteOption_Flush))) {
                 Log::Error("fsFileWrite(%s) failed: 0x%x\n", dest_path, ret);
                 delete[] buf;
-                fsFileClose(&src_handle);
-                fsFileClose(&dest_handle);
+                fsFileClose(std::addressof(src_handle));
+                fsFileClose(std::addressof(dest_handle));
                 return ret;
             }
             
@@ -326,8 +327,8 @@ namespace FS {
         } while(offset < size);
         
         delete[] buf;
-        fsFileClose(&src_handle);
-        fsFileClose(&dest_handle);
+        fsFileClose(std::addressof(src_handle));
+        fsFileClose(std::addressof(dest_handle));
         return 0;
     }
 
@@ -335,7 +336,7 @@ namespace FS {
         Result ret = 0;
         FsDir dir;
         
-        if (R_FAILED(ret = fsFsOpenDirectory(&devices[PREVIOUS_BROWSE_STATE], src_path, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, &dir))) {
+        if (R_FAILED(ret = fsFsOpenDirectory(std::addressof(devices[PREVIOUS_BROWSE_STATE]), src_path, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, std::addressof(dir)))) {
             Log::Error("fsFsOpenDirectory(%s) failed: 0x%x\n", src_path, ret);
             return ret;
         }
@@ -344,13 +345,13 @@ namespace FS {
         fsFsCreateDirectory(fs, dest_path);
         
         s64 entry_count = 0;
-        if (R_FAILED(ret = fsDirGetEntryCount(&dir, &entry_count))) {
+        if (R_FAILED(ret = fsDirGetEntryCount(std::addressof(dir), std::addressof(entry_count)))) {
             Log::Error("fsDirGetEntryCount(%s) failed: 0x%x\n", src_path, ret);
             return ret;
         }
             
         FsDirectoryEntry *entries = new FsDirectoryEntry[entry_count * sizeof(*entries)];
-        if (R_FAILED(ret = fsDirRead(&dir, nullptr, static_cast<size_t>(entry_count), entries))) {
+        if (R_FAILED(ret = fsDirRead(std::addressof(dir), nullptr, static_cast<size_t>(entry_count), entries))) {
             Log::Error("fsDirRead(%s) failed: 0x%x\n", src_path, ret);
             delete[] entries;
             return ret;
@@ -378,7 +379,7 @@ namespace FS {
         }
         
         delete[] entries;
-        fsDirClose(&dir);
+        fsDirClose(std::addressof(dir));
         return 0;
     }
 
@@ -441,7 +442,7 @@ namespace FS {
     Result GetFreeStorageSpace(s64 &size) {
         Result ret = 0;
         
-        if (R_FAILED(ret = fsFsGetFreeSpace(fs, "/", &size))) {
+        if (R_FAILED(ret = fsFsGetFreeSpace(fs, "/", std::addressof(size)))) {
             Log::Error("fsFsGetFreeSpace() failed: 0x%x\n", ret);
             return ret;
         }
@@ -452,7 +453,7 @@ namespace FS {
     Result GetTotalStorageSpace(s64 &size) {
         Result ret = 0;
         
-        if (R_FAILED(ret = fsFsGetTotalSpace(fs, "/", &size))) {
+        if (R_FAILED(ret = fsFsGetTotalSpace(fs, "/", std::addressof(size)))) {
             Log::Error("fsFsGetTotalSpace() failed: 0x%x\n", ret);
             return ret;
         }

@@ -7,6 +7,8 @@
 #include "tabs.hpp"
 #include "windows.hpp"
 
+WindowData data;
+
 namespace Windows {
     static bool image_properties = false;
 
@@ -70,11 +72,11 @@ namespace Windows {
             data.state = WINDOW_STATE_OPTIONS;
 
         if (key & HidNpadButton_Y) {
-            if ((std::strlen(data.checkbox_data.cwd) != 0) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) != 0))
+            if ((std::strlen(data.checkbox_data.cwd) != 0) && (strcasecmp(data.checkbox_data.cwd, cwd) != 0))
                 Windows::ResetCheckbox(data);
             
             if ((std::strncmp(data.entries[data.selected].name, "..", 2)) != 0) {
-                std::strcpy(data.checkbox_data.cwd, cfg.cwd);
+                std::strcpy(data.checkbox_data.cwd, cwd);
                 data.checkbox_data.checked.at(data.selected) = !data.checkbox_data.checked.at(data.selected);
                 data.checkbox_data.count = std::count(data.checkbox_data.checked.begin(), data.checkbox_data.checked.end(), true);
             }

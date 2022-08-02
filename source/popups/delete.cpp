@@ -14,7 +14,7 @@ namespace Popups {
         
         if (ImGui::BeginPopupModal(strings[cfg.lang][Lang::OptionsDelete], nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text(strings[cfg.lang][Lang::DeleteMessage]);
-            if ((data.checkbox_data.count > 1) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) == 0)) {
+            if ((data.checkbox_data.count > 1) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0)) {
                 ImGui::Text(strings[cfg.lang][Lang::DeleteMultiplePrompt]);
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::BeginChild("Scrolling", ImVec2(0, 100));
@@ -34,7 +34,7 @@ namespace Popups {
             if (ImGui::Button(strings[cfg.lang][Lang::ButtonOK], ImVec2(120, 0))) {
                 Result ret = 0;
 
-                if ((data.checkbox_data.count > 1) && (strcasecmp(data.checkbox_data.cwd, cfg.cwd) == 0)) {
+                if ((data.checkbox_data.count > 1) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0)) {
                     std::vector<FsDirectoryEntry> entries;
                     
                     if (R_FAILED(ret = FS::GetDirList(data.checkbox_data.cwd, entries)))
@@ -49,7 +49,7 @@ namespace Popups {
                         
                         if (data.checkbox_data.checked.at(i)) {
                             if (R_FAILED(ret = FS::Delete(entries[i]))) {
-                                FS::GetDirList(cfg.cwd, data.entries);
+                                FS::GetDirList(cwd, data.entries);
                                 Windows::ResetCheckbox(data);
                                 break;
                             }
@@ -62,7 +62,7 @@ namespace Popups {
                 }
                 
                 if (R_SUCCEEDED(ret)) {
-                    FS::GetDirList(cfg.cwd, data.entries);
+                    FS::GetDirList(cwd, data.entries);
                     Windows::ResetCheckbox(data);
                 }
 
