@@ -89,7 +89,7 @@ namespace Popups {
             if (ImGui::Button(strings[cfg.lang][Lang::OptionsNewFolder], ImVec2(200, 50))) {
                 std::string name = Keyboard::GetText(strings[cfg.lang][Lang::OptionsFolderPrompt], strings[cfg.lang][Lang::OptionsNewFolder]);
                 char path[FS_MAX_PATH];
-                std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, name.c_str());
+                std::snprintf(path, FS_MAX_PATH + 2, "%s/%s", cfg.cwd, name.c_str());
 
                 if (R_SUCCEEDED(fsFsCreateDirectory(fs, path))) {
                     FS::GetDirList(cfg.cwd, data.entries);
@@ -106,7 +106,7 @@ namespace Popups {
             if (ImGui::Button(strings[cfg.lang][Lang::OptionsNewFile], ImVec2(200, 50))) {
                 std::string name = Keyboard::GetText(strings[cfg.lang][Lang::OptionsFilePrompt], strings[cfg.lang][Lang::OptionsNewFile]);
                 char path[FS_MAX_PATH];
-                std::snprintf(path, FS_MAX_PATH, "%s/%s", cfg.cwd, name.c_str());
+                std::snprintf(path, FS_MAX_PATH + 2, "%s/%s", cfg.cwd, name.c_str());
                 
                 if (R_SUCCEEDED(fsFsCreateFile(fs, path, 0, 0))) {
                     FS::GetDirList(cfg.cwd, data.entries);
