@@ -18,12 +18,12 @@ namespace FS {
     static int PREVIOUS_BROWSE_STATE = 0;
 
     typedef struct {
-        char copy_path[FS_MAX_PATH];
-        char copy_filename[FS_MAX_PATH];
-        bool is_dir = false;
-    } FS_Copy_Struct;
+        char path[FS_MAX_PATH];
+        char filename[FS_MAX_PATH];
+        bool is_directory = false;
+    } FSCopyEntry;
     
-    FS_Copy_Struct fs_copy_struct;
+    FSCopyEntry fs_copy_entry;
 
     bool FileExists(const char path[FS_MAX_PATH]) {
         FsFile file;
@@ -389,11 +389,11 @@ namespace FS {
         full_path.append(entry.name);
         
         if ((std::strncmp(entry.name, "..", 2)) != 0) {
-            std::strcpy(fs_copy_struct.copy_path, full_path.c_str());
-            std::strcpy(fs_copy_struct.copy_filename, entry.name);
+            std::strcpy(fs_copy_entry.path, full_path.c_str());
+            std::strcpy(fs_copy_entry.filename, entry.name);
             
             if (entry.type == FsDirEntryType_Dir)
-                fs_copy_struct.is_dir = true;
+                fs_copy_entry.is_directory = true;
         }
     }
 
@@ -401,16 +401,16 @@ namespace FS {
         Result ret = 0;
         
         char path[FS_MAX_PATH];
-        FS::BuildPath(path, fs_copy_struct.copy_filename);
+        FS::BuildPath(path, fs_copy_entry.filename);
         
-        if (fs_copy_struct.is_dir) // Copy folder recursively
-            ret = FS::CopyDir(fs_copy_struct.copy_path, path);
+        if (fs_copy_entry.is_directory) // Copy folder recursively
+            ret = FS::CopyDir(fs_copy_entry.path, path);
         else // Copy file
-            ret = FS::CopyFile(fs_copy_struct.copy_path, path);
+            ret = FS::CopyFile(fs_copy_entry.path, path);
             
-        std::memset(fs_copy_struct.copy_path, 0, FS_MAX_PATH);
-        std::memset(fs_copy_struct.copy_filename, 0, FS_MAX_PATH);
-        fs_copy_struct.is_dir = false;
+        std::memset(fs_copy_entry.path, 0, FS_MAX_PATH);
+        std::memset(fs_copy_entry.filename, 0, FS_MAX_PATH);
+        fs_copy_entry.is_directory = false;
         return ret;
     }
 
@@ -418,24 +418,24 @@ namespace FS {
         Result ret = 0;
 
         char path[FS_MAX_PATH];
-        FS::BuildPath(path, fs_copy_struct.copy_filename);
+        FS::BuildPath(path, fs_copy_entry.filename);
         
-        if (fs_copy_struct.is_dir) {
-            if (R_FAILED(ret = fsFsRenameDirectory(fs, fs_copy_struct.copy_path, path))) {
-                Log::Error("fsFsRenameDirectory(%s, %s) failed: 0x%x\n", path, fs_copy_struct.copy_filename, ret);
+        if (fs_copy_entry.is_directory) {
+            if (R_FAILED(ret = fsFsRenameDirectory(fs, fs_copy_entry.path, path))) {
+                Log::Error("fsFsRenameDirectory(%s, %s) failed: 0x%x\n", path, fs_copy_entry.filename, ret);
                 return ret;
             }
         }
         else {
-            if (R_FAILED(ret = fsFsRenameFile(fs, fs_copy_struct.copy_path, path))) {
-                Log::Error("fsFsRenameFile(%s, %s) failed: 0x%x\n", path, fs_copy_struct.copy_filename, ret);
+            if (R_FAILED(ret = fsFsRenameFile(fs, fs_copy_entry.path, path))) {
+                Log::Error("fsFsRenameFile(%s, %s) failed: 0x%x\n", path, fs_copy_entry.filename, ret);
                 return ret;
             }
         }
         
-        std::memset(fs_copy_struct.copy_path, 0, FS_MAX_PATH);
-        std::memset(fs_copy_struct.copy_filename, 0, FS_MAX_PATH);
-        fs_copy_struct.is_dir = false;
+        std::memset(fs_copy_entry.path, 0, FS_MAX_PATH);
+        std::memset(fs_copy_entry.filename, 0, FS_MAX_PATH);
+        fs_copy_entry.is_directory = false;
         return 0;
     }
     
