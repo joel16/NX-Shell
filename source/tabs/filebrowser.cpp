@@ -103,10 +103,10 @@ namespace Tabs {
             ImGui::PushItemWidth(160.f);
             if (ImGui::BeginCombo("", device.c_str())) {
                 for (std::size_t i = 0; i < devices_list.size(); i++) {
-                    const bool is_selected = (device == devices_list.at(i));
+                    const bool is_selected = (device == devices_list[i]);
                     
-                    if (ImGui::Selectable(devices_list.at(i).c_str(), is_selected)) {
-                        device = devices_list.at(i);
+                    if (ImGui::Selectable(devices_list[i].c_str(), is_selected)) {
+                        device = devices_list[i];
                         fs = std::addressof(devices[i]);
                         std::strncpy(cwd, "/", 2);
                         data.entries.clear();
@@ -161,7 +161,7 @@ namespace Tabs {
                     ImGui::TableNextColumn();
                     ImGui::PushID(i);
                     
-                    if ((data.checkbox_data.checked.at(i)) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0))
+                    if ((data.checkbox_data.checked[i]) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0))
                         ImGui::Image(reinterpret_cast<ImTextureID>(check_icon.id), tex_size);
                     else
                         ImGui::Image(reinterpret_cast<ImTextureID>(uncheck_icon.id), tex_size);

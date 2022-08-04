@@ -28,11 +28,11 @@ namespace Options {
 
         std::sort(entries.begin(), entries.end(), FileBrowser::Sort);
         
-        for (long unsigned int i = 0; i < data.checkbox_data.checked_copy.size(); i++) {
+        for (std::size_t i = 0; i < data.checkbox_data.checked_copy.size(); i++) {
             if (std::strncmp(entries[i].name, "..", 2) == 0)
                 continue;
             
-            if (data.checkbox_data.checked_copy.at(i)) {
+            if (data.checkbox_data.checked_copy[i]) {
                 FS::Copy(entries[i], data.checkbox_data.cwd);
 
                 if (R_FAILED((*func)())) {

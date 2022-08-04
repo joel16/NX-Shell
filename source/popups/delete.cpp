@@ -18,8 +18,8 @@ namespace Popups {
                 ImGui::Text(strings[cfg.lang][Lang::DeleteMultiplePrompt]);
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::BeginChild("Scrolling", ImVec2(0, 100));
-                for (long unsigned int i = 0; i < data.checkbox_data.checked.size(); i++) {
-                    if (data.checkbox_data.checked.at(i))
+                for (std::size_t i = 0; i < data.checkbox_data.checked.size(); i++) {
+                    if (data.checkbox_data.checked[i])
                         ImGui::Text(data.entries[i].name);
                 }
                 ImGui::EndChild();
@@ -43,11 +43,11 @@ namespace Popups {
                     std::sort(entries.begin(), entries.end(), FileBrowser::Sort);
                     Log::Exit();
 
-                    for (long unsigned int i = 0; i < data.checkbox_data.checked.size(); i++) {
+                    for (std::size_t i = 0; i < data.checkbox_data.checked.size(); i++) {
                         if (std::strncmp(entries[i].name, "..", 2) == 0)
                             continue;
                         
-                        if (data.checkbox_data.checked.at(i)) {
+                        if (data.checkbox_data.checked[i]) {
                             if (R_FAILED(ret = FS::Delete(entries[i]))) {
                                 FS::GetDirList(cwd, data.entries);
                                 Windows::ResetCheckbox(data);
