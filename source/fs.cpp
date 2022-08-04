@@ -11,7 +11,7 @@
 
 // Global vars
 FsFileSystem *fs;
-std::vector<FsFileSystem> devices;
+FsFileSystem devices[FileSystemMax];
 char cwd[FS_MAX_PATH] = "/";
 
 namespace FS {

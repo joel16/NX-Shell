@@ -4,15 +4,23 @@
 #include <switch.h>
 #include <vector>
 
-extern FsFileSystem *fs;
-extern std::vector<FsFileSystem> devices;
-
 typedef enum FileType {
     FileTypeNone,
     FileTypeArchive,
     FileTypeImage,
     FileTypeText
 } FileType;
+
+typedef enum FileSystemDevices {
+    FileSystemSDMC,
+    FileSystemSafe,
+    FileSystemUser,
+    FileSystemSystem,
+    FileSystemMax
+} FileSystemDevices;
+
+extern FsFileSystem *fs;
+extern FsFileSystem devices[FileSystemMax];
 
 namespace FS {
     bool FileExists(const char path[FS_MAX_PATH]);

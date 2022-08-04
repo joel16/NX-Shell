@@ -15,8 +15,17 @@ namespace Services {
     int Init(void) {
         Result ret = 0;
 
-        devices.push_back(*fsdevGetDeviceFileSystem("sdmc"));
-        fs = std::addressof(devices[0]);
+        devices[FileSystemSDMC] = *fsdevGetDeviceFileSystem("sdmc");
+        fs = std::addressof(devices[FileSystemSDMC]);
+
+        fsOpenBisFileSystem(std::addressof(devices[FileSystemSafe]), FsBisPartitionId_SafeMode, "");
+		fsdevMountDevice("safe", devices[FileSystemSafe]);
+
+        fsOpenBisFileSystem(std::addressof(devices[FileSystemUser]), FsBisPartitionId_User, "");
+		fsdevMountDevice("user", devices[FileSystemUser]);
+
+        fsOpenBisFileSystem(std::addressof(devices[FileSystemSystem]), FsBisPartitionId_System, "");
+		fsdevMountDevice("system", devices[FileSystemSystem]);
         
         Config::Load();
         Log::Init();
@@ -53,6 +62,10 @@ namespace Services {
         nifmExit();
         socketExit();
         Log::Exit();
+        
+        fsdevUnmountDevice("system");
+        fsdevUnmountDevice("user");
+        fsdevUnmountDevice("safe");
     }
 }
 

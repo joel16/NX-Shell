@@ -51,6 +51,8 @@ namespace FileBrowser {
 namespace Tabs {
     static const u32 sampler_id = 1;
     static const ImVec2 tex_size = ImVec2(25, 25);
+    static std::vector<std::string> devices_list = { "sdmc:", "safe:", "user:", "system:" };
+    static std::string device = "sdmc:";
 
     // Sort using ImGuiTableSortSpecs
     bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
@@ -95,10 +97,39 @@ namespace Tabs {
 
     void FileBrowser(WindowData &data) {
         if (ImGui::BeginTabItem("File Browser")) {
+            ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
+
+            ImGui::PushID("device_list");
+            ImGui::PushItemWidth(160.f);
+            if (ImGui::BeginCombo("", device.c_str())) {
+                for (std::size_t i = 0; i < devices_list.size(); i++) {
+                    const bool is_selected = (device == devices_list.at(i));
+                    
+                    if (ImGui::Selectable(devices_list.at(i).c_str(), is_selected)) {
+                        device = devices_list.at(i);
+                        fs = std::addressof(devices[i]);
+                        std::strncpy(cwd, "/", 2);
+                        data.entries.clear();
+                        FS::GetDirList(cwd, data.entries);
+                        sort = -1;
+                    }
+                        
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+
+                ImGui::EndCombo();
+            }
+            ImGui::PopItemWidth();
+            ImGui::PopID();
+            
+            ImGui::SameLine();
+
             // Display current working directory
-            ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), cwd);
+            ImGui::Text(cwd);
             
             // Draw storage bar
+            ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
             ImGui::ProgressBar(static_cast<float>(data.used_storage) / static_cast<float>(data.total_storage), ImVec2(1265.0f, 6.0f), "");
             ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
 
