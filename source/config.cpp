@@ -87,7 +87,7 @@ namespace Config {
         delete[] buf;
         
         if (!root) {
-            printf("error: on line %d: %s\n", error.line, error.text);
+            std::printf("error: on line %d: %s\n", error.line, error.text);
             return -1;
         }
         
