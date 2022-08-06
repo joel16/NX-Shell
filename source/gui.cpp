@@ -2,6 +2,7 @@
 #include <EGL/eglext.h>
 #include <glad/glad.h>
 #include <cstdio>
+#include <memory>
 #include <switch.h>
 
 #include "gui.hpp"
@@ -30,8 +31,8 @@ namespace GUI {
         }
         
         EGLConfig config;
-        EGLint numConfigs;
-        static const EGLint framebufferAttributeList[] = {
+        EGLint num_configs;
+        static const EGLint framebuffer_attr_list[] = {
             EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
             EGL_RED_SIZE,     8,
             EGL_GREEN_SIZE,   8,
@@ -42,8 +43,8 @@ namespace GUI {
             EGL_NONE
         };
         
-        eglChooseConfig(s_display, framebufferAttributeList, &config, 1, &numConfigs);
-        if (numConfigs == 0) {
+        eglChooseConfig(s_display, framebuffer_attr_list, std::addressof(config), 1, std::addressof(num_configs));
+        if (num_configs == 0) {
             Log::Error("No config found! error: %d", eglGetError());
             eglTerminate(s_display);
             s_display = nullptr;
@@ -56,14 +57,14 @@ namespace GUI {
             s_display = nullptr;
         }
         
-        static const EGLint contextAttributeList[] = {
+        static const EGLint context_attr_list[] = {
             EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
             EGL_CONTEXT_MAJOR_VERSION_KHR, 4,
             EGL_CONTEXT_MINOR_VERSION_KHR, 3,
             EGL_NONE
         };
         
-        s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
+        s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, context_attr_list);
         if (!s_context) {
             Log::Error("Context creation failed! error: %d", eglGetError());
             eglDestroySurface(s_display, s_surface);
@@ -171,24 +172,24 @@ namespace GUI {
         PlFontData standard, extended, chinese, korean;
         static ImWchar extended_range[] = {0xE000, 0xE152};
         
-        if (R_SUCCEEDED(plGetSharedFontByType(&standard, PlSharedFontType_Standard)) &&
-            R_SUCCEEDED(plGetSharedFontByType(&extended, PlSharedFontType_NintendoExt)) &&
-            R_SUCCEEDED(plGetSharedFontByType(&chinese, PlSharedFontType_ChineseSimplified)) &&
-            R_SUCCEEDED(plGetSharedFontByType(&korean, PlSharedFontType_KO))) {
+        if (R_SUCCEEDED(plGetSharedFontByType(std::addressof(standard), PlSharedFontType_Standard)) &&
+            R_SUCCEEDED(plGetSharedFontByType(std::addressof(extended), PlSharedFontType_NintendoExt)) &&
+            R_SUCCEEDED(plGetSharedFontByType(std::addressof(chinese), PlSharedFontType_ChineseSimplified)) &&
+            R_SUCCEEDED(plGetSharedFontByType(std::addressof(korean), PlSharedFontType_KO))) {
                 
             u8 *px = nullptr;
             int w = 0, h = 0, bpp = 0;
             ImFontConfig font_cfg;
             
             font_cfg.FontDataOwnedByAtlas = false;
-            io.Fonts->AddFontFromMemoryTTF(standard.address, standard.size, 20.f, &font_cfg, io.Fonts->GetGlyphRangesDefault());
+            io.Fonts->AddFontFromMemoryTTF(standard.address, standard.size, 20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesDefault());
             font_cfg.MergeMode = true;
-            io.Fonts->AddFontFromMemoryTTF(extended.address, extended.size, 20.f, &font_cfg, extended_range);
-            io.Fonts->AddFontFromMemoryTTF(chinese.address,  chinese.size,  20.f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
-            io.Fonts->AddFontFromMemoryTTF(korean.address,   korean.size,   20.f, &font_cfg, io.Fonts->GetGlyphRangesKorean());
+            io.Fonts->AddFontFromMemoryTTF(extended.address, extended.size, 20.f, std::addressof(font_cfg), extended_range);
+            io.Fonts->AddFontFromMemoryTTF(chinese.address,  chinese.size,  20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesChineseFull());
+            io.Fonts->AddFontFromMemoryTTF(korean.address,   korean.size,   20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesKorean());
             
             // build font atlas
-            io.Fonts->GetTexDataAsAlpha8(&px, &w, &h, &bpp);
+            io.Fonts->GetTexDataAsAlpha8(std::addressof(px), std::addressof(w), std::addressof(h), std::addressof(bpp));
             io.Fonts->Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight;
             io.Fonts->Build();
         }

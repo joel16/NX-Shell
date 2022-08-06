@@ -14,7 +14,7 @@ namespace Popups {
         
         if (ImGui::BeginPopupModal(strings[cfg.lang][Lang::OptionsDelete], nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text(strings[cfg.lang][Lang::DeleteMessage]);
-            if ((data.checkbox_data.count > 1) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0)) {
+            if ((data.checkbox_data.count > 1) && (data.checkbox_data.cwd == cwd)) {
                 ImGui::Text(strings[cfg.lang][Lang::DeleteMultiplePrompt]);
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::BeginChild("Scrolling", ImVec2(0, 100));
@@ -32,12 +32,11 @@ namespace Popups {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
             if (ImGui::Button(strings[cfg.lang][Lang::ButtonOK], ImVec2(120, 0))) {
-                Result ret = 0;
+                bool ret = false;
 
-                if ((data.checkbox_data.count > 1) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0)) {
+                if ((data.checkbox_data.count > 1) && (data.checkbox_data.cwd == cwd)) {
                     std::vector<FsDirectoryEntry> entries;
-                    
-                    if (R_FAILED(ret = FS::GetDirList(data.checkbox_data.cwd, entries)))
+                    if (!FS::GetDirList(data.checkbox_data.device, data.checkbox_data.cwd, entries))
                         return;
                         
                     std::sort(entries.begin(), entries.end(), FileBrowser::Sort);
@@ -48,8 +47,8 @@ namespace Popups {
                             continue;
                         
                         if (data.checkbox_data.checked[i]) {
-                            if (R_FAILED(ret = FS::Delete(entries[i]))) {
-                                FS::GetDirList(cwd, data.entries);
+                            if (!(ret = FS::Delete(entries[i]))) {
+                                FS::GetDirList(device, cwd, data.entries);
                                 Windows::ResetCheckbox(data);
                                 break;
                             }
@@ -61,8 +60,8 @@ namespace Popups {
                         ret = FS::Delete(data.entries[data.selected]);
                 }
                 
-                if (R_SUCCEEDED(ret)) {
-                    FS::GetDirList(cwd, data.entries);
+                if (ret) {
+                    FS::GetDirList(device, cwd, data.entries);
                     Windows::ResetCheckbox(data);
                 }
 

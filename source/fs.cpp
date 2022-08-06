@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <dirent.h>
 #include <filesystem>
 
 #include "config.hpp"
@@ -12,64 +13,331 @@
 // Global vars
 FsFileSystem *fs;
 FsFileSystem devices[FileSystemMax];
-char cwd[FS_MAX_PATH] = "/";
+std::string cwd = "/";
+std::string device = "sdmc:";
 
 namespace FS {
-    static int PREVIOUS_BROWSE_STATE = 0;
 
     typedef struct {
-        char path[FS_MAX_PATH];
-        char filename[FS_MAX_PATH];
+        std::string path;
+        std::string filename;
         bool is_directory = false;
     } FSCopyEntry;
     
     FSCopyEntry fs_copy_entry;
 
-    bool FileExists(const char path[FS_MAX_PATH]) {
-        FsFile file;
-        if (R_SUCCEEDED(fsFsOpenFile(fs, path, FsOpenMode_Read, std::addressof(file)))) {
-            fsFileClose(std::addressof(file));
-            return true;
-        }
-        
-        return false;
+    bool FileExists(const std::string &path) {
+        struct stat file_stat = { 0 };
+        return (stat(path.c_str(), std::addressof(file_stat)) == 0 && S_ISREG(file_stat.st_mode));
     }
     
-    bool DirExists(const char path[FS_MAX_PATH]) {
-        FsDir dir;
-        if (R_SUCCEEDED(fsFsOpenDirectory(fs, path, FsDirOpenMode_ReadDirs, std::addressof(dir)))) {
-            fsDirClose(std::addressof(dir));
-            return true;
-        }
-        
-        return false;
+    bool DirExists(const std::string &path) {
+        struct stat dir_stat = { 0 };
+        return (stat(path.c_str(), &dir_stat) == 0);
     }
 
-    Result GetFileSize(const char path[FS_MAX_PATH], s64 &size) {
-        Result ret = 0;
+    bool GetFileSize(const std::string &path, std::size_t &size) {
+        struct stat file_stat = { 0 };
+        std::string full_path = FS::BuildPath(path, true);
+
+        if (stat(full_path.c_str(), std::addressof(file_stat)) != 0) {
+            Log::Error("FS::GetFileSize(%s) failed to stat file.\n", full_path.c_str());
+            return false;
+        }
+
+        size = file_stat.st_size;
+        return true;
+    }
+    
+    bool GetDirList(const std::string &device, const std::string &path, std::vector<FsDirectoryEntry> &entries) {
+        DIR *dir = nullptr;
+        struct dirent *d_entry = nullptr;
+        std::string full_path = device + path;
+        dir = opendir(full_path.c_str());
+        entries.clear();
+
+        if (dir) {
+            FsDirectoryEntry parent_entry = { 0 };
+            std::strncpy(parent_entry.name, "..", 3);
+            parent_entry.type = FsDirEntryType_Dir;
+            entries.push_back(parent_entry);
+
+            while((d_entry = readdir(dir))) {
+                FsDirectoryEntry entry = { 0 };
+
+                std::strncpy(entry.name, d_entry->d_name, FS_MAX_PATH);
+                entry.type = (d_entry->d_type & DT_DIR)? FsDirEntryType_Dir : FsDirEntryType_File;
+
+                if (entry.type == FsDirEntryType_File) {
+                    std::string path;
+                    struct stat file_stat = { 0 };
+                    entry.file_size = 0;
+                    
+                    std::string file_path = full_path;
+                    file_path.append(cwd.compare("/") == 0? "" : "/");
+                    file_path.append(entry.name);
+
+                    if (!stat(file_path.c_str(), std::addressof(file_stat)))
+                        entry.file_size = file_stat.st_size;
+                }
+
+                entries.push_back(entry);
+            }
+
+            closedir(dir);
+        }
+        else {
+            Log::Error("FS::GetDirList(%s) to open path.\n", full_path.c_str());
+            return false;
+        }
+
+        return true;
+    }
+
+    static bool ChangeDir(const std::string &path, std::vector<FsDirectoryEntry> &entries) {
+        std::vector<FsDirectoryEntry> new_entries;
+        const std::string new_path = path;
+        cwd = path;
         
-        FsFile file;
-        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, std::addressof(file)))) {
-            Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
-            return ret;
+        bool ret = FS::GetDirList(device, new_path, new_entries);
+        
+        entries.clear();
+        entries = new_entries;
+        return ret;
+    }
+    
+    bool ChangeDirNext(const std::string &path, std::vector<FsDirectoryEntry> &entries) {
+        return FS::ChangeDir(FS::BuildPath(path, false), entries);
+    }
+    
+    bool ChangeDirPrev(std::vector<FsDirectoryEntry> &entries) {
+        // We are already at the root.
+        if (cwd.compare("/") == 0)
+            return false;
+        
+        std::filesystem::path path = cwd;
+        std::string parent_path = path.parent_path();
+        return FS::ChangeDir(parent_path.empty()? cwd : parent_path, entries);
+    }
+
+    bool GetTimeStamp(FsDirectoryEntry &entry, FsTimeStampRaw &timestamp) {
+        struct stat file_stat = { 0 };
+        std::string full_path = FS::BuildPath(entry);
+
+        if (stat(full_path.c_str(), std::addressof(file_stat)) != 0) {
+            Log::Error("FS::GetTimeStamp(%s) failed to stat file.\n", full_path.c_str());
+            return false;
+        }
+
+        timestamp.is_valid = 1;
+        timestamp.created = file_stat.st_ctime;
+        timestamp.modified = file_stat.st_mtime;
+        timestamp.accessed = file_stat.st_atime;
+        return true;
+    }
+
+    bool Rename(FsDirectoryEntry &entry, const std::string &dest_path) {
+        std::string src_path = FS::BuildPath(entry);
+
+        if (rename(src_path.c_str(), dest_path.c_str()) != 0) {
+            Log::Error("FS::Rename(%s, %s) failed.\n", src_path.c_str(), dest_path.c_str());
+            return false;
         }
         
-        if (R_FAILED(ret = fsFileGetSize(std::addressof(file), std::addressof(size)))) {
-            Log::Error("fsFileGetSize(%s) failed: 0x%x\n", path, ret);
-            fsFileClose(std::addressof(file));
-            return ret;
+        return true;
+    }
+
+    bool DeleteRecursive(const std::string &path) {
+        DIR *dir = nullptr;
+        struct dirent *entry = nullptr;
+        dir = opendir(path.c_str());
+
+        if (dir) {
+            while((entry = readdir(dir))) {
+                std::string filename = entry->d_name;
+                if ((filename.compare(".") == 0) || (filename.compare("..") == 0))
+                    continue;
+
+                std::string file_path = path;
+                file_path.append(cwd.compare("/") == 0? "" : "/");
+                file_path.append(filename);
+
+                if (entry->d_type & DT_DIR) {
+                    FS::DeleteRecursive(file_path);
+                }
+                else {
+                    if (remove(file_path.c_str()) != 0) {
+                        Log::Error("FS::DeleteRecursive(%s) failed to delete file.\n", file_path.c_str());
+                        return false;
+                    }
+                }
+            }
+
+            closedir(dir);
+        }
+        else {
+            Log::Error("FS::DeleteRecursive(%s) failed to open path.\n", path.c_str());
+            return false;
+        }
+
+        return (rmdir(path.c_str()) == 0);
+    }
+    
+    bool Delete(FsDirectoryEntry &entry) {
+        std::string full_path = FS::BuildPath(entry);
+
+        if (entry.type == FsDirEntryType_Dir) {
+            if (!FS::DeleteRecursive(full_path)) {
+                Log::Error("FS::Delete(%s) failed to delete folder.\n", full_path.c_str());
+                return false;
+            }
+        }
+        else {
+            if (remove(full_path.c_str()) != 0) {
+                Log::Error("FS::Delete(%s) failed to delete file.\n", full_path.c_str());
+                return false;
+            }
         }
         
-        fsFileClose(std::addressof(file));
+        return true;
+    }
+    
+    static bool CopyFile(const std::string &src_path, const std::string &dest_path) {
+        FILE *src = fopen(src_path.c_str(), "rb");
+        if (!src) {
+            Log::Error("FS::CopyFile (%s) failed to open src file.\n", src_path.c_str());
+            return false;
+        }
+
+        struct stat file_stat = { 0 };
+        if (stat(src_path.c_str(), std::addressof(file_stat)) != 0) {
+            Log::Error("FS::CopyFile (%s) failed to get src file size.\n", src_path.c_str());
+            return false;
+        }
+
+        std::size_t size = file_stat.st_size;
+
+        FILE *dest = fopen(dest_path.c_str(), "wb");
+        if (!dest) {
+            Log::Error("FS::CopyFile (%s) failed to open dest file.\n", dest_path.c_str());
+            fclose(src);
+            return false;
+        }
+
+        std::size_t bytes_read = 0, offset = 0;
+        const std::size_t buf_size = 0x10000;
+        unsigned char *buf = new unsigned char[buf_size];
+        std::string filename = std::filesystem::path(src_path).filename();
+
+        do {
+            std::memset(buf, 0, buf_size);
+
+            bytes_read = fread(buf, sizeof(unsigned char), buf_size, src);
+            if (bytes_read < 0) {
+                Log::Error("FS::CopyFile (%s) failed to read src file.\n", src_path.c_str());
+                delete[] buf;
+                fclose(src);
+                fclose(dest);
+                return false;
+            }
+            
+            std::size_t bytes_written = fwrite(buf, sizeof(unsigned char), bytes_read, dest);
+            if (bytes_written != bytes_read) {
+                Log::Error("FS::CopyFile (%s) failed to write to dest file.\n", dest_path.c_str());
+                delete[] buf;
+                fclose(src);
+                fclose(dest);
+                return false;
+            }
+            
+            offset += bytes_read;
+            Popups::ProgressBar(static_cast<float>(offset), static_cast<float>(size), strings[cfg.lang][Lang::OptionsCopying], filename.c_str());
+        } while (offset < size);
+
+        delete[] buf;
+        fclose(src);
+        fclose(dest);
+        return true;
         return 0;
     }
-    
-    std::string GetFileExt(const std::string &filename) {
-        std::string ext = std::filesystem::path(filename).extension();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
-        return ext;
+
+    static bool CopyDir(const std::string &src_path, const std::string &dest_path) {
+        DIR *dir = nullptr;
+        struct dirent *entry = nullptr;
+        dir = opendir(src_path.c_str());
+
+        if (dir) {
+            // This may fail or not, but we don't care -> make the dir if it doesn't exist, otherwise continue.
+            mkdir(dest_path.c_str(), 0700);
+
+            while((entry = readdir(dir))) {
+                std::string filename = entry->d_name;
+                if ((filename.compare(".") == 0) || (filename.compare("..") == 0))
+                    continue;
+
+                std::string src = src_path;
+                src.append("/");
+                src.append(filename);
+
+                std::string dest = dest_path;
+                dest.append("/");
+                dest.append(filename);
+
+                if (entry->d_type & DT_DIR)
+                    FS::CopyDir(src.c_str(), dest.c_str()); // Copy Folder (via recursion)
+                else
+                    FS::CopyFile(src.c_str(), dest.c_str()); // Copy File
+            }
+
+            closedir(dir);
+        }
+        else {
+            Log::Error("FS::CopyDir(%s) failed to open path.\n", src_path.c_str());
+            return false;
+        }
+
+        return true;
     }
-    
+
+    void Copy(FsDirectoryEntry &entry, const std::string &path) {
+        std::string full_path = path;
+        full_path.append(path.compare("/") == 0? "" : "/");
+        full_path.append(entry.name);
+        
+        if ((std::strncmp(entry.name, "..", 2)) != 0) {
+            fs_copy_entry.path = full_path;
+            fs_copy_entry.filename = entry.name;
+            
+            if (entry.type == FsDirEntryType_Dir)
+                fs_copy_entry.is_directory = true;
+        }
+    }
+
+    bool Paste(void) {
+        bool ret = false;
+        std::string path = FS::BuildPath(fs_copy_entry.filename, true);
+        
+        if (fs_copy_entry.is_directory)
+            ret = FS::CopyDir(fs_copy_entry.path, path);
+        else
+            ret = FS::CopyFile(fs_copy_entry.path, path);
+
+        fs_copy_entry = {};
+        return ret;
+    }
+
+    bool Move(void) {
+        std::string path = FS::BuildPath(fs_copy_entry.filename, true);
+
+        if (rename(fs_copy_entry.path.c_str(), path.c_str()) != 0) {
+            Log::Error("FS::Move(%s, %s) failed.\n", fs_copy_entry.path.c_str(), path.c_str());
+            return false;
+        }
+
+        fs_copy_entry = {};
+        return true;
+    }
+
     FileType GetFileType(const std::string &filename) {
         std::string ext = FS::GetFileExt(filename);
         
@@ -84,358 +352,17 @@ namespace FS {
         return FileTypeNone;
     }
     
-    Result GetDirList(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
-        FsDir dir;
+    Result SetArchiveBit(const std::string &path) {
         Result ret = 0;
-        s64 read_entries = 0;
-        const std::string cwd = path;
-        entries.clear();
 
-        // Create ".." entry
-        FsDirectoryEntry entry;
-        std::strncpy(entry.name, "..", 3);
-        entry.type = FsDirEntryType_Dir;
-        entry.file_size = 0;
-        entries.push_back(entry);
-        
-        if (R_FAILED(ret = fsFsOpenDirectory(fs, path, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, std::addressof(dir)))) {
-            Log::Error("GetDirListfsFsOpenDirectory(%s) failed: 0x%x\n", path, ret);
+        char fs_path[FS_MAX_PATH];
+        std::snprintf(fs_path, FS_MAX_PATH, path.c_str());
+
+        if (R_FAILED(ret = fsFsSetConcatenationFileAttribute(std::addressof(devices[FileSystemSDMC]), fs_path))) {
+            Log::Error("fsFsSetConcatenationFileAttribute(%s) failed: 0x%x\n", path.c_str(), ret);
             return ret;
         }
         
-        while (true) {
-            FsDirectoryEntry entry;
-            if (R_FAILED(ret = fsDirRead(std::addressof(dir), &read_entries, 1, std::addressof(entry)))) {
-                fsDirClose(std::addressof(dir));
-                Log::Error("fsDirRead(%s) failed: 0x%x\n", path, ret);
-                return ret;
-            }
-            
-            if (read_entries != 1)
-                break;
-            
-            entries.push_back(entry);
-        }
-
-        fsDirClose(std::addressof(dir));
-        return 0;
-    }
-    
-    static Result ChangeDir(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
-        Result ret = 0;
-        std::vector<FsDirectoryEntry> new_entries;
-        
-        if (R_FAILED(ret = FS::GetDirList(path, new_entries)))
-            return ret;
-            
-        // Apply cd after successfully listing new directory
-        entries.clear();
-        std::strncpy(cwd, path, FS_MAX_PATH - 1);
-        Config::Save(cfg);
-        entries = new_entries;
-        return 0;
-    }
-    
-    static int GetPrevPath(char path[FS_MAX_PATH]) {
-        if (std::strlen(cwd) <= 1 && cwd[0] == '/')
-            return -1;
-            
-        // Remove upmost directory
-        bool copy = false;
-        int len = 0;
-        for (ssize_t i = std::strlen(cwd); i >= 0; i--) {
-            if (cwd[i] == '/')
-                copy = true;
-            if (copy) {
-                path[i] = cwd[i];
-                len++;
-            }
-        }
-        
-        // remove trailing slash
-        if (len > 1 && path[len - 1] == '/')
-            len--;
-            
-        path[len] = '\0';
-        return 0;
-    }
-    
-    Result ChangeDirNext(const char path[FS_MAX_PATH], std::vector<FsDirectoryEntry> &entries) {
-        char new_cwd[FS_MAX_PATH];
-        const char *sep = (std::strncmp(cwd, "/", 2) == 0)?  "" : "/"; // Don't append / if at /
-        
-        if ((std::snprintf(new_cwd, FS_MAX_PATH, "%s%s%s", cwd, sep, path)) > 0)
-            return FS::ChangeDir(new_cwd, entries);
-            
-        return 0;
-    }
-
-    Result ChangeDirPrev(std::vector<FsDirectoryEntry> &entries) {
-        char new_cwd[FS_MAX_PATH];
-        if (FS::GetPrevPath(new_cwd) < 0)
-            return -1;
-            
-        return FS::ChangeDir(new_cwd, entries);
-    }
-
-    static int BuildPath(FsDirectoryEntry &entry, char path[FS_MAX_PATH]) {
-        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cwd, (std::strncmp(cwd, "/", 2) == 0)?  "" : "/", entry.name)) > 0)
-            return 0;
-            
-        return -1;
-    }
-
-    static int BuildPath(char path[FS_MAX_PATH], const char filename[FS_MAX_PATH]) {
-        if ((std::snprintf(path, FS_MAX_PATH, "%s%s%s", cwd, (std::strncmp(cwd, "/", 2) == 0)?  "" : "/", filename[0] != '\0'? filename : "")) > 0)
-            return 0;
-        
-        return -1;
-    }
-
-    Result GetTimeStamp(FsDirectoryEntry &entry, FsTimeStampRaw &timestamp) {
-        Result ret = 0;
-        
-        char path[FS_MAX_PATH];
-        if (R_FAILED(FS::BuildPath(entry, path)))
-            return -1;
-            
-        if (R_FAILED(ret = fsFsGetFileTimeStampRaw(fs, path, std::addressof(timestamp)))) {
-            Log::Error("fsFsGetFileTimeStampRaw(%s) failed: 0x%x\n", path, ret);
-            return ret;
-        }
-            
-        return 0;
-    }
-
-    Result Rename(FsDirectoryEntry &entry, const char filename[FS_MAX_PATH]) {
-        Result ret = 0;
-        
-        char path[FS_MAX_PATH];
-        if (FS::BuildPath(entry, path) < 0)
-            return -1;
-            
-        char new_path[FS_MAX_PATH];
-        if (FS::BuildPath(new_path, filename) < 0)
-            return -1;
-        
-        if (entry.type == FsDirEntryType_Dir) {
-            if (R_FAILED(ret = fsFsRenameDirectory(fs, path, new_path))) {
-                Log::Error("fsFsRenameDirectory(%s, %s) failed: 0x%x\n", path, new_path, ret);
-                return ret;
-            }
-        }
-        else {
-            if (R_FAILED(ret = fsFsRenameFile(fs, path, new_path))) {
-                Log::Error("fsFsRenameFile(%s, %s) failed: 0x%x\n", path, new_path, ret);
-                return ret;
-            }
-        }
-        
-        return 0;
-    }
-    
-    Result Delete(FsDirectoryEntry &entry) {
-        Result ret = 0;
-        
-        char path[FS_MAX_PATH];
-        if (FS::BuildPath(entry, path) < 0)
-            return -1;
-            
-        if (entry.type == FsDirEntryType_Dir) {
-            if (R_FAILED(ret = fsFsDeleteDirectoryRecursively(fs, path))) {
-                Log::Error("fsFsDeleteDirectoryRecursively(%s) failed: 0x%x\n", path, ret);
-                return ret;
-            }
-        }
-        else {
-            if (R_FAILED(ret = fsFsDeleteFile(fs, path))) {
-                Log::Error("fsFsDeleteFile(%s) failed: 0x%x\n", path, ret);
-                return ret;
-            }
-        }
-        
-        return 0;
-    }
-
-    Result SetArchiveBit(FsDirectoryEntry &entry) {
-        Result ret = 0;
-        
-        char path[FS_MAX_PATH];
-        if (FS::BuildPath(entry, path) < 0)
-            return -1;
-            
-        if (R_FAILED(ret = fsFsSetConcatenationFileAttribute(fs, path))) {
-            Log::Error("fsFsSetConcatenationFileAttribute(%s) failed: 0x%x\n", path, ret);
-            return ret;
-        }
-            
-        return 0;
-    }
-    
-    static Result CopyFile(const char src_path[FS_MAX_PATH], const char dest_path[FS_MAX_PATH]) {
-        Result ret = 0;
-        FsFile src_handle, dest_handle;
-        
-        if (R_FAILED(ret = fsFsOpenFile(std::addressof(devices[PREVIOUS_BROWSE_STATE]), src_path, FsOpenMode_Read, std::addressof(src_handle)))) {
-            Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", src_path, ret);
-            return ret;
-        }
-        
-        s64 size = 0;
-        if (R_FAILED(ret = fsFileGetSize(std::addressof(src_handle), std::addressof(size)))) {
-            Log::Error("fsFileGetSize(%s) failed: 0x%x\n", src_path, ret);
-            fsFileClose(std::addressof(src_handle));
-            return ret;
-        }
-
-        // This may fail or not, but we don't care -> create the file if it doesn't exist, otherwise continue.
-        fsFsCreateFile(fs, dest_path, size, 0);
-            
-        if (R_FAILED(ret = fsFsOpenFile(fs, dest_path, FsOpenMode_Write, std::addressof(dest_handle)))) {
-            Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", dest_path, ret);
-            fsFileClose(std::addressof(src_handle));
-            return ret;
-        }
-        
-        u64 bytes_read = 0;
-        const u64 buf_size = 0x10000;
-        s64 offset = 0;
-        unsigned char *buf = new unsigned char[buf_size];
-        std::string filename = std::filesystem::path(src_path).filename();
-        
-        do {
-            std::memset(buf, 0, buf_size);
-            
-            if (R_FAILED(ret = fsFileRead(std::addressof(src_handle), offset, buf, buf_size, FsReadOption_None, std::addressof(bytes_read)))) {
-                Log::Error("fsFileRead(%s) failed: 0x%x\n", src_path, ret);
-                delete[] buf;
-                fsFileClose(std::addressof(src_handle));
-                fsFileClose(std::addressof(dest_handle));
-                return ret;
-            }
-            
-            if (R_FAILED(ret = fsFileWrite(std::addressof(dest_handle), offset, buf, bytes_read, FsWriteOption_Flush))) {
-                Log::Error("fsFileWrite(%s) failed: 0x%x\n", dest_path, ret);
-                delete[] buf;
-                fsFileClose(std::addressof(src_handle));
-                fsFileClose(std::addressof(dest_handle));
-                return ret;
-            }
-            
-            offset += bytes_read;
-            Popups::ProgressBar(static_cast<float>(offset), static_cast<float>(size), strings[cfg.lang][Lang::OptionsCopying], filename.c_str());
-        } while(offset < size);
-        
-        delete[] buf;
-        fsFileClose(std::addressof(src_handle));
-        fsFileClose(std::addressof(dest_handle));
-        return 0;
-    }
-
-    static Result CopyDir(const char src_path[FS_MAX_PATH], const char dest_path[FS_MAX_PATH]) {
-        Result ret = 0;
-        FsDir dir;
-        
-        if (R_FAILED(ret = fsFsOpenDirectory(std::addressof(devices[PREVIOUS_BROWSE_STATE]), src_path, FsDirOpenMode_ReadDirs | FsDirOpenMode_ReadFiles, std::addressof(dir)))) {
-            Log::Error("fsFsOpenDirectory(%s) failed: 0x%x\n", src_path, ret);
-            return ret;
-        }
-            
-        // This may fail or not, but we don't care -> make the dir if it doesn't exist, otherwise continue.
-        fsFsCreateDirectory(fs, dest_path);
-        
-        s64 entry_count = 0;
-        if (R_FAILED(ret = fsDirGetEntryCount(std::addressof(dir), std::addressof(entry_count)))) {
-            Log::Error("fsDirGetEntryCount(%s) failed: 0x%x\n", src_path, ret);
-            return ret;
-        }
-            
-        FsDirectoryEntry *entries = new FsDirectoryEntry[entry_count * sizeof(*entries)];
-        if (R_FAILED(ret = fsDirRead(std::addressof(dir), nullptr, static_cast<size_t>(entry_count), entries))) {
-            Log::Error("fsDirRead(%s) failed: 0x%x\n", src_path, ret);
-            delete[] entries;
-            return ret;
-        }
-        
-        for (s64 i = 0; i < entry_count; i++) {
-            std::string filename = entries[i].name;
-            if (!filename.empty()) {
-                if ((!filename.compare(".")) || (!filename.compare("..")))
-                    continue;
-                
-                std::string src = src_path;
-                src.append("/");
-                src.append(filename);
-
-                std::string dest = dest_path;
-                dest.append("/");
-                dest.append(filename);
-                
-                if (entries[i].type == FsDirEntryType_Dir)
-                    FS::CopyDir(src.c_str(), dest.c_str()); // Copy Folder (via recursion)
-                else
-                    FS::CopyFile(src.c_str(), dest.c_str()); // Copy File
-            }
-        }
-        
-        delete[] entries;
-        fsDirClose(std::addressof(dir));
-        return 0;
-    }
-
-    void Copy(FsDirectoryEntry &entry, const std::string &path) {
-        std::string full_path = path;
-        full_path.append("/");
-        full_path.append(entry.name);
-        
-        if ((std::strncmp(entry.name, "..", 2)) != 0) {
-            std::strcpy(fs_copy_entry.path, full_path.c_str());
-            std::strcpy(fs_copy_entry.filename, entry.name);
-            
-            if (entry.type == FsDirEntryType_Dir)
-                fs_copy_entry.is_directory = true;
-        }
-    }
-
-    Result Paste(void) {
-        Result ret = 0;
-        
-        char path[FS_MAX_PATH];
-        FS::BuildPath(path, fs_copy_entry.filename);
-        
-        if (fs_copy_entry.is_directory) // Copy folder recursively
-            ret = FS::CopyDir(fs_copy_entry.path, path);
-        else // Copy file
-            ret = FS::CopyFile(fs_copy_entry.path, path);
-            
-        std::memset(fs_copy_entry.path, 0, FS_MAX_PATH);
-        std::memset(fs_copy_entry.filename, 0, FS_MAX_PATH);
-        fs_copy_entry.is_directory = false;
-        return ret;
-    }
-
-    Result Move(void) {
-        Result ret = 0;
-
-        char path[FS_MAX_PATH];
-        FS::BuildPath(path, fs_copy_entry.filename);
-        
-        if (fs_copy_entry.is_directory) {
-            if (R_FAILED(ret = fsFsRenameDirectory(fs, fs_copy_entry.path, path))) {
-                Log::Error("fsFsRenameDirectory(%s, %s) failed: 0x%x\n", path, fs_copy_entry.filename, ret);
-                return ret;
-            }
-        }
-        else {
-            if (R_FAILED(ret = fsFsRenameFile(fs, fs_copy_entry.path, path))) {
-                Log::Error("fsFsRenameFile(%s, %s) failed: 0x%x\n", path, fs_copy_entry.filename, ret);
-                return ret;
-            }
-        }
-        
-        std::memset(fs_copy_entry.path, 0, FS_MAX_PATH);
-        std::memset(fs_copy_entry.filename, 0, FS_MAX_PATH);
-        fs_copy_entry.is_directory = false;
         return 0;
     }
     
@@ -473,5 +400,31 @@ namespace FS {
         
         size = (total_size - free_size);
         return 0;
+    }
+
+    std::string GetFileExt(const std::string &filename) {
+        std::string ext = std::filesystem::path(filename).extension();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
+        return ext;
+    }
+
+    std::string BuildPath(FsDirectoryEntry &entry) {
+        std::string path_next = device;
+        path_next.append(cwd);
+        path_next.append((cwd.compare("/") == 0)? "" : "/");
+        path_next.append(entry.name);
+        return path_next;
+    }
+
+    std::string BuildPath(const std::string &path, bool device_name) {
+        std::string path_next = "";
+
+        if (device_name)
+            path_next.append(device);
+        
+        path_next.append(cwd);
+        path_next.append((cwd.compare("/") == 0)? "" : "/");
+        path_next.append(path);
+        return path_next;
     }
 }

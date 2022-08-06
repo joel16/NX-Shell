@@ -48,14 +48,12 @@ namespace Lang {
         SettingsTitle,
         SettingsSortTitle,
         SettingsLanguageTitle,
+        SettingsUSBTitle,
+        SettingsUSBUnmount,
         SettingsImageViewTitle,
         SettingsDevOptsTitle,
         SettingsAboutTitle,
         SettingsCheckForUpdates,
-        SettingsSortNameAsc,
-        SettingsSortNameDesc,
-        SettingsSortSizeLarge,
-        SettingsSortSizeSmall,
         SettingsImageViewFilenameToggle,
         SettingsDevOptsLogsToggle,
         SettingsAboutVersion,
@@ -70,6 +68,10 @@ namespace Lang {
         UpdateSuccess,
         UpdateRestart,
         UpdateNotAvailable,
+
+        // USB Dialog
+        USBUnmountPrompt,
+        USBUnmountSuccess,
 
         // Keyboard
         KeyboardEmpty,

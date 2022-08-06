@@ -8,13 +8,15 @@ namespace Log {
     static s64 offset = 0;
     
     void Init(void) {
+        const char *log_path = "/switch/NX-Shell/debug.log";
+
         if (!cfg.dev_options)
             return;
         
-        if (!FS::FileExists("/switch/NX-Shell/debug.log"))
-            fsFsCreateFile(fs, "/switch/NX-Shell/debug.log", 0, 0);
+        if (!FS::FileExists(log_path))
+            fsFsCreateFile(std::addressof(devices[FileSystemSDMC]), log_path, 0, 0);
             
-        if (R_FAILED(fsFsOpenFile(fs, "/switch/NX-Shell/debug.log", (FsOpenMode_Read | FsOpenMode_Write | FsOpenMode_Append), std::addressof(file))))
+        if (R_FAILED(fsFsOpenFile(std::addressof(devices[FileSystemSDMC]), log_path, (FsOpenMode_Read | FsOpenMode_Write | FsOpenMode_Append), std::addressof(file))))
             return;
             
         s64 size = 0;

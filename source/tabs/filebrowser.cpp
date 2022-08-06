@@ -10,6 +10,7 @@
 #include "utils.hpp"
 
 int sort = 0;
+std::vector<std::string> devices_list = { "sdmc:", "safe:", "user:", "system:" };
 
 namespace FileBrowser {
     // Sort without using ImGuiTableSortSpecs
@@ -46,16 +47,9 @@ namespace FileBrowser {
 
         return false;
     }
-}
-
-namespace Tabs {
-    static const u32 sampler_id = 1;
-    static const ImVec2 tex_size = ImVec2(25, 25);
-    static std::vector<std::string> devices_list = { "sdmc:", "safe:", "user:", "system:" };
-    static std::string device = "sdmc:";
 
     // Sort using ImGuiTableSortSpecs
-    bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
+    bool TableSort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB) {
         bool descending = false;
         ImGuiTableSortSpecs *table_sort_specs = ImGui::TableGetSortSpecs();
         
@@ -94,6 +88,10 @@ namespace Tabs {
         
         return false;
     }
+}
+
+namespace Tabs {
+    static const ImVec2 tex_size = ImVec2(21, 21);
 
     void FileBrowser(WindowData &data) {
         if (ImGui::BeginTabItem("File Browser")) {
@@ -108,9 +106,14 @@ namespace Tabs {
                     if (ImGui::Selectable(devices_list[i].c_str(), is_selected)) {
                         device = devices_list[i];
                         fs = std::addressof(devices[i]);
-                        std::strncpy(cwd, "/", 2);
+                        
+                        cwd = "/";
                         data.entries.clear();
-                        FS::GetDirList(cwd, data.entries);
+                        FS::GetDirList(device, cwd, data.entries);
+                        
+                        data.checkbox_data.checked.resize(data.entries.size());
+                        FS::GetUsedStorageSpace(data.used_storage);
+                        FS::GetTotalStorageSpace(data.total_storage);
                         sort = -1;
                     }
                         
@@ -126,7 +129,7 @@ namespace Tabs {
             ImGui::SameLine();
 
             // Display current working directory
-            ImGui::Text(cwd);
+            ImGui::Text(cwd.c_str());
             
             // Draw storage bar
             ImGui::Dummy(ImVec2(0.0f, 1.0f)); // Spacing
@@ -150,7 +153,7 @@ namespace Tabs {
                         sorts_specs->SpecsDirty = true;
                     
                     if (sorts_specs->SpecsDirty) {
-                        std::sort(data.entries.begin(), data.entries.end(), Tabs::Sort);
+                        std::sort(data.entries.begin(), data.entries.end(), FileBrowser::TableSort);
                         sorts_specs->SpecsDirty = false;
                     }
                 }
@@ -161,7 +164,7 @@ namespace Tabs {
                     ImGui::TableNextColumn();
                     ImGui::PushID(i);
                     
-                    if ((data.checkbox_data.checked[i]) && (strcasecmp(data.checkbox_data.cwd, cwd) == 0))
+                    if ((data.checkbox_data.checked[i]) && (data.checkbox_data.cwd.compare(cwd) == 0) && (data.checkbox_data.device.compare(device) == 0))
                         ImGui::Image(reinterpret_cast<ImTextureID>(check_icon.id), tex_size);
                     else
                         ImGui::Image(reinterpret_cast<ImTextureID>(uncheck_icon.id), tex_size);
@@ -181,21 +184,18 @@ namespace Tabs {
                     if (ImGui::Selectable(data.entries[i].name, false)) {
                         if (data.entries[i].type == FsDirEntryType_Dir) {
                             if (std::strncmp(data.entries[i].name, "..", 2) == 0) {
-                                if (R_SUCCEEDED(FS::ChangeDirPrev(data.entries))) {
+                                if (FS::ChangeDirPrev(data.entries)) {
                                     if ((data.checkbox_data.count > 1) && (data.checkbox_data.checked_copy.empty()))
                                         data.checkbox_data.checked_copy = data.checkbox_data.checked;
                                         
                                     data.checkbox_data.checked.resize(data.entries.size());
                                 }
                             }
-                            else if ((FS::ChangeDirNext(data.entries[i].name, data.entries)) >= 0) {
+                            else if (FS::ChangeDirNext(data.entries[i].name, data.entries)) {
                                 if ((data.checkbox_data.count > 1) && (data.checkbox_data.checked_copy.empty()))
                                     data.checkbox_data.checked_copy = data.checkbox_data.checked;
                                 
                                 data.checkbox_data.checked.resize(data.entries.size());
-                            }
-                            else {
-                                std::printf("ChangeDirNext failed?\n");
                             }
 
                             // Reset navigation ID -- TODO: Scroll to top
@@ -207,14 +207,12 @@ namespace Tabs {
                             sorts_specs->SpecsDirty = true;
                         }
                         else {
-                            char path[FS_MAX_PATH + 1];
-
+                            std::string path = FS::BuildPath(data.entries[i]);
+                            
                             switch (file_type) {
                                 case FileTypeImage:
-                                    if ((std::snprintf(path, FS_MAX_PATH, "%s/%s", cwd, data.entries[i].name)) > 0) {
-                                        Textures::LoadImageFile(path, data.textures);
+                                    if (Textures::LoadImageFile(path, data.textures))
                                         data.state = WINDOW_STATE_IMAGEVIEWER;
-                                    }
                                     break;
 
                                 default:

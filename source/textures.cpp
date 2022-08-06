@@ -1,6 +1,7 @@
 #include <cstring>
 #include <string>
 #include <memory>
+#include <sys/stat.h>
 
 // BMP
 #include "libnsbmp.h"
@@ -79,38 +80,31 @@ namespace Textures {
         ImageTypeOther
     } ImageType;
     
-    static Result ReadFile(const char path[FS_MAX_PATH], unsigned char **buffer, s64 &size) {
-        Result ret = 0;
-        FsFile file;
-        
-        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Read, std::addressof(file)))) {
-            Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
-            return ret;
-        }
-        
-        if (R_FAILED(ret = fsFileGetSize(std::addressof(file), std::addressof(size)))) {
-            Log::Error("fsFileGetSize(%s) failed: 0x%x\n", path, ret);
-            fsFileClose(std::addressof(file));
-            return ret;
+    static bool ReadFile(const std::string &path, unsigned char **buffer, std::size_t &size) {
+        FILE *file = fopen(path.c_str(), "rb");
+        if (!file) {
+            Log::Error("Textures::ReadFile (%s) failed to open file.\n", path.c_str());
+            return false;
         }
 
-        *buffer = new unsigned char[size];
-
-        u64 bytes_read = 0;
-        if (R_FAILED(ret = fsFileRead(std::addressof(file), 0, *buffer, static_cast<u64>(size), FsReadOption_None, std::addressof(bytes_read)))) {
-            Log::Error("fsFileRead(%s) failed: 0x%x\n", path, ret);
-            fsFileClose(std::addressof(file));
-            return ret;
-        }
-        
-        if (bytes_read != static_cast<u64>(size)) {
-            Log::Error("bytes_read(%llu) does not match file size(%llu)\n", bytes_read, size);
-            fsFileClose(std::addressof(file));
-            return -1;
+        struct stat file_stat = { 0 };
+        if (stat(path.c_str(), std::addressof(file_stat)) != 0) {
+            Log::Error("Textures::ReadFile (%s) failed to get file size.\n", path.c_str());
+            return false;
         }
 
-        fsFileClose(std::addressof(file));
-        return 0;
+        size = file_stat.st_size;
+        *buffer = new unsigned char[size + 1];
+        std::size_t bytes_read = fread(*buffer, sizeof(unsigned char), size, file);
+
+        if (bytes_read != size) {
+            Log::Error("Textures::ReadFile (%s) failed to read file.\n", path.c_str());
+            fclose(file);
+            return false;
+        }
+
+        fclose(file);
+        return true;
     }
 
     static bool Create(unsigned char *data, GLint format, Tex &texture) {
@@ -130,7 +124,7 @@ namespace Textures {
         return true;
     }
     
-    static bool LoadImageRomfs(const std::string &path, Tex &texture) {
+    static bool LoadImagePNG(const std::string &path, Tex &texture) {
         bool ret = false;
         png_image image;
         std::memset(std::addressof(image), 0, (sizeof image));
@@ -159,7 +153,7 @@ namespace Textures {
         return ret;
     }
     
-    static bool LoadImageBMP(unsigned char **data, s64 &size, Tex &texture) {
+    static bool LoadImageBMP(unsigned char **data, std::size_t &size, Tex &texture) {
         bmp_bitmap_callback_vt bitmap_callbacks = {
             BMP::bitmap_create,
             BMP::bitmap_destroy,
@@ -295,54 +289,25 @@ namespace Textures {
         return true;
     }
     
-    static bool LoadImageJPEG(unsigned char **data, s64 &size, Tex &texture) {
+    static bool LoadImageJPEG(unsigned char **data, std::size_t &size, Tex &texture) {
         tjhandle jpeg = tjInitDecompress();
         int jpegsubsamp = 0;
         tjDecompressHeader2(jpeg, *data, size, std::addressof(texture.width), std::addressof(texture.height), std::addressof(jpegsubsamp));
-        unsigned char *buffer = new unsigned char[texture.width * texture.height * 3];
-        tjDecompress2(jpeg, *data, size, buffer, texture.width, 0, texture.height, TJPF_RGB, TJFLAG_FASTDCT);
-        bool ret = Textures::Create(buffer, GL_RGB, texture);
+        unsigned char *buffer = new unsigned char[texture.width * texture.height * 4];
+        tjDecompress2(jpeg, *data, size, buffer, texture.width, 0, texture.height, TJPF_RGBA, TJFLAG_FASTDCT);
+        bool ret = Textures::Create(buffer, GL_RGBA, texture);
         tjDestroy(jpeg);
         delete[] buffer;
         return ret;
     }
 
-    static bool LoadImageOther(unsigned char **data, s64 &size, Tex &texture) {
-        unsigned char *image = stbi_load_from_memory(*data, size, std::addressof(texture.width), std::addressof(texture.height), nullptr, STBI_rgb_alpha);
+    static bool LoadImageOther(const std::string &path, Tex &texture) {
+        unsigned char *image = stbi_load(path.c_str(), std::addressof(texture.width), std::addressof(texture.height), nullptr, STBI_rgb_alpha);
         bool ret = Textures::Create(image, GL_RGBA, texture);
         return ret;
     }
 
-    static bool LoadImagePNG(unsigned char **data, s64 &size, Tex &texture) {
-        bool ret = false;
-        png_image image;
-        std::memset(std::addressof(image), 0, (sizeof image));
-        image.version = PNG_IMAGE_VERSION;
-
-        if (png_image_begin_read_from_memory(std::addressof(image), *data, size) != 0) {
-            png_bytep buffer;
-            image.format = PNG_FORMAT_RGBA;
-            buffer = new png_byte[PNG_IMAGE_SIZE(image)];
-
-            if (buffer != nullptr && png_image_finish_read(std::addressof(image), nullptr, buffer, 0, nullptr) != 0) {
-                texture.width = image.width;
-                texture.height = image.height;
-                ret = Textures::Create(buffer, GL_RGBA, texture);
-                delete[] buffer;
-                png_image_free(std::addressof(image));
-            }
-            else {
-                if (buffer == nullptr)
-                    png_image_free(std::addressof(image));
-                else
-                    delete[] buffer;
-            }
-        }
-
-        return ret;
-    }
-
-    static bool LoadImageWEBP(unsigned char **data, s64 &size, Tex &texture) {
+    static bool LoadImageWEBP(unsigned char **data, std::size_t &size, Tex &texture) {
         *data = WebPDecodeRGBA(*data, size, std::addressof(texture.width), std::addressof(texture.height));
         bool ret = Textures::Create(*data, GL_RGBA, texture);
         return ret;
@@ -365,7 +330,7 @@ namespace Textures {
         return ImageTypeOther;
     }
 
-    bool LoadImageFile(const char path[FS_MAX_PATH], std::vector<Tex> &textures) {
+    bool LoadImageFile(const std::string &path, std::vector<Tex> &textures) {
         bool ret = false;
 
         // Resize to 1 initially. If the file is a GIF it will be resized accordingly.
@@ -375,11 +340,15 @@ namespace Textures {
 
         if (type == ImageTypeGIF)
             ret = Textures::LoadImageGIF(path, textures);
+        else if (type == ImageTypePNG)
+            ret = Textures::LoadImagePNG(path, textures[0]);
+        else if (type == ImageTypeOther)
+            ret = Textures::LoadImageOther(path, textures[0]);
         else {
             unsigned char *data = nullptr;
-            s64 size = 0;
+            std::size_t size = 0;
             
-            if (R_FAILED(Textures::ReadFile(path, std::addressof(data), size))) {
+            if (!Textures::ReadFile(path, std::addressof(data), size)) {
                 delete[] data;
                 return ret;
             }
@@ -393,16 +362,11 @@ namespace Textures {
                     ret = Textures::LoadImageJPEG(std::addressof(data), size, textures[0]);
                     break;
                     
-                case ImageTypePNG:
-                    ret = Textures::LoadImagePNG(std::addressof(data), size, textures[0]);
-                    break;
-                    
                 case ImageTypeWEBP:
                     ret = Textures::LoadImageWEBP(std::addressof(data), size, textures[0]);
                     break;
                     
                 default:
-                    ret = Textures::LoadImageOther(std::addressof(data), size, textures[0]);
                     break;
             }
 
@@ -421,19 +385,19 @@ namespace Textures {
             "romfs:/text.png"
         };
 
-        bool image_ret = Textures::LoadImageRomfs("romfs:/folder.png", folder_icon);
+        bool image_ret = Textures::LoadImagePNG("romfs:/folder.png", folder_icon);
         IM_ASSERT(image_ret);
 
-        image_ret = Textures::LoadImageRomfs("romfs:/check.png", check_icon);
+        image_ret = Textures::LoadImagePNG("romfs:/check.png", check_icon);
         IM_ASSERT(image_ret);
 
-        image_ret = Textures::LoadImageRomfs("romfs:/uncheck.png", uncheck_icon);
+        image_ret = Textures::LoadImagePNG("romfs:/uncheck.png", uncheck_icon);
         IM_ASSERT(image_ret);
         
         file_icons.resize(num_icons);
 
         for (int i = 0; i < num_icons; i++) {
-            bool ret = Textures::LoadImageRomfs(paths[i], file_icons[i]);
+            bool ret = Textures::LoadImagePNG(paths[i], file_icons[i]);
             IM_ASSERT(ret);
         }
     }

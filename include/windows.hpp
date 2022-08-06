@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <switch.h>
 #include <vector>
 
@@ -26,7 +27,8 @@ enum FS_SORT_STATE {
 typedef struct {
     std::vector<bool> checked;
     std::vector<bool> checked_copy;
-    char cwd[FS_MAX_PATH + 1] = "";
+    std::string cwd = "";
+    std::string device = "";
     u64 count = 0;
 } WindowCheckboxData;
 
@@ -44,9 +46,11 @@ typedef struct {
 
 extern WindowData data;
 extern int sort;
+extern std::vector<std::string> devices_list;
 
 namespace FileBrowser {
     bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB);
+    bool TableSort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB);
 }
 
 namespace ImageViewer {

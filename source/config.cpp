@@ -11,6 +11,7 @@
 config_t cfg;
 
 namespace Config {
+    static const char *config_path = "/switch/NX-Shell/config.json";
     static const char *config_file = "{\n\t\"config_version\": %d,\n\t\"language\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d\n}";
     static int config_version_holder = 0;
     static const int buf_size = 128;
@@ -21,18 +22,18 @@ namespace Config {
         u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.lang, config.dev_options, config.image_filename);
         
         // Delete and re-create the file, we don't care about the return value here.
-        fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
-        fsFsCreateFile(fs, "/switch/NX-Shell/config.json", len, 0);
+        fsFsDeleteFile(std::addressof(devices[FileSystemSDMC]), config_path);
+        fsFsCreateFile(std::addressof(devices[FileSystemSDMC]), config_path, len, 0);
         
         FsFile file;
-        if (R_FAILED(ret = fsFsOpenFile(fs, "/switch/NX-Shell/config.json", FsOpenMode_Write, std::addressof(file)))) {
-            Log::Error("fsFsOpenFile(/switch/NX-Shell/config.json) failed: 0x%x\n", ret);
+        if (R_FAILED(ret = fsFsOpenFile(std::addressof(devices[FileSystemSDMC]), config_path, FsOpenMode_Write, std::addressof(file)))) {
+            Log::Error("Config::Save fsFsOpenFile(%s) failed: 0x%x\n", config_path, ret);
             delete[] buf;
             return ret;
         }
         
         if (R_FAILED(ret = fsFileWrite(std::addressof(file), 0, buf, len, FsWriteOption_Flush))) {
-            Log::Error("fsFileWrite(/switch/NX-Shell/config.json) failed: 0x%x\n", ret);
+            Log::Error("Config::Save fsFileWrite(%s) failed: 0x%x\n", config_path, ret);
             delete[] buf;
             fsFileClose(std::addressof(file));
             return ret;
@@ -53,17 +54,17 @@ namespace Config {
         Result ret = 0;
         
         if (!FS::DirExists("/switch/"))
-            fsFsCreateDirectory(fs, "/switch");
+            fsFsCreateDirectory(std::addressof(devices[FileSystemSDMC]), "/switch");
         if (!FS::DirExists("/switch/NX-Shell/"))
-            fsFsCreateDirectory(fs, "/switch/NX-Shell");
+            fsFsCreateDirectory(std::addressof(devices[FileSystemSDMC]), "/switch/NX-Shell");
             
-        if (!FS::FileExists("/switch/NX-Shell/config.json")) {
+        if (!FS::FileExists(config_path)) {
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
         
         FsFile file;
-        if (R_FAILED(ret = fsFsOpenFile(fs, "/switch/NX-Shell/config.json", FsOpenMode_Read, std::addressof(file))))
+        if (R_FAILED(ret = fsFsOpenFile(std::addressof(devices[FileSystemSDMC]), config_path, FsOpenMode_Read, std::addressof(file))))
             return ret;
         
         s64 size = 0;
@@ -96,7 +97,7 @@ namespace Config {
 
         // Delete config file if config file is updated. This will rarely happen.
         if (config_version_holder < CONFIG_VERSION) {
-            fsFsDeleteFile(fs, "/switch/NX-Shell/config.json");
+            fsFsDeleteFile(std::addressof(devices[FileSystemSDMC]), config_path);
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }

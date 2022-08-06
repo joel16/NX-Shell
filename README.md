@@ -21,3 +21,4 @@ NX Shell is a multi-purpose file manager for the Nintendo Switch that aims towar
 - **Preetisketch** for the banner.
 - **Dear ImGui developers and contributors** for the GUI.
 - **devkitPro maintainers and contributors** for libnx, devkitA64, and many other packages used by this project.
+- **DarkMatterCore** for libusbhsfs.

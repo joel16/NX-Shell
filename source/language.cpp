@@ -44,14 +44,12 @@ static const char *strings_jp[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -65,6 +63,9 @@ static const char *strings_jp[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -110,14 +111,12 @@ static const char *strings_en[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -131,6 +130,9 @@ static const char *strings_en[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -177,14 +179,12 @@ static const char *strings_fr[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -198,6 +198,9 @@ static const char *strings_fr[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -243,14 +246,12 @@ static const char *strings_de[] {
     "Einstellungen",
     "Sortiereinstellung",
     "Sprache",
+    "USB",
+    "Unmount USB devices",
     "Bildanzeige",
     "Entwickleroptionen",
     "Über",
     "Nach Updates suchen",
-    " Nach Name (aufsteigend)",
-    " Nach Name (absteigend)",
-    " Nach Größe (größtes zuerst)",
-    " Nach Größe (kleinstes zuerst)",
     " Dateiname anzeigen",
     " Log aktivieren",
     "Version",
@@ -264,6 +265,9 @@ static const char *strings_de[] {
     "Update war erfolgreich.",
     "Bitte beenden Sie die Anwendung und starten Sie sie erneut.",
     "Sie sind bereits auf der neusten Version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "Der Name darf nicht leer sein."
 };
@@ -310,14 +314,12 @@ static const char *strings_it[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -331,6 +333,9 @@ static const char *strings_it[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -377,14 +382,12 @@ static const char *strings_es[] {
     "Ajustes",
     "Ajustes de organización",
     "Idioma",
+    "USB",
+    "Unmount USB devices",
     "Visualizador de Imagen",
     "Opciones de Desarrollador",
     "Acerca de",
     "Buscar Actualizaciones",
-    " Por nombre (ascendente)",
-    " Por nombre (descendente)",
-    " Por tamaño (más grande primero)",
-    " Por tamaño (más pequeño primero)",
     " Mostrar nombre de archivo",
     " Habilitar logs",
     "versión",
@@ -398,6 +401,9 @@ static const char *strings_es[] {
     "Actualización exitosa.",
     "Por favor cerrar y reiniciar la aplicación.",
     "Estás en la última versión.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "El nombre no puede estar vacío."
 };
@@ -444,14 +450,12 @@ static const char *strings_sc[] {
     "设置",
     "排序方式",
     "语言",
+    "USB",
+    "Unmount USB devices",
     "图片查看器",
     "开发人员选项",
     "关于",
     "检查更新",
-    " 根据文件名 (升序)",
-    " 根据文件名 (降序)",
-    " 根据大小 (大文件在前)",
-    " 根据大小 (小文件在前)",
     " 显示文件名",
     " 打开日志",
     "版本",
@@ -465,6 +469,9 @@ static const char *strings_sc[] {
     "更新成功.",
     "请退出并重新运行应用程序.",
     "你使用的是最新版本.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "名称不能为空."
 };
@@ -511,14 +518,12 @@ static const char *strings_ko[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -532,6 +537,9 @@ static const char *strings_ko[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -578,14 +586,12 @@ static const char *strings_nl[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -599,6 +605,9 @@ static const char *strings_nl[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -645,14 +654,12 @@ static const char *strings_pt[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -666,6 +673,9 @@ static const char *strings_pt[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -712,14 +722,12 @@ static const char *strings_ru[] {
     "Settings",
     "Sort Settings",
     "Language",
+    "USB",
+    "Unmount USB devices",
     "Image Viewer",
     "Developer Options",
     "About",
     "Check for Updates",
-    " By name (ascending)",
-    " By name (descending)",
-    " By size (largest first)",
-    " By size (smallest first)",
     " Display filename",
     " Enable logs",
     "version",
@@ -733,6 +741,9 @@ static const char *strings_ru[] {
     "Update was successful.",
     "Please exit and rerun the application.",
     "You are on the latest version.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "The name cannot be empty."
 };
@@ -779,14 +790,12 @@ static const char *strings_tw[] {
     "設置",
     "排序方式",
     "語言",
+    "USB",
+    "Unmount USB devices",
     "圖片查看器",
     "開發人員選項",
     "關於",
     "檢查更新",
-    " 根據文件名 (升序)",
-    " 根據文件名 (降序)",
-    " 根據大小 (大文件在前)",
-    " 根據大小 (小文件在前)",
     " 顯示文件名",
     " 打開日誌",
     "版本",
@@ -800,6 +809,9 @@ static const char *strings_tw[] {
     "更新成功.",
     "請退出並重新運行應用程序.",
     "妳使用的是最新版本.",
+
+    "Do you wish to unmount all the connected USB devices?",
+    "The USB device can now be safely removed.",
 
     "名稱不能為空."
 };

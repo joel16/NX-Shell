@@ -37,3 +37,4 @@
 *.nacp
 build/
 res/shaders
+!libs/lib/libusbhsfs.a

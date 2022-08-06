@@ -15,7 +15,7 @@ extern std::vector<Tex> file_icons;
 extern Tex folder_icon, check_icon, uncheck_icon;
 
 namespace Textures {
-    bool LoadImageFile(const char path[FS_MAX_PATH], std::vector<Tex> &textures);
+    bool LoadImageFile(const std::string &path, std::vector<Tex> &textures);
     void Free(Tex &texture);
     void Init(void);
     void Exit(void);

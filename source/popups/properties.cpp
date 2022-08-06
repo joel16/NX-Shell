@@ -28,7 +28,7 @@ namespace Popups {
             }
             
             FsTimeStampRaw timestamp;
-            if (R_SUCCEEDED(FS::GetTimeStamp(data.entries[data.selected], timestamp))) {
+            if (FS::GetTimeStamp(data.entries[data.selected], timestamp)) {
                 if (timestamp.is_valid == 1) { // Confirm valid timestamp
                     char date[3][36];
                     
@@ -63,6 +63,7 @@ namespace Popups {
         std::string new_width, new_height;
         if (ImGui::BeginPopupModal("Properties", std::addressof(state), ImGuiWindowFlags_AlwaysAutoResize)) {
             std::string parent_text = "Parent: ";
+            parent_text.append(device);
             parent_text.append(cwd);
             ImGui::Text(parent_text.c_str());
 

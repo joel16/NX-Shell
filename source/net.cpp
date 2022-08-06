@@ -87,9 +87,9 @@ namespace Net {
         const char path[FS_MAX_PATH] = "/switch/NX-Shell/NX-Shell_UPDATE.nro";
 
         if (!FS::FileExists(path))
-            fsFsCreateFile(fs, path, 0, 0);
+            fsFsCreateFile(std::addressof(devices[FileSystemSDMC]), path, 0, 0);
 
-        if (R_FAILED(ret = fsFsOpenFile(fs, path, FsOpenMode_Write | FsOpenMode_Append, std::addressof(file)))) {
+        if (R_FAILED(ret = fsFsOpenFile(std::addressof(devices[FileSystemSDMC]), path, FsOpenMode_Write | FsOpenMode_Append, std::addressof(file)))) {
             Log::Error("fsFsOpenFile(%s) failed: 0x%x\n", path, ret);
             return;
         }

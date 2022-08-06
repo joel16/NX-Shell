@@ -10,7 +10,8 @@ typedef struct {
 } config_t;
 
 extern config_t cfg;
-extern char cwd[FS_MAX_PATH];
+extern std::string cwd;
+extern std::string device;
 
 namespace Config {
     int Save(config_t &config);

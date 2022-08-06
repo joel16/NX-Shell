@@ -37,10 +37,10 @@ namespace Popups {
                     Net::GetLatestReleaseNRO(tag);
                     
                     Result ret = 0;
-                    if (R_FAILED(ret = fsFsDeleteFile(fs, __application_path)))
+                    if (R_FAILED(ret = fsFsDeleteFile(std::addressof(devices[FileSystemSDMC]), __application_path)))
                         Log::Error("fsFsDeleteFile(%s) failed: 0x%x\n", __application_path, ret);
                     
-                    if (R_FAILED(ret = fsFsRenameFile(fs, "/switch/NX-Shell/NX-Shell_UPDATE.nro", __application_path)))
+                    if (R_FAILED(ret = fsFsRenameFile(std::addressof(devices[FileSystemSDMC]), "/switch/NX-Shell/NX-Shell_UPDATE.nro", __application_path)))
                         Log::Error("fsFsRenameFile(update) failed: 0x%x\n", ret);
                         
                     done = true;

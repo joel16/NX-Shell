@@ -22,7 +22,7 @@ namespace ImageViewer {
             data.selected = index;
             
             char fs_path[FS_MAX_PATH + 1];
-            if ((std::snprintf(fs_path, FS_MAX_PATH, "%s/%s", cwd, data.entries[index].name)) > 0) {
+            if ((std::snprintf(fs_path, FS_MAX_PATH, "%s/%s", cwd.c_str(), data.entries[index].name)) > 0) {
                 bool ret = Textures::LoadImageFile(fs_path, data.textures);
                 IM_ASSERT(ret);
                 return ret;
@@ -69,13 +69,13 @@ namespace ImageViewer {
         if (key & HidNpadButton_X)
             properties = !properties;
         
-        if (key & HidNpadButton_StickLDown) {
+        if (ImGui::IsKeyDown(ImGuiKey_GamepadDpadDown)) {
             data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
             
             if (data.zoom_factor < 0.1f)
                 data.zoom_factor = 0.1f;
         }
-        else if (key & HidNpadButton_StickLUp) {
+        else if (ImGui::IsKeyDown(ImGuiKey_GamepadDpadUp)) {
             data.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
             
             if (data.zoom_factor > 5.0f)

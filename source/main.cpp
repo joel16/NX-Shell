@@ -8,13 +8,14 @@
 #include "log.hpp"
 #include "textures.hpp"
 #include "windows.hpp"
+#include "usb.hpp"
 
 char __application_path[FS_MAX_PATH];
 
 namespace Services {
     int Init(void) {
         Result ret = 0;
-
+        
         devices[FileSystemSDMC] = *fsdevGetDeviceFileSystem("sdmc");
         fs = std::addressof(devices[FileSystemSDMC]);
 
@@ -47,6 +48,11 @@ namespace Services {
             return ret;
         }
 
+        if (R_FAILED(ret = USB::Init())) {
+            Log::Error("usbHsFsInitialize(0) failed: 0x%x\n", ret);
+            return ret;
+        }
+
         if (!GUI::Init())
             Log::Error("GUI::Init() failed: 0x%x\n", ret);
         
@@ -59,6 +65,7 @@ namespace Services {
     void Exit(void) {
         Textures::Exit();
         GUI::Exit();
+        USB::Exit();
         nifmExit();
         socketExit();
         Log::Exit();
@@ -70,14 +77,13 @@ namespace Services {
 }
 
 int main(int argc, char* argv[]) {
-    Result ret = 0;
     u64 key = 0;
 
     Services::Init();
 
-    if (R_FAILED(ret = FS::GetDirList(cwd, data.entries))) {
+    if (!FS::GetDirList(device, cwd, data.entries)) {
         Services::Exit();
-        return ret;
+        return 0;
     }
     
     data.checkbox_data.checked.resize(data.entries.size());
