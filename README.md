@@ -3,7 +3,7 @@
 NX Shell is a multi-purpose file manager for the Nintendo Switch that aims towards handling various file types while keeping the basic necessities of a standard file manager. Initially, the project was inspired by LineageOS/CyanogenMod's file manager for android, and even had a similar design approach to that of the famous Android file manager. However, it has been re-written from scratch, now using more up to date tools and libraries.
 
 <p align="center">
-  <img src="https://i.imgur.com/FfkFEkA.jpg" alt="NX-Shell (Deko3D) Screenshot" width="640" height="360"/>
+  <img src="https://i.imgur.com/f43g1ya.jpg" alt="NX-Shell (Next) Screenshot" width="640" height="360"/>
 </p>
 
 # Features:
