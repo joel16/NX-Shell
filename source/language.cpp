@@ -463,15 +463,15 @@ static const char *strings_sc[] {
     "排序方式",
     "语言",
     "USB",
-    "Unmount USB devices",
+    "卸载USB设备",
     "图片查看器",
     "开发人员选项",
-    "Multiple Character Set (Improves boot speed when disabled)",
+    "多字符集(禁用时提高启动速度)",
     "关于",
     "检查更新",
     " 显示文件名",
     " 打开日志",
-    " Enable support for special symbols/characters",
+    " 启用对特殊符号/字符的支持",
     "版本",
     "作者",
     "横幅",
@@ -484,8 +484,8 @@ static const char *strings_sc[] {
     "请退出并重新运行应用程序.",
     "你使用的是最新版本.",
 
-    "Do you wish to unmount all the connected USB devices?",
-    "The USB device can now be safely removed.",
+    "您想卸载所有连接的 USB 设备吗？",
+    "现在可以安全地移除 USB 设备。",
 
     "名称不能为空."
 };
@@ -813,15 +813,15 @@ static const char *strings_tw[] {
     "排序方式",
     "語言",
     "USB",
-    "Unmount USB devices",
+    "卸載 USB 設備",
     "圖片查看器",
     "開發人員選項",
-    "Multiple Character Set (Improves boot speed when disabled)",
+    "多字符集(禁用時提高啟動速度)",
     "關於",
     "檢查更新",
     " 顯示文件名",
     " 打開日誌",
-    " Enable support for special symbols/characters",
+    " 啟用對特殊符號/字符的支持",
     "版本",
     "作者",
     "橫幅",
@@ -834,8 +834,8 @@ static const char *strings_tw[] {
     "請退出並重新運行應用程序.",
     "妳使用的是最新版本.",
 
-    "Do you wish to unmount all the connected USB devices?",
-    "The USB device can now be safely removed.",
+    "您想卸載所有連接的 USB 設備嗎？",
+    "現在可以安全地移除 USB 設備。",
 
     "名稱不能為空."
 };
