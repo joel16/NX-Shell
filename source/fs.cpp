@@ -138,8 +138,9 @@ namespace FS {
 
     bool Rename(FsDirectoryEntry &entry, const std::string &dest_path) {
         std::string src_path = FS::BuildPath(entry);
+        std::string full_dest_path = FS::BuildPath(dest_path, true);
 
-        if (rename(src_path.c_str(), dest_path.c_str()) != 0) {
+        if (rename(src_path.c_str(), full_dest_path.c_str()) != 0) {
             Log::Error("FS::Rename(%s, %s) failed.\n", src_path.c_str(), dest_path.c_str());
             return false;
         }

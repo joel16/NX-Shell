@@ -84,7 +84,8 @@ namespace Popups {
 
             if (ImGui::Button(strings[cfg.lang][Lang::OptionsRename], ImVec2(200, 50))) {
                 std::string path = Keyboard::GetText(strings[cfg.lang][Lang::OptionsRenamePrompt], data.entries[data.selected].name);
-                if (R_SUCCEEDED(FS::Rename(data.entries[data.selected], path.c_str()))) {
+                
+                if (FS::Rename(data.entries[data.selected], path.c_str())) {
                     Options::RefreshEntries(false);
                     sort = -1;
                 }
