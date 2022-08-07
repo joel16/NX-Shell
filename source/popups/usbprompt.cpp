@@ -1,8 +1,10 @@
 #include "config.hpp"
+#include "fs.hpp"
 #include "imgui.h"
 #include "language.hpp"
 #include "popups.hpp"
 #include "usb.hpp"
+#include "windows.hpp"
 
 namespace Popups {
     static bool done = false;
@@ -21,6 +23,20 @@ namespace Popups {
             if (ImGui::Button(strings[cfg.lang][Lang::ButtonOK], ImVec2(120, 0))) {
                 if (!done) {
                     USB::Unmount();
+                    
+                    // Reset device back to sdmc
+                    device = "sdmc:";
+                    fs = std::addressof(devices[FileSystemSDMC]);
+                    
+                    cwd = "/";
+                    data.entries.clear();
+                    FS::GetDirList(device, cwd, data.entries);
+                    
+                    data.checkbox_data.checked.resize(data.entries.size());
+                    FS::GetUsedStorageSpace(data.used_storage);
+                    FS::GetTotalStorageSpace(data.total_storage);
+                    sort = -1;
+                    
                     ImGui::CloseCurrentPopup();
                     done = true;
                 }
