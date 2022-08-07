@@ -5,6 +5,7 @@
 #include <memory>
 #include <switch.h>
 
+#include "config.hpp"
 #include "gui.hpp"
 #include "imgui_impl_switch.hpp"
 #include "log.hpp"
@@ -172,7 +173,7 @@ namespace GUI {
         PlFontData standard, extended, chinese, korean;
         static ImWchar extended_range[] = {0xE000, 0xE152};
         
-        if (R_SUCCEEDED(plGetSharedFontByType(std::addressof(standard), PlSharedFontType_Standard)) &&
+        if ((R_SUCCEEDED(plGetSharedFontByType(std::addressof(standard), PlSharedFontType_Standard))) &&
             R_SUCCEEDED(plGetSharedFontByType(std::addressof(extended), PlSharedFontType_NintendoExt)) &&
             R_SUCCEEDED(plGetSharedFontByType(std::addressof(chinese), PlSharedFontType_ChineseSimplified)) &&
             R_SUCCEEDED(plGetSharedFontByType(std::addressof(korean), PlSharedFontType_KO))) {
@@ -183,10 +184,13 @@ namespace GUI {
             
             font_cfg.FontDataOwnedByAtlas = false;
             io.Fonts->AddFontFromMemoryTTF(standard.address, standard.size, 20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesDefault());
-            font_cfg.MergeMode = true;
-            io.Fonts->AddFontFromMemoryTTF(extended.address, extended.size, 20.f, std::addressof(font_cfg), extended_range);
-            io.Fonts->AddFontFromMemoryTTF(chinese.address,  chinese.size,  20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesChineseFull());
-            io.Fonts->AddFontFromMemoryTTF(korean.address,   korean.size,   20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesKorean());
+
+            if (cfg.multi_lang) {
+                font_cfg.MergeMode = true;
+                io.Fonts->AddFontFromMemoryTTF(extended.address, extended.size, 20.f, std::addressof(font_cfg), extended_range);
+                io.Fonts->AddFontFromMemoryTTF(chinese.address,  chinese.size,  20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesChineseFull());
+                io.Fonts->AddFontFromMemoryTTF(korean.address,   korean.size,   20.f, std::addressof(font_cfg), io.Fonts->GetGlyphRangesKorean());
+            }
             
             // build font atlas
             io.Fonts->GetTexDataAsAlpha8(std::addressof(px), std::addressof(w), std::addressof(h), std::addressof(bpp));

@@ -7,6 +7,7 @@ typedef struct {
     int lang = 1;
     bool dev_options = false;
     bool image_filename = false;
+    bool multi_lang = false;
 } config_t;
 
 extern config_t cfg;

@@ -97,6 +97,14 @@ namespace Tabs {
 
             Tabs::Separator();
 
+            // Multi lang Checkbox
+            Tabs::Indent(strings[cfg.lang][Lang::SettingsMultiLangTitle]);
+
+            if (ImGui::Checkbox(strings[cfg.lang][Lang::SettingsMultiLangLogsToggle], std::addressof(cfg.multi_lang)))
+                Config::Save(cfg);
+
+            Tabs::Separator();
+
             // About
             Tabs::Indent(strings[cfg.lang][Lang::SettingsAboutTitle]);
             

@@ -6,20 +6,20 @@
 #include "fs.hpp"
 #include "log.hpp"
 
-#define CONFIG_VERSION 4
+#define CONFIG_VERSION 5
 
 config_t cfg;
 
 namespace Config {
     static const char *config_path = "/switch/NX-Shell/config.json";
-    static const char *config_file = "{\n\t\"config_version\": %d,\n\t\"language\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d\n}";
+    static const char *config_file = "{\n\t\"config_version\": %d,\n\t\"language\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d,\n\t\"multi_lang\": %d\n}";
     static int config_version_holder = 0;
     static const int buf_size = 128;
     
     int Save(config_t &config) {
         Result ret = 0;
         char *buf = new char[buf_size];
-        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.lang, config.dev_options, config.image_filename);
+        u64 len = std::snprintf(buf, buf_size, config_file, CONFIG_VERSION, config.lang, config.dev_options, config.image_filename, config.multi_lang);
         
         // Delete and re-create the file, we don't care about the return value here.
         fsFsDeleteFile(std::addressof(devices[FileSystemSDMC]), config_path);
@@ -44,12 +44,6 @@ namespace Config {
         return 0;
     }
     
-    static void SetDefault(config_t &config) {
-        config.lang = 1;
-        config.dev_options = false;
-        config.image_filename = false;
-    }
-    
     int Load(void) {
         Result ret = 0;
         
@@ -59,7 +53,7 @@ namespace Config {
             fsFsCreateDirectory(std::addressof(devices[FileSystemSDMC]), "/switch/NX-Shell");
             
         if (!FS::FileExists(config_path)) {
-            Config::SetDefault(cfg);
+            cfg = {};
             return Config::Save(cfg);
         }
         
@@ -98,7 +92,7 @@ namespace Config {
         // Delete config file if config file is updated. This will rarely happen.
         if (config_version_holder < CONFIG_VERSION) {
             fsFsDeleteFile(std::addressof(devices[FileSystemSDMC]), config_path);
-            Config::SetDefault(cfg);
+            cfg = {};
             return Config::Save(cfg);
         }
 
@@ -110,6 +104,9 @@ namespace Config {
 
         json_t *image_filename = json_object_get(root, "image_filename");
         cfg.image_filename = json_integer_value(image_filename);
+
+        json_t *multi_lang = json_object_get(root, "multi_lang");
+        cfg.multi_lang = json_integer_value(multi_lang);
 
         json_decref(root);
         return 0;
