@@ -52,34 +52,25 @@ namespace FS {
     bool GetDirList(const std::string &device, const std::string &path, std::vector<FsDirectoryEntry> &entries) {
         DIR *dir = nullptr;
         struct dirent *d_entry = nullptr;
+        
         std::string full_path = device + path;
         dir = opendir(full_path.c_str());
         entries.clear();
 
         if (dir) {
-            FsDirectoryEntry parent_entry = { 0 };
-            std::strncpy(parent_entry.name, "..", 3);
+            FsDirectoryEntry parent_entry;
+            std::memset(std::addressof(parent_entry), 0, sizeof(FsDirectoryEntry));
+            std::snprintf(parent_entry.name, 3, "..");
             parent_entry.type = FsDirEntryType_Dir;
             entries.push_back(parent_entry);
 
             while((d_entry = readdir(dir))) {
-                FsDirectoryEntry entry = { 0 };
+                FsDirectoryEntry entry;
+                std::memset(std::addressof(entry), 0, sizeof(FsDirectoryEntry));
 
-                std::strncpy(entry.name, d_entry->d_name, FS_MAX_PATH);
+                std::snprintf(entry.name, FS_MAX_PATH, d_entry->d_name);
                 entry.type = (d_entry->d_type & DT_DIR)? FsDirEntryType_Dir : FsDirEntryType_File;
-
-                if (entry.type == FsDirEntryType_File) {
-                    std::string path;
-                    struct stat file_stat = { 0 };
-                    entry.file_size = 0;
-                    
-                    std::string file_path = full_path;
-                    file_path.append(cwd.compare("/") == 0? "" : "/");
-                    file_path.append(entry.name);
-
-                    if (!stat(file_path.c_str(), std::addressof(file_stat)))
-                        entry.file_size = file_stat.st_size;
-                }
+                entry.file_size = 0;
 
                 entries.push_back(entry);
             }

@@ -35,14 +35,6 @@ namespace FileBrowser {
             case FS_SORT_ALPHA_DESC:
                 return (strcasecmp(entryB.name, entryA.name) < 0);
                 break;
-
-            case FS_SORT_SIZE_ASC:
-                return (entryA.file_size < entryB.file_size);
-                break;
-
-            case FS_SORT_SIZE_DESC:
-                return (entryB.file_size < entryA.file_size);
-                break;
         }
 
         return false;
@@ -73,11 +65,6 @@ namespace FileBrowser {
                     case 1: // filename
                         sort = descending? FS_SORT_ALPHA_DESC : FS_SORT_ALPHA_ASC;
                         return descending? (strcasecmp(entryB.name, entryA.name) < 0) : (strcasecmp(entryA.name, entryB.name) < 0);
-                        break;
-                        
-                    case 2: // Size
-                        sort = descending? FS_SORT_SIZE_DESC : FS_SORT_SIZE_ASC;
-                        return descending? (entryB.file_size < entryA.file_size) : (entryA.file_size < entryB.file_size);
                         break;
                         
                     default:
@@ -139,13 +126,12 @@ namespace Tabs {
             ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInner |
                 ImGuiTableFlags_BordersOuter | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
             
-            if (ImGui::BeginTable("Directory List", 3, tableFlags)) {
+            if (ImGui::BeginTable("Directory List", 2, tableFlags)) {
                 // Make header always visible
                 // ImGui::TableSetupScrollFreeze(0, 1);
 
                 ImGui::TableSetupColumn("", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_NoHeaderLabel | ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_DefaultSort);
-                ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 150.f);
                 ImGui::TableHeadersRow();
 
                 if (ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs()) {
@@ -223,13 +209,6 @@ namespace Tabs {
 
                     if (ImGui::IsItemHovered())
                         data.selected = i;
-
-                    ImGui::TableNextColumn();
-                    if (data.entries[i].file_size != 0) {
-                        char size[16];
-                        Utils::GetSizeString(size, static_cast<double>(data.entries[i].file_size));
-                        ImGui::Text(size);
-                    }
                 }
 
                 ImGui::EndTable();

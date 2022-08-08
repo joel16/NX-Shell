@@ -67,7 +67,7 @@ namespace ImageViewer {
 
     void HandleControls(u64 &key, bool &properties) {
         if (key & HidNpadButton_X)
-            properties = !properties;
+            properties = true;
         
         if (ImGui::IsKeyDown(ImGuiKey_GamepadDpadDown)) {
             data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
@@ -106,7 +106,7 @@ namespace ImageViewer {
 }
 
 namespace Windows {
-    void ImageViewer(bool &properties) {
+    void ImageViewer(bool &properties, bool &file_stat) {
         Windows::SetupWindow();
         
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -131,7 +131,7 @@ namespace Windows {
         }
 
         if (properties)
-            Popups::ImageProperties(properties, data.textures[0]);
+            Popups::ImageProperties(properties, data.textures[0], file_stat);
         
         Windows::ExitWindow();
         ImGui::PopStyleVar();

@@ -10,7 +10,7 @@
 WindowData data;
 
 namespace Windows {
-    static bool image_properties = false;
+    static bool image_properties = false, file_stat = false;
 
     void SetupWindow(void) {
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
@@ -52,7 +52,7 @@ namespace Windows {
                 break;
 
             case WINDOW_STATE_PROPERTIES:
-                Popups::FilePropertiesPopup(data);
+                Popups::FilePropertiesPopup(data, file_stat);
                 break;
             
             case WINDOW_STATE_DELETE:
@@ -60,7 +60,7 @@ namespace Windows {
                 break;
 
             case WINDOW_STATE_IMAGEVIEWER:
-                Windows::ImageViewer(image_properties);
+                Windows::ImageViewer(image_properties, file_stat);
                 ImageViewer::HandleControls(key, image_properties);
                 break;
 
@@ -90,13 +90,19 @@ namespace Windows {
                     break;
 
                 case WINDOW_STATE_PROPERTIES:
+                    data.state = WINDOW_STATE_OPTIONS;
+                    file_stat = false;
+                    break;
+                
                 case WINDOW_STATE_DELETE:
                     data.state = WINDOW_STATE_OPTIONS;
                     break;
 
                 case WINDOW_STATE_IMAGEVIEWER:
-                    if (image_properties)
+                    if (image_properties) {
                         image_properties = false;
+                        file_stat = false;
+                    }
                     else {
                         ImageViewer::ClearTextures();
                         data.state = WINDOW_STATE_FILEBROWSER;

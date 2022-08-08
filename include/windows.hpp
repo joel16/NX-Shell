@@ -66,5 +66,5 @@ namespace Windows {
     void ExitWindow(void);
     void ResetCheckbox(WindowData &data);
     void MainWindow(WindowData &data, u64 &key, bool progress);
-    void ImageViewer(bool &properties);
+    void ImageViewer(bool &properties, bool &file_stat);
 }

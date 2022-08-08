@@ -7,12 +7,14 @@
 #include "utils.hpp"
 
 namespace Popups {
+    static std::size_t size = 0;
+
     static char *FormatDate(char *string, time_t timestamp) {
         strftime(string, 36, "%Y/%m/%d %H:%M:%S", localtime(std::addressof(timestamp)));
         return string;
     }
 
-    void FilePropertiesPopup(WindowData &data) {
+    void FilePropertiesPopup(WindowData &data, bool &file_stat) {
         Popups::SetupPopup(strings[cfg.lang][Lang::OptionsProperties]);
         
         if (ImGui::BeginPopupModal(strings[cfg.lang][Lang::OptionsProperties], nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -20,10 +22,15 @@ namespace Popups {
             ImGui::Text(name_text.c_str());
             
             if (data.entries[data.selected].type == FsDirEntryType_File) {
-                char size[16];
-                Utils::GetSizeString(size, static_cast<double>(data.entries[data.selected].file_size));
+                if (!file_stat) {
+                    FS::GetFileSize(data.entries[data.selected].name, size);
+                    file_stat = true;
+                }
+
+                char size_str[16];
+                Utils::GetSizeString(size_str, static_cast<double>(size));
                 std::string size_text = strings[cfg.lang][Lang::PropertiesSize];
-                size_text.append(size);
+                size_text.append(size_str);
                 ImGui::Text(size_text.c_str());
             }
             
@@ -49,6 +56,7 @@ namespace Popups {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
             if (ImGui::Button(strings[cfg.lang][Lang::ButtonOK], ImVec2(120, 0))) {
+                file_stat = false;
                 ImGui::CloseCurrentPopup();
                 data.state = WINDOW_STATE_OPTIONS;
             }
@@ -57,7 +65,7 @@ namespace Popups {
         Popups::ExitPopup();
     }
 
-    void ImageProperties(bool &state, Tex &texture) {
+    void ImageProperties(bool &state, Tex &texture, bool &file_stat) {
         Popups::SetupPopup(strings[cfg.lang][Lang::OptionsProperties]);
 
         std::string new_width, new_height;
@@ -74,11 +82,16 @@ namespace Popups {
             ImGui::Text(name_text.c_str());
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+            
+            if (!file_stat) {
+                FS::GetFileSize(data.entries[data.selected].name, size);
+                file_stat = true;
+            }
 
-            char size[16];
-            Utils::GetSizeString(size, static_cast<double>(data.entries[data.selected].file_size));
+            char size_str[16];
+            Utils::GetSizeString(size_str, static_cast<double>(size));
             std::string size_text = "Size: ";
-            size_text.append(size);
+            size_text.append(size_str);
             ImGui::Text(size_text.c_str());
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
@@ -101,8 +114,9 @@ namespace Popups {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
             if (ImGui::Button("OK", ImVec2(120, 0))) {
-                ImGui::CloseCurrentPopup();
                 state = false;
+                file_stat = false;
+                ImGui::CloseCurrentPopup();
             }
         }
         
