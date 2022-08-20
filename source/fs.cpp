@@ -151,7 +151,7 @@ namespace FS {
                     continue;
 
                 std::string file_path = path;
-                file_path.append(cwd.compare("/") == 0? "" : "/");
+                file_path.append(path.compare("/") == 0? "" : "/");
                 file_path.append(filename);
 
                 if (entry->d_type & DT_DIR) {
