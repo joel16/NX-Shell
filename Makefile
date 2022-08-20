@@ -78,7 +78,7 @@ ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 LIBS	:=	`curl-config --libs` `freetype-config --libs` -lgif -lturbojpeg -ljpeg -lpng -lwebp -ljansson \
-		-lglad -lEGL -lglapi -ldrm_nouveau -lusbhsfs -lnx -lm -lz
+		-lglad -lEGL -lglapi -ldrm_nouveau -lusbhsfs -llwext4 -lntfs-3g -lnx -lm -lz
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
