@@ -3,6 +3,7 @@
 #include <string>
 #include <switch.h>
 #include <vector>
+#include <mutex>
 
 #include "textures.hpp"
 
@@ -47,6 +48,7 @@ typedef struct {
 extern WindowData data;
 extern int sort;
 extern std::vector<std::string> devices_list;
+extern std::recursive_mutex devices_list_mutex;
 
 namespace FileBrowser {
     bool Sort(const FsDirectoryEntry &entryA, const FsDirectoryEntry &entryB);

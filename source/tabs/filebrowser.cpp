@@ -11,6 +11,7 @@
 
 int sort = 0;
 std::vector<std::string> devices_list = { "sdmc:", "safe:", "user:", "system:" };
+std::recursive_mutex devices_list_mutex;
 
 namespace FileBrowser {
     // Sort without using ImGuiTableSortSpecs
@@ -87,6 +88,8 @@ namespace Tabs {
             ImGui::PushID("device_list");
             ImGui::PushItemWidth(160.f);
             if (ImGui::BeginCombo("", device.c_str())) {
+                std::scoped_lock lock(devices_list_mutex);
+
                 for (std::size_t i = 0; i < devices_list.size(); i++) {
                     const bool is_selected = (device == devices_list[i]);
                     
