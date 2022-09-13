@@ -396,7 +396,7 @@ static const char *strings_es[] {
     "Unmount USB devices",
     "Visualizador de Imagen",
     "Opciones de Desarrollador",
-    "Multiple Character Set (Improves boot speed when disabled)",
+    "Múltiples Juegos de Caracteres (arranque más rápido si se desactiva)",
     "Acerca de",
     "Buscar Actualizaciones",
     " Mostrar nombre de archivo",
@@ -414,8 +414,8 @@ static const char *strings_es[] {
     "Por favor cerrar y reiniciar la aplicación.",
     "Estás en la última versión.",
 
-    "Do you wish to unmount all the connected USB devices?",
-    "The USB device can now be safely removed.",
+    "¿Quieres desmontar todos los dispositivos USB conectados?",
+    "El dispositivo USB ahora puede ser removido de forma segura.",
 
     "El nombre no puede estar vacío."
 };
