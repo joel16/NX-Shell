@@ -630,7 +630,7 @@ static const char *strings_nl[] {
     "The name cannot be empty."
 };
 
-// Brazilian Portuguese ("Portuguese")
+// Portuguese
 static const char *strings_pt[] {
     "OK",
     "Cancelar",
